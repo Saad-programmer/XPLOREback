@@ -56,6 +56,7 @@ xplore-labs/
           schema.ts              Zod schemas for all content
         ui/                      terminal, live map, title screen, galaxy
         theme/                   zone accent colors
+  public/intro/                  Labs intro video (sound + silent) and poster image
   public/games/linux/            memes/ (memes.yaml + stickers), sounds/, characters/, cover/
   tests/
     unit/                        Vitest (engine, content, bridge)
@@ -388,7 +389,7 @@ The engine never imports React, Zustand, Howler or the bridge. The UI subscribes
 | 4    | Game screen: top bar, xterm terminal, D3 map, dialogue box, maximize             | mission 1 playable in the browser                   |
 | 5    | Mistake reactions, meme reactions, sounds, effects, reduced motion               | every PRD reaction triggers                         |
 | 6    | Title screen with galaxy, logo, menu                                             | smooth, pauses when hidden                          |
-| 7    | Labs hub + mission map                                                           | hub → title → map → mission works                   |
+| 7    | Intro video (start screen, skip, first visit only), Labs hub + mission map       | intro → hub → title → map → mission works           |
 | 8    | Missions 4 to 10 + bonus case                                                    | all 11 playable                                     |
 | 9    | Playwright e2e, README, CONTRIBUTING                                             | all tests green                                     |
 

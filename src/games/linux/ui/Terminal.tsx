@@ -247,6 +247,7 @@ export default function Terminal() {
     keys['\x1bOF'] = keys['\x1b[F'];
 
     const onData = term.onData((data) => {
+      store.getState().noteActivity();
       const repeatedTab = lastWasTab;
       lastWasTab = data === '\t';
       if (data === '\t') return tab(repeatedTab);

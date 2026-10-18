@@ -9,6 +9,7 @@ import { UI } from '../strings';
 import { useGame, useGameStore, useText } from './game-context';
 import { Icon } from './Icon';
 import { PasswordBox } from './PasswordBox';
+import { SettingsMenu } from './SettingsMenu';
 import styles from './TopBar.module.css';
 
 export function TopBar() {
@@ -75,7 +76,7 @@ export function TopBar() {
             onClick={() => store.getState().showHint()}
             disabled={!playing}
           >
-            {t(UI.hint)}
+            {hintsUsed >= mission.hints.length ? t(UI.showAnswer) : t(UI.hint)}
             <span className={styles.count}>
               {hintsUsed}/{mission.hints.length}
             </span>
@@ -92,6 +93,7 @@ export function TopBar() {
               label={t(muted ? UI.soundOff : UI.soundOn)}
             />
           </button>
+          <SettingsMenu buttonClass={styles.icon} />
           <button type="button" className={styles.icon} onClick={restart} title={t(UI.restart)}>
             <Icon name="restart" label={t(UI.restart)} />
           </button>

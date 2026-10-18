@@ -1,11 +1,20 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { ProgressStore, SubmitOutcome } from '@/src/shared/progress/progress-store';
 import type { LocalizedText } from '@/src/shared/i18n/text';
-import type { DialogueLine, Mission, Mood } from './content/schema';
-import type { EventOf } from './engine/events';
+import type { DialogueLine, Meme, MemeEvent, Mission, Mood, Reactions } from './content/schema';
+import type { EventOf, SpecialKind } from './engine/events';
 import { passwordsOf } from './engine/goals';
 import type { RunResult, Shell } from './engine/shell';
 import { initialKnown, isFsChange, revealAfterLine } from './map-model';
+import {
+  feedbackForLine,
+  memeFor,
+  reactionLines,
+  type EffectKind,
+  type PenguinAct,
+  type Random,
+  type SoundName,
+} from './reactions';
 import { createMissionShell, toCheckpoint, type MissionMeta } from './session';
 import { UI } from './strings';
 
@@ -24,6 +33,22 @@ export interface Victory {
   hintsUsed: number;
 }
 
+/** One-shot things the screen shows; the UI clears them when their animation ends. */
+export interface Effect {
+  id: number;
+  kind: EffectKind;
+}
+
+export interface ShownMeme {
+  id: number;
+  sticker: string | null;
+}
+
+/** Plays sounds; the UI version respects mute and the meme sounds setting. */
+export interface SoundPlayer {
+  play(name: SoundName | string, category: 'effect' | 'meme' | 'voice'): void;
+}
+
 export interface GameState {
   phase: Phase;
   mission: Mission;
@@ -37,16 +62,31 @@ export interface GameState {
   dialogue: Dialogue | null;
   dialogueHidden: boolean;
   hintsUsed: number;
+  /** All hints shown: the hint button now gives the full answer. */
+  answerShown: boolean;
   wrongPassword: boolean;
   victory: Victory | null;
+  effects: Effect[];
+  meme: ShownMeme | null;
+  penguin: { id: number; act: PenguinAct } | null;
+  /** The fake vim screen is open; the terminal waits until the player types :q! */
+  vimOpen: boolean;
 
   start(options?: { fresh?: boolean }): Promise<void>;
   /** Runs one terminal line. Returns null when no mission is running. */
   run(line: string): RunResult | null;
   submitPassword(value: string): Promise<boolean>;
+  /** Next hint, or the full answer once every hint was used. */
   showHint(): void;
+  /** Typed in the fake vim. Returns true when it was a way out. */
+  vimCommand(command: string): boolean;
+  /** The player typed something: resets the idle timer. */
+  noteActivity(): void;
   nextLine(): void;
   setDialogueHidden(hidden: boolean): void;
+  clearEffect(id: number): void;
+  clearMeme(id: number): void;
+  clearPenguin(id: number): void;
   getShell(): Shell | null;
   dispose(): void;
 }
@@ -56,25 +96,56 @@ export type GameStore = StoreApi<GameState>;
 interface Dependencies {
   mission: Mission;
   progress: ProgressStore;
+  reactions: Reactions;
+  memes: readonly Meme[];
+  sound?: SoundPlayer;
+  random?: Random;
   now?: () => Date;
+  /** No typing for this long: the penguin falls asleep (PRD section 6). */
+  idleMs?: number;
 }
+
+/** Mistakes in a row before the penguin offers a hint (PRD section 5). */
+const MISTAKES_BEFORE_HINT = 3;
+const VIM_EXITS = new Set([':q!', ':q', ':wq', ':x', ':qa!', ':wq!']);
 
 const line = (mood: Mood, text: LocalizedText): DialogueLine => ({ mood, text });
 
 export function createGameStore({
   mission,
   progress,
+  reactions,
+  memes,
+  sound = { play: () => {} },
+  random = Math.random,
   now = () => new Date(),
+  idleMs = 60_000,
 }: Dependencies): GameStore {
   let shell: Shell | null = null;
   // Filled by start(), which runs in the browser: no clock read while prerendering.
   let meta: MissionMeta = { hintsUsed: 0, attempts: 0, startedAt: '' };
   let shortestCmdLen: number | null = null;
-  let dialogueId = 0;
+  let nextId = 0;
+  let mistakes = 0;
+  let idleTimer: ReturnType<typeof setTimeout> | null = null;
 
   return createStore<GameState>()((set, get) => {
     const say = (kind: Dialogue['kind'], lines: DialogueLine[]) =>
-      set({ dialogue: { id: ++dialogueId, kind, lines, index: 0 }, dialogueHidden: false });
+      set({ dialogue: { id: ++nextId, kind, lines, index: 0 }, dialogueHidden: false });
+
+    const addEffect = (kind: EffectKind) =>
+      set((s) => ({
+        effects: [...s.effects.filter((e) => e.kind !== kind), { id: ++nextId, kind }],
+      }));
+
+    const playMeme = (event: MemeEvent) => {
+      const meme = memeFor(event, memes, random);
+      if (!meme) return;
+      if (meme.sound) sound.play(meme.sound, 'meme');
+      set({ meme: { id: ++nextId, sticker: meme.sticker ?? null } });
+    };
+
+    const actPenguin = (act: PenguinAct) => set({ penguin: { id: ++nextId, act } });
 
     const saveCheckpoint = () => {
       if (!shell || get().phase !== 'playing') return;
@@ -83,9 +154,31 @@ export function createGameStore({
         .recordCheckpoint(toCheckpoint(shell, mission, meta, { map: [...get().known] }, now()));
     };
 
+    const stopIdle = () => {
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = null;
+    };
+
+    const armIdle = () => {
+      stopIdle();
+      if (get().phase !== 'playing') return;
+      idleTimer = setTimeout(() => {
+        idleTimer = null;
+        if (get().phase !== 'playing' || get().vimOpen) return;
+        say('reaction', reactionLines(reactions, 'idle', random));
+        actPenguin('sleep');
+        playMeme('idle_60s');
+      }, idleMs);
+    };
+
     const win = async (answer: string | null) => {
-      set({ phase: 'won', victory: { outcome: null, hintsUsed: meta.hintsUsed } });
+      stopIdle();
+      set({ phase: 'won', vimOpen: false, victory: { outcome: null, hintsUsed: meta.hintsUsed } });
       say('victory', mission.victory);
+      addEffect('confetti');
+      actPenguin('dance');
+      sound.play('victory', 'effect');
+      if (meta.hintsUsed === 0) playMeme('mission_success_no_hint');
       const timeS = Math.round((now().getTime() - Date.parse(meta.startedAt)) / 1000);
       try {
         const outcome = await progress.getState().submitMission('linux', mission.id, answer, {
@@ -110,11 +203,17 @@ export function createGameStore({
       dialogue: null,
       dialogueHidden: false,
       hintsUsed: 0,
+      answerShown: false,
       wrongPassword: false,
       victory: null,
+      effects: [],
+      meme: null,
+      penguin: null,
+      vimOpen: false,
 
       async start(options = {}) {
-        set({ phase: 'loading', victory: null, wrongPassword: false });
+        stopIdle();
+        set({ phase: 'loading', victory: null, wrongPassword: false, vimOpen: false, effects: [] });
         try {
           const state = progress.getState();
           const start = await state.startMission('linux', mission.id);
@@ -126,6 +225,7 @@ export function createGameStore({
           shell = created.shell;
           meta = created.meta;
           shortestCmdLen = null;
+          mistakes = 0;
           const savedMap = created.restored
             ? (start.checkpoint?.state as { map?: unknown } | undefined)?.map
             : undefined;
@@ -139,10 +239,12 @@ export function createGameStore({
             known,
             fsVersion: s.fsVersion + 1,
             hintsUsed: meta.hintsUsed,
+            answerShown: false,
           }));
           if (created.restored) say('info', [line('happy', UI.welcomeBack)]);
           else say('briefing', mission.briefing);
           if (options.fresh) saveCheckpoint();
+          armIdle();
         } catch (error) {
           console.error('[labs] could not start the mission', error);
           set({ phase: 'error' });
@@ -150,12 +252,16 @@ export function createGameStore({
       },
 
       run(input) {
-        if (!shell || get().phase === 'loading' || get().phase === 'error') return null;
+        if (!shell || get().phase === 'loading' || get().phase === 'error' || get().vimOpen) {
+          return null;
+        }
         const cwdBefore = shell.cwd();
         let command: EventOf<'command'> | null = null;
         const changes: EventOf<'fs_changed'>[] = [];
+        const specials: SpecialKind[] = [];
         const stop = shell.events.on('*', (event) => {
           if (event.type === 'command') command = event;
+          else if (event.type === 'special') specials.push(event.kind);
           else if (isFsChange(event)) changes.push(event);
         });
         const result = shell.run(input);
@@ -170,8 +276,25 @@ export function createGameStore({
         );
         set((s) => ({ cwd: shell!.cwd(), known, fsVersion: s.fsVersion + 1 }));
 
-        const reaction = mission.reactions.find((r) => r.on === input.trim());
-        if (reaction) say('reaction', [line(reaction.mood, reaction.text)]);
+        const feedback = feedbackForLine(command, specials, reactions, random);
+        feedback.effects.forEach(addEffect);
+        feedback.sounds.forEach((name) => sound.play(name, 'effect'));
+        if (feedback.meme) playMeme(feedback.meme);
+        if (feedback.penguin) actPenguin(feedback.penguin);
+        if (specials.includes('vim_trap')) set({ vimOpen: true });
+
+        // A mission's own reaction wins over the generic one.
+        const own = mission.reactions.find((r) => r.on === input.trim());
+        if (own) say('reaction', [line(own.mood, own.text)]);
+        else if (feedback.dialogue) say('reaction', feedback.dialogue);
+
+        mistakes = feedback.mistake ? mistakes + 1 : 0;
+        if (mistakes >= MISTAKES_BEFORE_HINT && !own && !feedback.dialogue) {
+          mistakes = 0;
+          if (meta.hintsUsed < mission.hints.length) {
+            say('reaction', reactionLines(reactions, 'error_streak', random));
+          }
+        }
 
         if (get().phase === 'playing') {
           if (result.goalReached) {
@@ -191,6 +314,8 @@ export function createGameStore({
         if (!correct) {
           set({ wrongPassword: true });
           say('info', [line('disappointed', UI.wrongPassword)]);
+          addEffect('shake');
+          sound.play('bonk', 'effect');
           saveCheckpoint();
           return false;
         }
@@ -204,13 +329,33 @@ export function createGameStore({
         if (get().phase !== 'playing') return;
         const { hints } = mission;
         if (meta.hintsUsed >= hints.length) {
-          say('hint', [line('thinking', hints[hints.length - 1]), line('neutral', UI.noMoreHints)]);
+          // Giving up: the full answer, and the only place where a mocking meme plays.
+          say('hint', [
+            line('laughing', UI.answerIntro),
+            line('neutral', mission.solution.join('\n')),
+          ]);
+          set({ answerShown: true });
+          playMeme('give_up');
           return;
         }
         say('hint', [line('thinking', hints[meta.hintsUsed])]);
         meta.hintsUsed++;
+        mistakes = 0;
         set({ hintsUsed: meta.hintsUsed });
         saveCheckpoint();
+      },
+
+      vimCommand(command) {
+        if (!get().vimOpen) return false;
+        if (!VIM_EXITS.has(command.trim())) return false;
+        set({ vimOpen: false });
+        say('reaction', [line('proud', UI.vimEscaped)]);
+        return true;
+      },
+
+      noteActivity() {
+        if (get().penguin?.act === 'sleep') set({ penguin: null });
+        armIdle();
       },
 
       nextLine() {
@@ -227,9 +372,22 @@ export function createGameStore({
         set({ dialogueHidden: hidden });
       },
 
+      clearEffect(id) {
+        set((s) => ({ effects: s.effects.filter((effect) => effect.id !== id) }));
+      },
+
+      clearMeme(id) {
+        if (get().meme?.id === id) set({ meme: null });
+      },
+
+      clearPenguin(id) {
+        if (get().penguin?.id === id) set({ penguin: null });
+      },
+
       getShell: () => shell,
 
       dispose() {
+        stopIdle();
         shell = null;
       },
     };

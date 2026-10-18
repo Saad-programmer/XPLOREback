@@ -1,0 +1,138 @@
+# Reactions to classic mistakes (PRD section 7).
+# Each reaction: one line picked at random from `lines`, then the `lesson`.
+# Jokes target the command or the situation, never the player.
+
+reactions:
+  rm_rf_root:
+    lines:
+      - mood: shocked
+        text:
+          en: 'You just tried to delete the WHOLE server. My coffee! My uptime! My life!'
+          fr: "Tu viens d'essayer d'effacer TOUT le serveur. Mon café ! Mon uptime ! Ma vie !"
+    lesson:
+      mood: thinking
+      text:
+        en: 'rm -rf / deletes everything, with no trash bin. Real Linux stops it here too. Always read an rm twice before pressing Enter.'
+        fr: "rm -rf / efface tout, sans corbeille. Le vrai Linux l'arrête aussi ici. Relis toujours un rm deux fois avant d'appuyer sur Entrée."
+
+  sudo:
+    lines:
+      - mood: laughing
+        text:
+          en: 'Sudo is not a personality.'
+          fr: "Sudo, ce n'est pas une personnalité."
+      - mood: proud
+        text:
+          en: 'Nice try. I tried that too, in 1998. Still waiting.'
+          fr: "Bien essayé. J'ai essayé aussi, en 1998. J'attends toujours."
+    lesson:
+      mood: neutral
+      text:
+        en: 'sudo runs a command as the admin. It is for admin tasks only, and interns are not in the sudoers file.'
+        fr: "sudo lance une commande en tant qu'admin. C'est réservé aux tâches d'admin, et les stagiaires ne sont pas dans le fichier sudoers."
+
+  sudo_spam:
+    lines:
+      - mood: disappointed
+        text:
+          en: 'Three sudos in a row. The incident report is getting long.'
+          fr: "Trois sudo d'affilée. Le rapport d'incident devient long."
+    lesson:
+      mood: thinking
+      text:
+        en: 'When a command is refused, read the error message instead of adding sudo. It usually says what is wrong.'
+        fr: "Quand une commande est refusée, lis le message d'erreur au lieu d'ajouter sudo. Il dit souvent ce qui ne va pas."
+
+  sl:
+    lines:
+      - mood: laughing
+        text:
+          en: 'Choo choo! sl is a real joke command for people who type too fast.'
+          fr: 'Tchou tchou ! sl est une vraie commande blague pour ceux qui tapent trop vite.'
+    lesson:
+      mood: neutral
+      text:
+        en: 'You probably meant ls, which lists files. Typos happen: the up arrow brings back your last command to fix it.'
+        fr: 'Tu voulais sûrement taper ls, qui liste les fichiers. Les fautes de frappe arrivent : la flèche du haut rappelle ta dernière commande pour la corriger.'
+
+  vim_trap:
+    lines:
+      - mood: shocked
+        text:
+          en: 'Oh no. You opened vim. You are stuck in vim forever now...'
+          fr: 'Oh non. Tu as ouvert vim. Tu es coincé dans vim pour toujours...'
+    lesson:
+      mood: thinking
+      text:
+        en: 'To quit vim: type :q! then press Enter. Every sysadmin learned this the hard way.'
+        fr: "Pour quitter vim : tape :q! puis Entrée. Tous les sysadmins l'ont appris à leurs dépens."
+
+  cd_into_file:
+    lines:
+      - mood: thinking
+        text:
+          en: 'That is a file, not a folder. You cannot walk into a sheet of paper.'
+          fr: "C'est un fichier, pas un dossier. On ne peut pas entrer dans une feuille de papier."
+    lesson:
+      mood: neutral
+      text:
+        en: 'cd only goes into folders. To read a file, use cat.'
+        fr: 'cd entre seulement dans les dossiers. Pour lire un fichier, utilise cat.'
+
+  permission_denied:
+    lines:
+      - mood: disappointed
+        text:
+          en: 'The bouncer checks the list... "Your name is not on the list."'
+          fr: 'Le videur vérifie la liste... « Ton nom n’est pas sur la liste. »'
+    lesson:
+      mood: thinking
+      text:
+        en: 'Permission denied means you are not allowed to do that. ls -l shows who can read (r), write (w) or run (x) a file.'
+        fr: "Permission denied veut dire que tu n'as pas le droit. ls -l montre qui peut lire (r), écrire (w) ou exécuter (x) un fichier."
+
+  exit:
+    lines:
+      - mood: proud
+        text:
+          en: 'There is no exit. Only the password.'
+          fr: "Il n'y a pas de sortie. Seulement le mot de passe."
+    lesson:
+      mood: neutral
+      text:
+        en: 'On a real server, exit closes your session. Here, finding the password is the only way out.'
+        fr: 'Sur un vrai serveur, exit ferme ta session. Ici, trouver le mot de passe est la seule sortie.'
+
+  error_streak:
+    lines:
+      - mood: thinking
+        text:
+          en: 'Stuck? No shame. The Hint button is right up there.'
+          fr: 'Bloqué ? Pas de honte. Le bouton Indice est juste là-haut.'
+
+  idle:
+    lines:
+      - mood: sleeping
+        text:
+          en: 'Zzz... type something...'
+          fr: 'Zzz... tape quelque chose...'
+
+unknown_command:
+  lines:
+    - mood: thinking
+      text:
+        en: 'Never heard of that one. And I know a LOT of commands.'
+        fr: 'Jamais entendu parler de celle-là. Et je connais BEAUCOUP de commandes.'
+    - mood: laughing
+      text:
+        en: 'Is that a command or did your cat walk on the keyboard?'
+        fr: 'Une commande, ça ? Ou ton chat a marché sur le clavier ?'
+    - mood: neutral
+      text:
+        en: 'This server only speaks a few commands. That was not one of them.'
+        fr: "Ce serveur ne parle que quelques commandes. Celle-là n'en fait pas partie."
+  tip:
+    mood: neutral
+    text:
+      en: 'Type help to see the commands you can use.'
+      fr: 'Tape help pour voir les commandes disponibles.'

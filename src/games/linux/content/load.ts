@@ -111,3 +111,22 @@ export function checkCampaign(missions: Mission[]): string[] {
   }
   return errors;
 }
+
+/** Parses any YAML content file against a schema. Errors name the file and the field. */
+export function parseContentFile<T>(
+  text: string,
+  fileName: string,
+  schema: z.ZodType<T>,
+): { ok: true; value: T } | { ok: false; errors: string[] } {
+  let data: unknown;
+  try {
+    data = load(text, { filename: fileName });
+  } catch (error) {
+    return { ok: false, errors: [`${fileName}: invalid YAML: ${(error as Error).message}`] };
+  }
+  const parsed = schema.safeParse(data);
+  if (!parsed.success) {
+    return { ok: false, errors: parsed.error.issues.map((i) => `${fileName}: ${formatIssue(i)}`) };
+  }
+  return { ok: true, value: parsed.data };
+}

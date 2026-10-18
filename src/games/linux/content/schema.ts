@@ -144,7 +144,69 @@ export type Mission = z.output<typeof missionSchema>;
 export type Mood = z.output<typeof mood>;
 export type DialogueLine = z.output<typeof dialogueLine>;
 
+/** Classic mistakes the guide reacts to (content/reactions.yaml). */
+export const REACTION_KEYS = [
+  'rm_rf_root',
+  'sudo',
+  'sudo_spam',
+  'sl',
+  'vim_trap',
+  'cd_into_file',
+  'permission_denied',
+  'exit',
+  'error_streak',
+  'idle',
+] as const;
+export type ReactionKey = (typeof REACTION_KEYS)[number];
+
+const reaction = z
+  .object({ lines: z.array(dialogueLine).min(1), lesson: dialogueLine.optional() })
+  .strict();
+
+export const reactionsSchema = z
+  .object({
+    reactions: z.object(Object.fromEntries(REACTION_KEYS.map((key) => [key, reaction]))).strict(),
+    unknown_command: z.object({ lines: z.array(dialogueLine).min(1), tip: dialogueLine }).strict(),
+  })
+  .strict();
+
+export type Reaction = z.output<typeof reaction>;
+export interface Reactions {
+  reactions: Record<ReactionKey, Reaction>;
+  unknown_command: { lines: DialogueLine[]; tip: DialogueLine };
+}
+
+/** Meme events (PRD section 7). */
+export const MEME_EVENTS = [
+  'give_up',
+  'rm_rf_root',
+  'sudo_spam',
+  'vim_trap',
+  'mission_success_no_hint',
+  'idle_60s',
+] as const;
+export type MemeEvent = (typeof MEME_EVENTS)[number];
+
+const assetPath = z
+  .string()
+  .regex(/^[\w./-]+\.(wav|mp3|ogg|png|svg|webp|gif)$/, 'must be a file path like sounds/x.mp3');
+
+export const memesSchema = z.array(
+  z
+    .object({
+      event: z.enum(MEME_EVENTS),
+      sound: assetPath.optional(),
+      sticker: assetPath.optional(),
+      chance: z.number().min(0).max(1).default(1),
+    })
+    .strict()
+    .refine((meme) => meme.sound || meme.sticker, 'a meme needs a sound or a sticker'),
+);
+export type Meme = z.output<typeof memesSchema>[number];
+
 export interface LinuxContent {
   /** Sorted by `order`. */
   missions: Mission[];
+  reactions: Reactions;
+  memes: Meme[];
 }

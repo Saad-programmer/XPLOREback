@@ -276,6 +276,19 @@ Mock-up of the game screen (mission 3):
 - A separate option uses the browser Fullscreen API to hide the browser bar too.
 - The choice is remembered per player (settings).
 
+**Intro video (Labs entrance)**
+
+Xplore Labs opens with a short intro video before the hub, like a console boot screen. The video files already exist: `XploreLabs_Intro_16x9_sound.mp4` (with sound, about 1.7 MB) and `Silent-XploreLabs_Intro_16x9.mp4` (silent, about 0.9 MB).
+
+- First visit to `/labs`: a full-screen start screen shows the poster image (first frame of the video) and "Click or press Enter to start".
+- That click unlocks sound (browsers block autoplay with sound), then the version with sound plays full screen.
+- If the player's settings have sound muted, the silent version plays instead.
+- A Skip button (and Esc) is always visible. When the video ends or is skipped, it fades into the hub.
+- Plays on the first visit only (remembered on the device). After that, `/labs` opens straight on the hub. A "Replay intro" link sits in the hub footer.
+- Reduced motion: no video, the hub opens directly.
+- Performance and safety: the hub renders first and stays usable underneath; the video loads only when needed (`preload="none"` until the start screen shows); if the video fails to load, the hub appears at once.
+- Files live in `public/intro/` and are served at `/labs/intro/...`.
+
 **Labs home (game hub)**
 
 The first page of Xplore Labs, at `/labs`, works like game portals such as Friv or Y8: a grid of rectangle game cards, one per game.
@@ -583,7 +596,7 @@ v1 is the only committed scope. Each later phase starts only when the gate befor
 
 | Phase | Content | Gate to the next phase |
 | --- | --- | --- |
-| v1 Core game | Command engine, mock bridge, mission loader, 10 missions + bonus case; game screen with terminal, live map, penguin dialogue, sounds, memes; title screen and Labs hub; progress saving, NestJS labs module, `/labs` on the Xplore domain | Launched at a club event, feedback collected |
+| v1 Core game | Command engine, mock bridge, mission loader, 10 missions + bonus case; game screen with terminal, live map, penguin dialogue, sounds, memes; title screen, intro video and Labs hub; progress saving, NestJS labs module, `/labs` on the Xplore domain | Launched at a club event, feedback collected |
 | v2 Community | Detective cases, Case of the week on the Xplore home page, meme packs, meme of the week, fails wall, short-command challenge, admin page | 30% of players finish v1, students start adding content |
 | v3 New subjects | SQL game with the dolphin guide, Rescue the server mode, graduation mission in real Linux in the browser | SQL game stable, team picks the next subject |
 | Later | Co-op permission heist, walking 2D world, Git and networking games, teacher stats page | — |
@@ -702,8 +715,9 @@ Build order, one step at a time, tests passing before the next:
 5. Reactions to classic mistakes, meme reactions from memes.yaml, sounds with
    Howler, global mute and meme sounds toggle, victory effects, reduced motion.
 6. Linux title screen with animated galaxy, logo and menu (PRD 8).
-7. Labs home hub with game cards, hover previews and intro panel (PRD 8),
-   and the mission map page.
+7. Intro video before the hub (start screen, skip, first visit only,
+   replay link, PRD 8), Labs home hub with game cards, hover previews and
+   intro panel (PRD 8), and the mission map page.
 8. Missions 4 to 10 and the bonus case.
 9. Playwright tests, README and CONTRIBUTING (how to add a mission, a meme,
    or a new game).
@@ -757,6 +771,7 @@ xplore-labs/
       sql/                       (later)
       git/                       (later)
   public/
+    intro/                       Labs intro video (sound + silent) and poster
     games/
       linux/
         memes/                   stickers + memes.yaml

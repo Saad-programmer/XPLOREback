@@ -35,7 +35,8 @@ npm run typecheck    # tsc --noEmit
 - Points and stickers are decided by the server (mock bridge plays that role now), never by UI code.
 - Progress: autosave in-progress state after each command, save results on mission completion, retry failed saves, show a saving / saved indicator.
 - Content is data, not code: missions in YAML, validated with Zod at build time (bad files fail the build). Meme reactions come from `public/games/linux/memes/memes.yaml`.
-- All player-facing text lives in content files or `src/shared/i18n` (French + English, English fallback).
+- All player-facing text lives in content files or `src/shared/i18n` (French + English, English fallback). Exception: command help texts live in each command file.
+- Engine output copies real Linux (English). The fun lines and jokes around it come from content files, through events.
 
 ## Style rules
 

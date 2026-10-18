@@ -400,3 +400,17 @@ Each step is its own branch and pull request.
 2. Penguin placeholder name `Pixel`: fine until the real name is chosen?
 3. Shell user per mission (`intern` by default, `root` never given to the player): OK?
 4. No globbing (`*.txt`) in v1, to keep the parser small. It can come in v2. OK?
+
+## 7. Changes made during implementation
+
+The code is the source of truth; these are the differences from the proposal above.
+
+**Step 1 (engine)**
+
+- Vfs results carry only an `ErrorKind` (`VfsResult<T>`). Each command builds its own message, because real Linux words the same error differently per command (`cat: x: No such file or directory` vs `ls: cannot access 'x': ...`).
+- Vfs methods take positional flags (`mkdir(path, user, parents)`) and work on exact paths. Commands decide things like "copy into this folder".
+- Commands write output with `ctx.out()` / `ctx.err()` instead of returning strings, so errors and output appear in the right order. `shell.run()` returns the chunks plus `stdout`, `stderr`, `exitCode` and `goalReached`.
+- New error kinds: `invalid_argument`, `operation_not_permitted`, `syntax`.
+- The `command` event also has `names` (every command of the pipe) and `redirect`.
+- `$HOME`, `$USER` and `$PWD` are expanded. Unquoted `*` and `?` give a clear "not supported yet" message (point 4 of section 6).
+- Command help texts (`help`, `man`, `--help`) live next to each command, in English and French. Mission content can override a man page.

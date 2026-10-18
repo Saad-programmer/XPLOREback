@@ -3,23 +3,32 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { getProgressStore, useProgress } from '@/src/shared/progress';
-import { getMission } from '../content';
+import { getMission, memes, reactions } from '../content';
 import { createGameStore } from '../game-store';
 import { ZONES } from '../meta';
 import { UI } from '../strings';
 import { DialogueBox } from './DialogueBox';
-import { GameContext, useGame, useText } from './game-context';
+import { Effects } from './Effects';
+import { GameContext, useGame, useGameStore, useText } from './game-context';
 import styles from './GameScreen.module.css';
 import { LiveMap } from './LiveMap';
+import { linuxSound } from './sound';
 import { TopBar } from './TopBar';
 import { VictoryPanel } from './VictoryPanel';
+import { VimTrap } from './VimTrap';
 
 // xterm.js needs the browser.
 const Terminal = dynamic(() => import('./Terminal'), { ssr: false });
 
 export function GameScreen({ missionId }: { missionId: string }) {
   const [store] = useState(() =>
-    createGameStore({ mission: getMission(missionId)!, progress: getProgressStore() }),
+    createGameStore({
+      mission: getMission(missionId)!,
+      progress: getProgressStore(),
+      reactions,
+      memes,
+      sound: linuxSound,
+    }),
   );
 
   useEffect(() => {
@@ -49,10 +58,21 @@ function Screen() {
   const mission = useGame((s) => s.mission);
   const phase = useGame((s) => s.phase);
   const sessionId = useGame((s) => s.sessionId);
+  const vimOpen = useGame((s) => s.vimOpen);
+  const store = useGameStore();
+  const language = useProgress((s) => s.settings.language);
   const maximized = useProgress((s) => s.settings.maximized);
   const reducedMotion = useProgress((s) => s.settings.reducedMotion);
   const updateSettings = useProgress((s) => s.updateSettings);
   const zone = ZONES.find((z) => z.id === mission.zone)!;
+
+  // help and man follow the player's language.
+  useEffect(() => store.getState().getShell()?.setLang(language), [store, language, sessionId]);
+
+  // Back to the terminal after escaping vim.
+  useEffect(() => {
+    if (!vimOpen) document.querySelector<HTMLElement>('.xterm-helper-textarea')?.focus();
+  }, [vimOpen]);
 
   useEffect(() => {
     if (!maximized) return;
@@ -71,6 +91,7 @@ function Screen() {
       style={{ '--zone': zone.color } as CSSProperties}
     >
       <section
+        id="game-frame"
         className={styles.frame}
         data-augmented-ui="tl-clip br-clip border"
         aria-label={t(mission.title)}
@@ -87,11 +108,13 @@ function Screen() {
             <>
               <div className={styles.terminal}>
                 <Terminal key={sessionId} />
+                {vimOpen && <VimTrap />}
               </div>
               <LiveMap />
               {phase === 'won' && <VictoryPanel />}
             </>
           )}
+          <Effects />
         </div>
         <DialogueBox />
       </section>

@@ -6,10 +6,25 @@ export const UI = {
     en: 'Welcome back! Everything you did is still here.',
     fr: 'Re-bonjour ! Tout ce que tu as fait est encore là.',
   },
-  noMoreHints: {
-    en: 'That was my last hint. The answer is in the hint above!',
-    fr: 'C’était mon dernier indice. La réponse est dans l’indice du dessus !',
+  answerIntro: {
+    en: 'You give up? Fine. Here is the full answer, line by line:',
+    fr: 'Tu abandonnes ? D’accord. Voici la réponse complète, ligne par ligne :',
   },
+  showAnswer: { en: 'Answer', fr: 'Réponse' },
+  vimEscaped: {
+    en: 'You escaped vim! Many developers never do. Remember :q! for life.',
+    fr: 'Tu es sorti de vim ! Beaucoup de développeurs n’y arrivent jamais. Retiens :q! pour la vie.',
+  },
+  vimHelp: {
+    en: 'Type :q! then press Enter to quit.',
+    fr: 'Tape :q! puis Entrée pour quitter.',
+  },
+  combo: { en: 'Pipe combo', fr: 'Combo de pipes' },
+  settings: { en: 'Settings', fr: 'Réglages' },
+  memeSounds: { en: 'Meme sounds', fr: 'Sons des memes' },
+  sound: { en: 'Sound', fr: 'Son' },
+  reducedMotion: { en: 'Reduced motion', fr: 'Animations réduites' },
+  language: { en: 'Language', fr: 'Langue' },
   wrongPassword: {
     en: 'Nope, that is not the password. Read it again, carefully.',
     fr: 'Non, ce n’est pas le mot de passe. Relis-le bien.',

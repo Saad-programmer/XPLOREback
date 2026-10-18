@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { complete } from '@/src/games/linux/completion';
-import { getMission } from '@/src/games/linux/content';
+import { getMission, memes, reactions } from '@/src/games/linux/content';
 import { createGameStore } from '@/src/games/linux/game-store';
 import { buildMapTree, initialKnown, revealAfterLine } from '@/src/games/linux/map-model';
 import type { EventOf } from '@/src/games/linux/engine/events';
@@ -101,7 +101,7 @@ describe('game session', () => {
   function setup(missionId = 'archive-hidden-scroll') {
     const store = memoryStore();
     const progress = createProgressStore({ bridge: new MockBridge(store), store });
-    const game = createGameStore({ mission: getMission(missionId)!, progress });
+    const game = createGameStore({ mission: getMission(missionId)!, progress, reactions, memes });
     return { store, progress, game, state: () => game.getState() };
   }
 
@@ -153,7 +153,12 @@ describe('game session', () => {
       bridge: new MockBridge(first.store),
       store: first.store,
     });
-    const again = createGameStore({ mission: getMission('wake-up-first-door')!, progress });
+    const again = createGameStore({
+      mission: getMission('wake-up-first-door')!,
+      progress,
+      reactions,
+      memes,
+    });
     await again.getState().start();
     expect(again.getState()).toMatchObject({ cwd: `${HOME}/door-2`, dialogue: { kind: 'info' } });
     expect(again.getState().known).toContain(`${HOME}/door-1`);

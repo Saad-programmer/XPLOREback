@@ -7,6 +7,8 @@ import { UI } from '../strings';
 import { useGame, useGameStore, useReducedMotion, useText } from './game-context';
 import styles from './LiveMap.module.css';
 import { Penguin } from './Penguin';
+import type { Mood } from '../content/schema';
+import type { PenguinAct } from '../reactions';
 
 const ROW = 30;
 const INDENT = 22;
@@ -26,6 +28,13 @@ function displayPath(path: string, home: string): string {
   return path.startsWith(`${home}/`) ? `~${path.slice(home.length)}` : path;
 }
 
+const ACT_MOOD: Record<PenguinAct, Mood> = {
+  search: 'thinking',
+  panic: 'shocked',
+  dance: 'happy',
+  sleep: 'sleeping',
+};
+
 /** The folder tree the player has discovered, with the penguin on the current folder. */
 export function LiveMap() {
   const t = useText();
@@ -33,6 +42,7 @@ export function LiveMap() {
   const known = useGame((s) => s.known);
   const fsVersion = useGame((s) => s.fsVersion);
   const cwd = useGame((s) => s.cwd);
+  const penguin = useGame((s) => s.penguin);
   const reducedMotion = useReducedMotion();
   const scroller = useRef<HTMLDivElement>(null);
   const shell = store.getState().getShell();
@@ -146,7 +156,34 @@ export function LiveMap() {
                   transform: `translate(${x(current.depth) - 32}px, ${current.index * ROW + 1}px)`,
                 }}
               >
-                <Penguin size={28} />
+                <g
+                  key={penguin?.id ?? 'idle'}
+                  className={styles.act}
+                  data-act={penguin?.act}
+                  onAnimationEnd={() =>
+                    penguin && penguin.act !== 'sleep' && store.getState().clearPenguin(penguin.id)
+                  }
+                >
+                  <Penguin size={28} mood={penguin ? ACT_MOOD[penguin.act] : 'neutral'} />
+                  {penguin?.act === 'search' && (
+                    <g className={styles.magnifier} aria-hidden="true">
+                      <circle
+                        cx="27"
+                        cy="9"
+                        r="6"
+                        fill="none"
+                        stroke="var(--warn)"
+                        strokeWidth="2.5"
+                      />
+                      <path
+                        d="M31 13l5 5"
+                        stroke="var(--warn)"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                      />
+                    </g>
+                  )}
+                </g>
               </g>
             )}
           </g>

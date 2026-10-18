@@ -6,6 +6,7 @@ import { UI } from '../strings';
 import { useGame, useGameStore, useReducedMotion, useText } from './game-context';
 import styles from './DialogueBox.module.css';
 import { Penguin } from './Penguin';
+import { linuxSound } from './sound';
 
 const CHAR_MS = 22;
 
@@ -17,7 +18,12 @@ function TypedLine({ text, onDone }: { text: string; onDone: () => void }) {
 
   useEffect(() => {
     if (complete) return;
-    const timer = setInterval(() => setShown((n) => Math.min(n + 1, text.length)), CHAR_MS);
+    let ticks = 0;
+    const timer = setInterval(() => {
+      // A short, high blip every few letters (PRD section 6).
+      if (ticks++ % 3 === 0) linuxSound.play('blip', 'voice');
+      setShown((n) => Math.min(n + 1, text.length));
+    }, CHAR_MS);
     return () => clearInterval(timer);
   }, [complete, text.length]);
 

@@ -444,3 +444,12 @@ The code is the source of truth; these are the differences from the proposal abo
 - New mission field `objective`: the goal in one line for the top bar.
 - Fonts: JetBrains Mono (terminal, text) and Pixelify Sans (titles, buttons; placeholder until the club picks a title font), self-hosted by `next/font`.
 - The penguin is a placeholder SVG with the 8 moods (`ui/Penguin.tsx`), to be replaced by Rive art.
+
+**Step 5 (fun layer)**
+
+- Classic-mistake reactions and the unknown-command pool live in `src/games/linux/content/reactions.yaml`; meme reactions in `public/games/linux/memes/memes.yaml` (PRD path). Both are validated by `npm run content`, which also checks that every meme's sound and sticker file exists.
+- `reactions.ts` turns one terminal line into feedback (dialogue + lesson, effects, sounds, meme, penguin action). It is pure and unit-tested; `game-store.ts` applies it.
+- Effects: shake, pipe combo (3+ commands), melt and rewind (`rm -rf /`), train (`sl`), fake vim that only `:q!` (or `:q`, `:wq`) closes, confetti on victory. Shakes use the Web Animations API instead of GSAP (one dependency less).
+- After 3 mistakes in a row the penguin offers a hint. After the last hint, the Hint button becomes "Answer": the full solution, with the `give_up` meme (the only mocking meme, never on normal hints).
+- 60 s without typing: the penguin falls asleep (`idle_60s` meme) and wakes up on the next key.
+- Sounds: Howler, loaded on first use. Sound is off by default; meme sounds have their own switch in the new settings menu (sound, meme sounds, reduced motion, language). Placeholder sounds are synthesized by `scripts/make-sounds.mjs`; placeholder stickers are simple original SVGs. Both are meant to be replaced by the club's own files with the same names.

@@ -111,3 +111,62 @@
     transition: none;
   }
 }
+
+/* Penguin animations (PRD section 6). */
+.act {
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+
+.act[data-act='search'] {
+  animation: bob 0.5s ease-in-out 4;
+}
+
+.act[data-act='panic'] {
+  animation: panic 0.12s linear 8;
+}
+
+.act[data-act='dance'] {
+  animation: dance 0.45s ease-in-out 6;
+}
+
+.act[data-act='sleep'] {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes panic {
+  25% {
+    transform: translateX(-2px) rotate(-6deg);
+  }
+  75% {
+    transform: translateX(2px) rotate(6deg);
+  }
+}
+
+@keyframes dance {
+  25% {
+    transform: translateY(-5px) rotate(-12deg);
+  }
+  75% {
+    transform: translateY(-5px) rotate(12deg);
+  }
+}
+
+@keyframes breathe {
+  50% {
+    transform: scale(1.05, 0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .act[data-act] {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
+  }
+}

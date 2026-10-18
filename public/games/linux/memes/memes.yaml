@@ -1,0 +1,23 @@
+# Meme reactions (PRD section 7): a short sound + a sticker next to the penguin.
+# Add a meme: drop the files in sounds/ and memes/, then add one line here.
+# Paths are relative to public/games/linux/. `chance` (0 to 1) keeps it rare.
+# Placeholder assets made for Xplore: replace them with the club's own.
+
+- event: give_up # player asks for the full answer (never on normal hints)
+  sound: sounds/giggle.wav
+  sticker: memes/lol.svg
+  chance: 0.7
+- event: rm_rf_root
+  sound: sounds/dramatic.wav
+  sticker: memes/on-fire.svg
+- event: sudo_spam
+  sticker: memes/facepalm.svg
+- event: vim_trap
+  sound: sounds/sad-violin.wav
+  sticker: memes/stuck.svg
+- event: mission_success_no_hint
+  sound: sounds/applause.wav
+  sticker: memes/flex.svg
+- event: idle_60s
+  sound: sounds/snore.wav
+  sticker: memes/zzz.svg

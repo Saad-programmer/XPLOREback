@@ -414,3 +414,12 @@ The code is the source of truth; these are the differences from the proposal abo
 - The `command` event also has `names` (every command of the pipe) and `redirect`.
 - `$HOME`, `$USER` and `$PWD` are expanded. Unquoted `*` and `?` give a clear "not supported yet" message (point 4 of section 6).
 - Command help texts (`help`, `man`, `--help`) live next to each command, in English and French. Mission content can override a man page.
+
+**Step 2 (bridge and progress)**
+
+- `startMission` and `submitMission` also take the `game`. `saveCheckpoint` takes one `Checkpoint` that holds its own `game` and `missionId`.
+- `Checkpoint.state` is game-specific JSON (`unknown`). For Linux it is the shell snapshot (file system, current folder, history).
+- One personal secret per mission: `{{password}}` = `HMAC-SHA256(secret, "<userId>:<missionId>")`, shown as `xxxx-WORD-00` (`src/shared/bridge/password.ts`). The NestJS module must use the same formula.
+- Points: 10 per mission + 5 without hints, only the first time (mock rules in `mock-bridge.ts`). Zone bonuses and stickers come when zones exist (Step 8 / Phase B).
+- Saving: every checkpoint is written to localStorage at once; the server gets it every 2 min or on `flushCheckpoints()` (page hidden). Failed saves wait in a queue in localStorage and are retried after 2 s, 5 s, 15 s, 30 s, then every 60 s. A submit made offline is queued and the local checkpoint is kept until the server confirms it.
+- `SaveIndicator` (`src/shared/ui`) shows saving / saved / offline. It goes in the game top bar in Step 4.

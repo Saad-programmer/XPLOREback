@@ -1,0 +1,38 @@
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+
+.dot {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.indicator[data-status='saving'] .dot {
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.indicator[data-status='saved'] {
+  color: #9ece6a;
+}
+
+.indicator[data-status='retrying'] {
+  color: #e0af68;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator[data-status='saving'] .dot {
+    animation: none;
+  }
+}

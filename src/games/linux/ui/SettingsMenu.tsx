@@ -11,7 +11,17 @@ import styles from './SettingsMenu.module.css';
 type Toggle = 'muted' | 'memeSounds' | 'reducedMotion';
 
 /** Sound, meme sounds, reduced motion and language (PRD sections 7 and 8). Uses the HTML popover API. */
-export function SettingsMenu({ buttonClass }: { buttonClass: string }) {
+export function SettingsMenu({
+  buttonClass,
+  menuClass,
+  textButton = false,
+}: {
+  buttonClass: string;
+  /** Extra class for the panel (e.g. centred on the title screen). */
+  menuClass?: string;
+  /** Show the word "Settings" instead of the gear icon. */
+  textButton?: boolean;
+}) {
   const t = useText();
   const id = useId();
   const settings = useProgress((s) => s.settings);
@@ -30,12 +40,12 @@ export function SettingsMenu({ buttonClass }: { buttonClass: string }) {
         type="button"
         className={buttonClass}
         popoverTarget={id}
-        title={t(UI.settings)}
-        aria-label={t(UI.settings)}
+        title={textButton ? undefined : t(UI.settings)}
+        aria-label={textButton ? undefined : t(UI.settings)}
       >
-        <Icon name="settings" label={t(UI.settings)} />
+        {textButton ? t(UI.settings) : <Icon name="settings" label={t(UI.settings)} />}
       </button>
-      <div id={id} popover="auto" className={styles.menu}>
+      <div id={id} popover="auto" className={`${styles.menu} ${menuClass ?? ''}`}>
         <h2 className={styles.title}>{t(UI.settings)}</h2>
         {toggles.map((toggle) => (
           <label key={toggle.key} className={styles.row}>

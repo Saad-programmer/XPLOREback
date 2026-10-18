@@ -51,6 +51,17 @@ export const UI = {
   passwordLabel: { en: 'Password', fr: 'Mot de passe' },
   passwordSubmit: { en: 'Unlock', fr: 'Déverrouiller' },
   terminal: { en: 'Terminal', fr: 'Terminal' },
+  pressStart: { en: 'Press Enter to start', fr: 'Appuie sur Entrée pour commencer' },
+  continue: { en: 'Continue', fr: 'Continuer' },
+  newGame: { en: 'New game', fr: 'Nouvelle partie' },
+  start: { en: 'Start', fr: 'Commencer' },
+  newGameConfirm: {
+    en: 'Start again from mission 1? Your points and finished missions stay.',
+    fr: 'Recommencer à la mission 1 ? Tes points et tes missions réussies restent.',
+  },
+  allDone: { en: 'all missions done', fr: 'toutes les missions réussies' },
+  missionLabel: { en: 'Mission', fr: 'Mission' },
+  titleMenu: { en: 'Main menu', fr: 'Menu principal' },
   terminalWelcome: {
     en: 'FST server, Linux 6.1. Type help to see the commands you can use.',
     fr: 'Serveur FST, Linux 6.1. Tape help pour voir les commandes disponibles.',

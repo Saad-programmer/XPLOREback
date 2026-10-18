@@ -61,7 +61,9 @@ export function Penguin({ mood = 'neutral', size = 64 }: { mood?: Mood; size?: n
       <ellipse cx="39" cy="60" rx="5" ry="2.5" fill={BEAK} />
       <ellipse cx="32" cy="36" rx="20" ry="23" fill="#2e3452" stroke="#4b5279" strokeWidth="1.5" />
       <ellipse cx="32" cy="40" rx="13.5" ry="17" fill="#e6e9f5" />
-      <Eyes mood={mood} />
+      <g className="penguin-eyes">
+        <Eyes mood={mood} />
+      </g>
       {openBeak ? (
         <path d="M28.5 34h7l-3.5 2.2zM29.5 37.2h5l-2.5 2.6z" fill={BEAK} />
       ) : (

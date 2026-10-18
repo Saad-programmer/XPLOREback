@@ -51,6 +51,9 @@ export function VictoryPanel() {
           ) : (
             <p className={styles.done}>{t(UI.campaignDone)}</p>
           )}
+          <Link className={styles.secondary} href="/linux/missions">
+            {t(UI.missionMap)}
+          </Link>
           <button
             type="button"
             className={styles.secondary}

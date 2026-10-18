@@ -1,0 +1,98 @@
+.intro {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+
+.intro[data-stage='leaving'] {
+  animation: fadeOut 600ms ease-in forwards;
+  pointer-events: none;
+}
+
+.video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Whole frame, so narrow screens do not crop the logo. */
+  object-fit: contain;
+}
+
+.intro[data-stage='start'] .video {
+  filter: brightness(0.45) saturate(0.8);
+}
+
+.start {
+  position: relative;
+  align-self: end;
+  margin-bottom: 10vh;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+}
+
+.startButton {
+  padding: var(--space-3) var(--space-6);
+  border: 0;
+  background: none;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 2rem);
+  cursor: pointer;
+  text-shadow: 0 0 18px rgb(0 0 0 / 0.9);
+  animation: breathe 2.2s ease-in-out infinite;
+}
+
+.sound {
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 999px;
+  padding: var(--space-1) var(--space-4);
+  background: rgb(0 0 0 / 0.4);
+  color: #fff;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+
+.sound[aria-pressed='true'] {
+  border-color: #bb9af7;
+}
+
+.skip {
+  position: absolute;
+  right: var(--space-6);
+  bottom: var(--space-6);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid rgb(255 255 255 / 0.4);
+  border-radius: var(--radius);
+  background: rgb(0 0 0 / 0.45);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  cursor: pointer;
+}
+
+.skip:hover,
+.sound:hover {
+  border-color: #fff;
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .startButton {
+    animation: none;
+  }
+}

@@ -1,9 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Link from 'next/link';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { getProgressStore, useProgress } from '@/src/shared/progress';
-import { getMission, memes, reactions } from '../content';
+import { getMission, memes, missions, reactions } from '../content';
+import { isLocked } from '../mission-map';
 import { createGameStore } from '../game-store';
 import { consumeFreshStart } from '../title';
 import { ZONES } from '../meta';
@@ -13,6 +15,7 @@ import { Effects } from './Effects';
 import { GameContext, useGame, useGameStore, useText } from './game-context';
 import styles from './GameScreen.module.css';
 import { LiveMap } from './LiveMap';
+import { Penguin } from './Penguin';
 import { linuxSound } from './sound';
 import { TopBar } from './TopBar';
 import { VictoryPanel } from './VictoryPanel';
@@ -32,14 +35,27 @@ export function GameScreen({ missionId }: { missionId: string }) {
     }),
   );
 
+  const [locked, setLocked] = useState(false);
+
   useEffect(() => {
-    void store.getState().start({ fresh: consumeFreshStart(missionId) });
+    let cancelled = false;
+    void (async () => {
+      // Locked missions cannot be opened with a direct link (PRD section 5).
+      const progress = await getProgressStore()
+        .getState()
+        .loadProgress('linux')
+        .catch(() => undefined);
+      if (cancelled) return;
+      if (progress && isLocked(missionId, missions, progress)) return setLocked(true);
+      void store.getState().start({ fresh: consumeFreshStart(missionId) });
+    })();
     // Send the latest checkpoint when the player leaves or hides the page.
     const flush = () => void getProgressStore().getState().flushCheckpoints();
     const onVisibility = () => document.visibilityState === 'hidden' && flush();
     document.addEventListener('visibilitychange', onVisibility);
     window.addEventListener('pagehide', flush);
     return () => {
+      cancelled = true;
       flush();
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pagehide', flush);
@@ -48,9 +64,18 @@ export function GameScreen({ missionId }: { missionId: string }) {
   }, [store, missionId]);
 
   return (
-    <GameContext.Provider value={store}>
-      <Screen />
-    </GameContext.Provider>
+    <GameContext.Provider value={store}>{locked ? <Locked /> : <Screen />}</GameContext.Provider>
+  );
+}
+
+function Locked() {
+  const t = useText();
+  return (
+    <main className={styles.locked}>
+      <Penguin mood="disappointed" size={96} />
+      <p>{t(UI.lockedMission)}</p>
+      <Link href="/linux/missions">{t(UI.missionMap)}</Link>
+    </main>
   );
 }
 

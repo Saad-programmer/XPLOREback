@@ -74,6 +74,10 @@
 }
 
 .secondary {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text);
+  text-decoration: none;
   min-height: 2.75rem;
   padding: 0 var(--space-4);
   border: 1px solid var(--line);

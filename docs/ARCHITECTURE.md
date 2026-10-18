@@ -453,3 +453,10 @@ The code is the source of truth; these are the differences from the proposal abo
 - After 3 mistakes in a row the penguin offers a hint. After the last hint, the Hint button becomes "Answer": the full solution, with the `give_up` meme (the only mocking meme, never on normal hints).
 - 60 s without typing: the penguin falls asleep (`idle_60s` meme) and wakes up on the next key.
 - Sounds: Howler, loaded on first use. Sound is off by default; meme sounds have their own switch in the new settings menu (sound, meme sounds, reduced motion, language). Placeholder sounds are synthesized by `scripts/make-sounds.mjs`; placeholder stickers are simple original SVGs. Both are meant to be replaced by the club's own files with the same names.
+
+**Step 6 (title screen)**
+
+- `/labs/linux` is the title screen: galaxy background, typed logo with the penguin, "Press Enter to start", then a menu (Continue, New game or Start, Settings, Back to Xplore) usable with the arrow keys.
+- `src/games/linux/galaxy.ts` generates the galaxy as data from a fixed seed (3 spiral arms, star layers, cursor-tempo core pulse) and is unit-tested; `ui/Galaxy.tsx` draws it on a canvas. The spiral is painted once into an offscreen image and only rotated each frame. The loop stops when the tab is hidden, when the player leaves for a mission, and shows one still frame with reduced motion.
+- `src/games/linux/title.ts`: "Continue" goes to the mission in progress, else the first one not done. "New game" starts mission 1 without its saved checkpoint (points and finished missions stay).
+- Title music (optional in the PRD) is not included yet.

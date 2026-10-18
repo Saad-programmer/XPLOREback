@@ -5,6 +5,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { getProgressStore, useProgress } from '@/src/shared/progress';
 import { getMission, memes, reactions } from '../content';
 import { createGameStore } from '../game-store';
+import { consumeFreshStart } from '../title';
 import { ZONES } from '../meta';
 import { UI } from '../strings';
 import { DialogueBox } from './DialogueBox';
@@ -32,7 +33,7 @@ export function GameScreen({ missionId }: { missionId: string }) {
   );
 
   useEffect(() => {
-    void store.getState().start();
+    void store.getState().start({ fresh: consumeFreshStart(missionId) });
     // Send the latest checkpoint when the player leaves or hides the page.
     const flush = () => void getProgressStore().getState().flushCheckpoints();
     const onVisibility = () => document.visibilityState === 'hidden' && flush();
@@ -44,7 +45,7 @@ export function GameScreen({ missionId }: { missionId: string }) {
       window.removeEventListener('pagehide', flush);
       store.getState().dispose();
     };
-  }, [store]);
+  }, [store, missionId]);
 
   return (
     <GameContext.Provider value={store}>

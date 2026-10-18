@@ -1,0 +1,227 @@
+.screen {
+  position: relative;
+  min-height: 100dvh;
+  overflow: hidden;
+  --zone: #bb9af7;
+}
+
+.content {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-6);
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.mascot {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  filter: drop-shadow(0 0 22px rgb(187 154 247 / 0.35));
+}
+
+/* Idle penguin: blinks and taps a tiny keyboard (PRD section 8). */
+.mascot :global(.penguin-eyes) {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: blink 4.6s infinite;
+}
+
+.key {
+  fill: var(--line);
+  animation: tap 1.4s steps(1) infinite;
+}
+
+.key:nth-child(3) {
+  animation-delay: 0.35s;
+}
+.key:nth-child(5) {
+  animation-delay: 0.7s;
+}
+.key:nth-child(7) {
+  animation-delay: 0.2s;
+}
+.key:nth-child(8) {
+  animation-delay: 1s;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.75rem, 9vw, 6.5rem);
+  line-height: 1;
+  color: #f2ecff;
+  /* A dark halo keeps the title readable over bright stars, then the glow. */
+  text-shadow:
+    0 0 14px rgb(12 13 24 / 0.95),
+    0 0 32px rgb(12 13 24 / 0.8),
+    0 0 26px rgb(187 154 247 / 0.45);
+  white-space: nowrap;
+}
+
+.cursor {
+  color: var(--zone);
+  animation: cursor 1.06s steps(1) infinite;
+}
+
+/* Once typed, the cursor goes away and the logo settles. */
+.logo[data-done] .cursor {
+  animation: cursorOut 2.12s steps(1) forwards;
+}
+
+.logo[data-done] .title {
+  animation: settle 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.press {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--text);
+  animation: breathe 2.2s ease-in-out infinite;
+}
+
+.menu {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-1);
+  min-width: min(22rem, 86vw);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-2) var(--space-6);
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.item:hover,
+.item:focus-visible {
+  color: #fff;
+  outline: none;
+  background: linear-gradient(90deg, transparent, rgb(187 154 247 / 0.16), transparent);
+}
+
+/* The console-menu cursor on the selected item. */
+.item:focus-visible::before {
+  content: '';
+  position: absolute;
+  left: var(--space-2);
+  top: 50%;
+  border: 6px solid transparent;
+  border-left: 9px solid var(--zone);
+  transform: translateY(-50%);
+}
+
+.detail {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--faint);
+}
+
+.item:hover .detail,
+.item:focus-visible .detail {
+  color: var(--muted);
+}
+
+.settings {
+  top: 50%;
+  left: 50%;
+  right: auto;
+  transform: translate(-50%, -50%);
+  text-align: left;
+}
+
+@keyframes blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes tap {
+  0% {
+    fill: var(--line);
+  }
+  10% {
+    fill: var(--zone);
+  }
+  20% {
+    fill: var(--line);
+  }
+}
+
+@keyframes cursor {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Two last blinks, then the cursor is gone. */
+@keyframes cursorOut {
+  25% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  75%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes settle {
+  from {
+    letter-spacing: 0.06em;
+    filter: brightness(1.6);
+  }
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (max-width: 560px) {
+  .logo {
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot :global(.penguin-eyes),
+  .key,
+  .cursor,
+  .press,
+  .logo[data-done] .title {
+    animation: none;
+  }
+}

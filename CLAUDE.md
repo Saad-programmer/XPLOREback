@@ -24,6 +24,7 @@ npm run typecheck    # tsc --noEmit
 - `basePath` is added to `<Link>` and router paths automatically, but NOT to raw URLs: files in `public/` (sounds, memes, Rive files, images, `fetch`) must go through `asset()` from `src/shared/asset.ts`.
 - Links back to Xplore use a plain `<a>`, never `<Link>` (different zone).
 - Game screens are client components (`'use client'`). Static pages stay server components.
+- Cache Components is on: no `new Date()`, `Date.now()` or `Math.random()` while rendering (read them in effects or event handlers), and read `params` inside `<Suspense>`. Browser-only libraries (xterm.js) load with `next/dynamic` and `ssr: false` from a client component.
 
 ## Architecture rules
 

@@ -1,0 +1,127 @@
+.box {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4) var(--space-4) var(--space-6);
+  border-top: 1px solid var(--line);
+  background: linear-gradient(to bottom, var(--storm), var(--deep));
+}
+
+.portrait {
+  --aug-border-all: 1px;
+  --aug-border-bg: var(--zone);
+  --aug-tl: 10px;
+  --aug-br: 10px;
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  background: var(--night);
+}
+
+.body {
+  min-width: 0;
+  max-width: 72ch;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--zone);
+}
+
+.text {
+  margin: var(--space-1) 0 0;
+  min-height: 3em;
+  font-size: 1rem;
+  line-height: 1.55;
+  cursor: pointer;
+}
+
+.rest {
+  visibility: hidden;
+}
+
+.actions {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  align-self: end;
+}
+
+.next {
+  --aug-tr: 8px;
+  --aug-bl: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  border: 0;
+  background: var(--zone);
+  color: var(--deep);
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  cursor: pointer;
+}
+
+.step {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  opacity: 0.75;
+}
+
+.minimize {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.collapsed {
+  border-top: 1px solid var(--line);
+  padding: var(--space-1) var(--space-4);
+  background: var(--deep);
+}
+
+.reopen {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.reopen:hover {
+  color: var(--text);
+}
+
+@media (max-width: 760px) {
+  .box {
+    grid-template-columns: auto 1fr;
+    padding-inline: var(--space-3);
+  }
+
+  .portrait {
+    width: 60px;
+    height: 60px;
+  }
+
+  .portrait svg {
+    width: 52px;
+    height: 52px;
+  }
+
+  .actions {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}

@@ -5,6 +5,9 @@ order: 2
 title:
   en: The first door
   fr: La première porte
+objective:
+  en: Find the door with the key and type its password
+  fr: Trouve la porte avec la clé et tape son mot de passe
 
 briefing:
   - mood: neutral

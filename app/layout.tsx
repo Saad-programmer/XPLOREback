@@ -1,5 +1,11 @@
 import type { Metadata } from 'next';
+import { JetBrains_Mono, Pixelify_Sans } from 'next/font/google';
+import 'augmented-ui/augmented-ui.min.css';
 import './globals.css';
+
+const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });
+/** Placeholder game title font until the club picks one (PRD section 17). */
+const display = Pixelify_Sans({ subsets: ['latin'], variable: '--font-display' });
 
 export const metadata: Metadata = {
   title: 'Xplore Labs',
@@ -8,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="fr">
+    <html lang="fr" className={`${mono.variable} ${display.variable}`}>
       <body>{children}</body>
     </html>
   );

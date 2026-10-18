@@ -5,6 +5,9 @@ order: 1
 title:
   en: Hello, world?
   fr: Bonjour, le monde ?
+objective:
+  en: Find the welcome note and type its password
+  fr: Trouve la note de bienvenue et tape son mot de passe
 
 briefing:
   - mood: sleeping

@@ -115,6 +115,8 @@ export const missionSchema = z
     /** Position in the campaign (1 to 10, bonus cases after). */
     order: z.number().int().positive(),
     title: localizedText,
+    /** The goal in one short line, shown in the top bar. */
+    objective: localizedText,
     guide: z.literal('penguin').default('penguin'),
     user: userName.refine((name) => name !== 'root', 'the player is never root').default('intern'),
     briefing: z.array(dialogueLine).min(1),

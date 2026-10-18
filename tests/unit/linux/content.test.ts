@@ -11,6 +11,7 @@ id: test-mission
 zone: archive
 order: 42
 title: Test
+objective: Read the file
 briefing:
   - { mood: neutral, text: "Hello" }
 filesystem:

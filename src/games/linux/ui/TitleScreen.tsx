@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { getProgressStore, useProgress } from '@/src/shared/progress';
@@ -164,6 +165,11 @@ export function TitleScreen() {
                 <button type="button" className={styles.item} onClick={newGame}>
                   {menu.hasProgress ? t(UI.newGame) : t(UI.start)}
                 </button>
+              </li>
+              <li>
+                <Link className={styles.item} href="/linux/missions">
+                  {t(UI.missions)}
+                </Link>
               </li>
               <li>
                 <SettingsMenu buttonClass={styles.item} menuClass={styles.settings} textButton />

@@ -45,7 +45,7 @@ The first game teaches **Linux**: you type real commands in a simulated terminal
 ```text
 xplore-labs/
   docs/PRD.md          full product spec
-  Intro/               intro videos
+  public/intro/        Labs intro video (sound + silent)
   app/                 Next.js routes (hub, title screen, mission map, game screen)
   src/shared/          bridge, progress, sound, memes, UI, theme, game registry
   src/games/linux/     engine, mission content, UI, theme

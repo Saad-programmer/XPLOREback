@@ -460,3 +460,10 @@ The code is the source of truth; these are the differences from the proposal abo
 - `src/games/linux/galaxy.ts` generates the galaxy as data from a fixed seed (3 spiral arms, star layers, cursor-tempo core pulse) and is unit-tested; `ui/Galaxy.tsx` draws it on a canvas. The spiral is painted once into an offscreen image and only rotated each frame. The loop stops when the tab is hidden, when the player leaves for a mission, and shows one still frame with reduced motion.
 - `src/games/linux/title.ts`: "Continue" goes to the mission in progress, else the first one not done. "New game" starts mission 1 without its saved checkpoint (points and finished missions stay).
 - Title music (optional in the PRD) is not included yet.
+
+**Step 7 (intro, hub, mission map)**
+
+- `/labs` is the Labs hub (`src/shared/hub`): game cards from `src/shared/games.ts` (one entry per game), a preview on hover or focus, an intro panel before entering a game, a "Your game here" card and a "Replay intro" link.
+- Intro video (`IntroVideo.tsx`): start screen, the click unlocks sound, silent version when sound is off (a sound switch sits on the start screen), Skip and Esc, fade into the hub, first visit only (localStorage), never with reduced motion, and the hub appears at once if the video fails. The videos moved from `Intro/` to `public/intro/`. The video starts on black, so the start screen shows the logo frame at 4 s instead of the first frame (no separate poster file needed).
+- `/labs/linux/missions` is the mission map: zones in order, missions done / open / locked. A mission opens when the one before it is done (`mission-map.ts`); a direct link to a locked mission shows a message and a link to the map.
+- Next 16 keeps visited pages alive but hidden; their effects are cleaned up, so the title screen galaxy stops when you leave it.

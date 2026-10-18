@@ -87,3 +87,19 @@
     border-top: 1px solid var(--line);
   }
 }
+
+.locked {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  text-align: center;
+  --zone: #f7768e;
+}
+
+.locked p {
+  max-width: 40ch;
+  margin: 0;
+}

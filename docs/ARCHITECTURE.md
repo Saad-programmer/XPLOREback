@@ -434,3 +434,13 @@ The code is the source of truth; these are the differences from the proposal abo
 - `order` is the campaign position and is unique across all missions. Zones and their colors are in `src/games/linux/meta.ts`.
 - Dialogue, hints, victory and concept are in English and French. Text inside the server's files is English only, like a real server.
 - `src/games/linux/session.ts` builds a mission shell from the bridge's `startMission` (personal secrets + checkpoint) and turns a shell back into a checkpoint.
+
+**Step 4 (game screen)**
+
+- Route `app/linux/[missionId]/page.tsx`: static params from the missions, `params` read inside `<Suspense>` (Next.js instant navigation), unknown ids give a 404.
+- `src/games/linux/game-store.ts`: one Zustand store per mission screen (shell, dialogue, hints, password, victory, checkpoints). The UI only talks to this store.
+- Live map = "fog of war" (`map-model.ts`): it shows only what the player discovered (`ls` lists a folder, `ls -a` its hidden files, `cd`, `cat`, `find`, files created). The PRD's "target highlighted" is replaced by this, so the map never gives the answer away. The map is saved in the checkpoint.
+- Terminal: xterm.js draws, `Terminal.tsx` is the line editor (cursor, history, Tab via `completion.ts`, green/red command word, Ctrl+C copy when text is selected).
+- New mission field `objective`: the goal in one line for the top bar.
+- Fonts: JetBrains Mono (terminal, text) and Pixelify Sans (titles, buttons; placeholder until the club picks a title font), self-hosted by `next/font`.
+- The penguin is a placeholder SVG with the 8 moods (`ui/Penguin.tsx`), to be replaced by Rive art.

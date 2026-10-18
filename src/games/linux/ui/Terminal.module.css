@@ -1,0 +1,13 @@
+.terminal {
+  height: 100%;
+  min-height: 0;
+}
+
+.terminal :global(.xterm) {
+  height: 100%;
+}
+
+.terminal :global(.xterm-viewport) {
+  background-color: var(--deep) !important;
+  scrollbar-color: var(--line) transparent;
+}

@@ -5,6 +5,9 @@ order: 3
 title:
   en: The hidden scroll
   fr: Le parchemin caché
+objective:
+  en: Find the hidden scroll and type its password
+  fr: Trouve le parchemin caché et tape son mot de passe
 
 briefing:
   - mood: neutral

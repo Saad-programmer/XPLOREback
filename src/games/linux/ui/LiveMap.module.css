@@ -1,0 +1,113 @@
+.map {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background:
+    radial-gradient(circle at 1px 1px, rgb(169 177 214 / 0.07) 1px, transparent 0) 0 0 / 22px 22px,
+    var(--night);
+}
+
+.header {
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.path {
+  color: var(--zone);
+  font-size: var(--text-sm);
+}
+
+.scroller {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-3) var(--space-2);
+  scrollbar-color: var(--line) transparent;
+}
+
+.svg {
+  display: block;
+  overflow: visible;
+}
+
+.link {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.5;
+}
+
+.currentBand {
+  fill: color-mix(in srgb, var(--zone) 10%, transparent);
+}
+
+.dir {
+  fill: color-mix(in srgb, var(--zone) 25%, var(--deep));
+  stroke: var(--zone);
+  stroke-width: 1.5;
+}
+
+.file {
+  fill: var(--deep);
+  stroke: var(--muted);
+  stroke-width: 1.5;
+}
+
+.label {
+  fill: var(--text);
+  font-size: 14px;
+  font-family: var(--font-mono), monospace;
+}
+
+.row[data-type='dir'] .label {
+  fill: var(--text);
+  font-weight: 600;
+}
+
+.row[data-hidden] .file,
+.row[data-hidden] .dir {
+  stroke-dasharray: 2 2;
+}
+
+.row[data-hidden] .label {
+  fill: var(--muted);
+  font-style: italic;
+}
+
+.row[data-current] .label {
+  fill: var(--zone);
+}
+
+.unexplored {
+  fill: var(--faint);
+  font-weight: 400;
+}
+
+/* New discoveries pop in. */
+.pop {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* The penguin slides on its belly to the new folder (PRD section 6). */
+.penguin {
+  transition: transform 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pop {
+    animation: none;
+  }
+
+  .penguin {
+    transition: none;
+  }
+}

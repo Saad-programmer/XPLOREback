@@ -49,16 +49,18 @@ export function createMissionShell(
   return { shell, meta, restored: !!restore };
 }
 
+/** `extra` is saved next to the shell snapshot (e.g. what the live map has revealed). */
 export function toCheckpoint(
   shell: Shell,
   mission: Mission,
   meta: MissionMeta,
+  extra: Record<string, unknown> = {},
   now = new Date(),
 ): Checkpoint {
   return {
     game: 'linux',
     missionId: mission.id,
-    state: shell.snapshot(),
+    state: { ...shell.snapshot(), ...extra },
     hintsUsed: meta.hintsUsed,
     attempts: meta.attempts,
     startedAt: meta.startedAt,

@@ -1,0 +1,88 @@
+# Mission 2 — moving between folders: cd, cd .., ls.
+id: wake-up-first-door
+zone: wake-up-room
+order: 2
+title:
+  en: The first door
+  fr: La première porte
+
+briefing:
+  - mood: neutral
+    text:
+      en: 'Next room: a hallway with three doors. On a server, a door is a folder.'
+      fr: "Pièce suivante : un couloir avec trois portes. Sur un serveur, une porte, c'est un dossier."
+  - mood: thinking
+    text:
+      en: 'Type cd followed by a folder name to walk in. To come back out, type cd .. (two dots mean the folder above).'
+      fr: "Tape cd suivi d'un nom de dossier pour entrer. Pour ressortir, tape cd .. (deux points = le dossier du dessus)."
+  - mood: laughing
+    text:
+      en: "Only one door has the key. Me? I'd just use sudo. ...It never works, but I keep trying."
+      fr: "Une seule porte a la clé. Moi ? J'utiliserais sudo. ...Ça ne marche jamais, mais j'essaie toujours."
+
+filesystem:
+  /home/intern:
+    hallway.txt: |
+      Three doors. Only one hides the key.
+      Enter a door with:   cd door-1
+      Look inside with:    ls
+      Come back with:      cd ..
+    door-1:
+      type: dir
+      children:
+        note.txt: |
+          Wrong door! Nothing here but dust.
+          Go back to the hallway with: cd ..
+    door-2:
+      type: dir
+      children:
+        note.txt: |
+          Still wrong. A sticky note says:
+          "The key is always behind the LAST door."
+    door-3:
+      type: dir
+      children:
+        key.txt: |
+          You found the key!
+          Password: {{password}}
+
+start_dir: '~'
+
+goal:
+  type: password
+  value: '{{password}}'
+
+hints:
+  - en: 'Use ls to see the doors, and cat hallway.txt for instructions.'
+    fr: 'Utilise ls pour voir les portes, et cat hallway.txt pour les instructions.'
+  - en: 'Each door is a folder. Walk in with cd door-1, look with ls, and come back with cd ..'
+    fr: 'Chaque porte est un dossier. Entre avec cd door-1, regarde avec ls, et ressors avec cd ..'
+  - en: 'The note in door-2 says it all. Type: cd door-3 then cat key.txt'
+    fr: 'La note de door-2 dit tout. Tape : cd door-3 puis cat key.txt'
+
+reactions:
+  - on: cd door-3/key.txt
+    mood: thinking
+    text:
+      en: 'Close! But key.txt is a file, not a door. Walk into door-3 first, then read the file.'
+      fr: "Presque ! Mais key.txt est un fichier, pas une porte. Entre d'abord dans door-3, puis lis le fichier."
+
+victory:
+  - mood: happy
+    text:
+      en: 'Key found! You walk through folders like a real admin now.'
+      fr: 'Clé trouvée ! Tu te promènes dans les dossiers comme un vrai admin.'
+
+rewards: { points: 10, no_hint_bonus: 5 }
+
+concept:
+  en: 'cd folder goes into a folder, cd .. goes back up, and cd alone takes you home.'
+  fr: "cd dossier entre dans un dossier, cd .. remonte d'un niveau, et cd tout seul te ramène à la maison."
+
+solution:
+  - ls
+  - cd door-1
+  - cat note.txt
+  - cd ..
+  - cd door-3
+  - cat key.txt

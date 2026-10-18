@@ -401,3 +401,36 @@ Each step is its own branch and pull request.
 2. Penguin placeholder name `Pixel`: fine until the real name is chosen?
 3. Shell user per mission (`intern` by default, `root` never given to the player): OK?
 4. No globbing (`*.txt`) in v1, to keep the parser small. It can come in v2. OK?
+
+## 7. Changes made during implementation
+
+The code is the source of truth; these are the differences from the proposal above.
+
+**Step 1 (engine)**
+
+- Vfs results carry only an `ErrorKind` (`VfsResult<T>`). Each command builds its own message, because real Linux words the same error differently per command (`cat: x: No such file or directory` vs `ls: cannot access 'x': ...`).
+- Vfs methods take positional flags (`mkdir(path, user, parents)`) and work on exact paths. Commands decide things like "copy into this folder".
+- Commands write output with `ctx.out()` / `ctx.err()` instead of returning strings, so errors and output appear in the right order. `shell.run()` returns the chunks plus `stdout`, `stderr`, `exitCode` and `goalReached`.
+- New error kinds: `invalid_argument`, `operation_not_permitted`, `syntax`.
+- The `command` event also has `names` (every command of the pipe) and `redirect`.
+- `$HOME`, `$USER` and `$PWD` are expanded. Unquoted `*` and `?` give a clear "not supported yet" message (point 4 of section 6).
+- Command help texts (`help`, `man`, `--help`) live next to each command, in English and French. Mission content can override a man page.
+
+**Step 2 (bridge and progress)**
+
+- `startMission` and `submitMission` also take the `game`. `saveCheckpoint` takes one `Checkpoint` that holds its own `game` and `missionId`.
+- `Checkpoint.state` is game-specific JSON (`unknown`). For Linux it is the shell snapshot (file system, current folder, history).
+- One personal secret per mission: `{{password}}` = `HMAC-SHA256(secret, "<userId>:<missionId>")`, shown as `xxxx-WORD-00` (`src/shared/bridge/password.ts`). The NestJS module must use the same formula.
+- Points: 10 per mission + 5 without hints, only the first time (mock rules in `mock-bridge.ts`). Zone bonuses and stickers come when zones exist (Step 8 / Phase B).
+- Saving: every checkpoint is written to localStorage at once; the server gets it every 2 min or on `flushCheckpoints()` (page hidden). Failed saves wait in a queue in localStorage and are retried after 2 s, 5 s, 15 s, 30 s, then every 60 s. A submit made offline is queued and the local checkpoint is kept until the server confirms it.
+- `SaveIndicator` (`src/shared/ui`) shows saving / saved / offline. It goes in the game top bar in Step 4.
+
+**Step 3 (missions)**
+
+- Mission files live in `src/games/linux/content/missions/<id>.yaml`; the file name must equal the `id`.
+- `npm run content` (also run before dev, build, test, typecheck and after install) validates every file with Zod, plays it, and writes `content/generated/content.json` (git-ignored). The game imports only that bundle.
+- Each mission is played at build time: the start folder must exist, the goal must not be met at the start, the `solution` commands must run without errors, show the password on screen (password goals) and reach the goal.
+- New mission fields: `solution` (required, also used for "give up") and `victory` (dialogue lines after success).
+- `order` is the campaign position and is unique across all missions. Zones and their colors are in `src/games/linux/meta.ts`.
+- Dialogue, hints, victory and concept are in English and French. Text inside the server's files is English only, like a real server.
+- `src/games/linux/session.ts` builds a mission shell from the bridge's `startMission` (personal secrets + checkpoint) and turns a shell back into a checkpoint.

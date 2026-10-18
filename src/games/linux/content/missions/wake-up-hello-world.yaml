@@ -1,0 +1,82 @@
+# Mission 1 — first contact with the terminal: pwd, ls, cat.
+id: wake-up-hello-world
+zone: wake-up-room
+order: 1
+title:
+  en: Hello, world?
+  fr: Bonjour, le monde ?
+
+briefing:
+  - mood: sleeping
+    text:
+      en: 'Zzz... huh? Oh! A visitor. Welcome inside the FST server, intern.'
+      fr: 'Zzz... hein ? Oh ! Un visiteur. Bienvenue dans le serveur de la FST, stagiaire.'
+  - mood: neutral
+    text:
+      en: "I'm the senior sysadmin here. Thirty years of uptime. Don't touch my coffee."
+      fr: "Je suis le sysadmin senior ici. Trente ans d'uptime. Touche pas à mon café."
+  - mood: thinking
+    text:
+      en: 'First question: where are you? Type pwd and press Enter. It prints the folder you are in.'
+      fr: 'Première question : où es-tu ? Tape pwd puis Entrée. Ça affiche le dossier où tu te trouves.'
+  - mood: happy
+    text:
+      en: 'Then type ls to see the files around you, and cat followed by a file name to read it. A welcome note hides your first password.'
+      fr: "Ensuite, tape ls pour voir les fichiers autour de toi, et cat suivi d'un nom de fichier pour le lire. Une note de bienvenue cache ton premier mot de passe."
+
+filesystem:
+  /home/intern:
+    welcome.txt: |
+      Welcome to the FST server, intern!
+
+      Rule number one: you only leave this room with the password.
+      Here it is. Type it in the password box to open the door:
+
+          {{password}}
+
+      - The sysadmin
+    coffee.txt: |
+      This is the sysadmin's coffee.
+      Do NOT touch the sysadmin's coffee.
+    todo.txt: |
+      1. Find out where I am       (pwd)
+      2. Look around               (ls)
+      3. Read the welcome note     (cat)
+
+start_dir: '~'
+
+goal:
+  type: password
+  value: '{{password}}'
+
+hints:
+  - en: 'Every file is like a note pinned in the room. Look around before you read.'
+    fr: 'Chaque fichier est comme une note épinglée dans la pièce. Regarde autour de toi avant de lire.'
+  - en: 'Type ls to list the files. One of them sounds very welcoming.'
+    fr: "Tape ls pour lister les fichiers. L'un d'eux a l'air très accueillant."
+  - en: 'Type: cat welcome.txt — then copy the password into the password box.'
+    fr: 'Tape : cat welcome.txt — puis recopie le mot de passe dans la case du mot de passe.'
+
+reactions:
+  - on: cat coffee.txt
+    mood: shocked
+    text:
+      en: "Hey! I said don't touch my coffee! ...Reading is fine. Just reading."
+      fr: "Hé ! J'ai dit touche pas à mon café ! ...Lire, ça va. Juste lire."
+
+victory:
+  - mood: proud
+    text:
+      en: 'Door open! Not bad for someone who was asleep on a server two minutes ago.'
+      fr: "Porte ouverte ! Pas mal pour quelqu'un qui dormait sur un serveur il y a deux minutes."
+
+rewards: { points: 10, no_hint_bonus: 5 }
+
+concept:
+  en: 'pwd shows where you are, ls lists what is there, and cat reads a file.'
+  fr: "pwd montre où tu es, ls liste ce qu'il y a, et cat lit un fichier."
+
+solution:
+  - pwd
+  - ls
+  - cat welcome.txt

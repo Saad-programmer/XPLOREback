@@ -1,0 +1,11 @@
+.next
+out
+build
+node_modules
+package-lock.json
+next-env.d.ts
+docs/PRD.md
+.claude
+skills-lock.json
+Intro
+*.md

@@ -1,0 +1,70 @@
+# Mission 3 — hidden files: ls -a, cat. (Example from PRD section 11.)
+id: archive-hidden-scroll
+zone: archive
+order: 3
+title:
+  en: The hidden scroll
+  fr: Le parchemin caché
+
+briefing:
+  - mood: neutral
+    text:
+      en: 'Welcome to the archive. The last intern hid the next password here. Classic intern.'
+      fr: 'Bienvenue aux archives. Le dernier stagiaire a caché le prochain mot de passe ici. Typique des stagiaires.'
+  - mood: thinking
+    text:
+      en: 'It is somewhere in your home folder, but you will not see it with a normal ls.'
+      fr: 'Il est quelque part dans ton dossier personnel, mais un simple ls ne le montrera pas.'
+
+filesystem:
+  /home/intern:
+    notes.txt: |
+      Nothing here. Or is there?
+    old-scrolls:
+      type: dir
+      children:
+        scroll-1.txt: |
+          Not this one.
+        scroll-2.txt: |
+          Not this one either.
+          Real secrets like to hide in plain sight.
+    .secret_scroll: |
+      {{password}}
+
+start_dir: '~'
+
+goal:
+  type: password
+  value: '{{password}}'
+
+hints:
+  - en: 'Some files start with a dot... and ls pretends they do not exist.'
+    fr: "Certains fichiers commencent par un point... et ls fait comme s'ils n'existaient pas."
+  - en: 'ls has an option that shows all files. Try ls --help or man ls.'
+    fr: 'ls a une option qui montre tous les fichiers. Essaie ls --help ou man ls.'
+  - en: 'Type: ls -a — then read the file that starts with a dot.'
+    fr: 'Tape : ls -a — puis lis le fichier qui commence par un point.'
+
+reactions:
+  - on: rm .secret_scroll
+    mood: shocked
+    text:
+      en: 'You deleted the evidence! There is no trash bin on Linux... Restart the mission to bring it back.'
+      fr: "Tu as supprimé la preuve ! Il n'y a pas de corbeille sous Linux... Recommence la mission pour la récupérer."
+
+victory:
+  - mood: proud
+    text:
+      en: 'Found it. The intern thought a dot would stop you. Rookie mistake.'
+      fr: "Trouvé. Le stagiaire pensait qu'un point allait t'arrêter. Erreur de débutant."
+
+rewards: { points: 10, no_hint_bonus: 5 }
+
+concept:
+  en: 'Files starting with a dot are hidden. ls -a shows them.'
+  fr: 'Les fichiers qui commencent par un point sont cachés. ls -a les montre.'
+
+solution:
+  - ls
+  - ls -a
+  - cat .secret_scroll

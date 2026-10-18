@@ -9,3 +9,4 @@ docs/PRD.md
 skills-lock.json
 Intro
 *.md
+/src/games/linux/content/generated

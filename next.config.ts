@@ -6,6 +6,13 @@ const nextConfig: NextConfig = {
   basePath: BASE_PATH,
   cacheComponents: true,
   partialPrefetching: true,
+  redirects() {
+    return [
+      // Running the app alone (npm run dev): open http://localhost:3000 and land on /labs.
+      // On the Xplore domain the root belongs to Xplore, so this is never reached there.
+      { source: '/', destination: BASE_PATH, basePath: false, permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;

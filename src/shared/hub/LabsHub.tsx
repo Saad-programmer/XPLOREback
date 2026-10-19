@@ -1,7 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+} from 'react';
 import { Penguin } from '@/src/games/linux/ui/Penguin';
 import { GAMES, type GameEntry } from '../games';
 import { useText } from '../i18n/use-text';
@@ -21,7 +28,12 @@ function GamePanel({ game, onClose }: { game: GameEntry | 'yours'; onClose: () =
   const dialog = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
-    dialog.current?.showModal();
+    const element = dialog.current;
+    element?.showModal();
+    // Next.js keeps a page alive but hidden after you leave it. A modal dialog
+    // left open there makes the next page inert (no clicks, no focus), so it
+    // must close whenever this panel is hidden or removed.
+    return () => element?.close();
   }, []);
 
   const accent = game === 'yours' ? '#bb9af7' : game.accent;
@@ -97,6 +109,7 @@ export function LabsHub() {
     () => false,
   );
   const [introState, setIntroState] = useState<'auto' | 'replay' | 'closed'>('auto');
+  const closeIntro = useCallback(() => setIntroState('closed'), []);
   const intro = introState === 'replay' || (introState === 'auto' && firstVisit && !reducedMotion);
 
   useEffect(() => {
@@ -175,7 +188,7 @@ export function LabsHub() {
       </footer>
 
       {open && <GamePanel game={open} onClose={() => setOpen(null)} />}
-      {intro && <IntroVideo onDone={() => setIntroState('closed')} />}
+      {intro && <IntroVideo onDone={closeIntro} />}
     </div>
   );
 }

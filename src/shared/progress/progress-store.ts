@@ -109,11 +109,19 @@ export function createProgressStore({
     return {
       player: null,
       progress: {},
-      settings: { ...DEFAULT_SETTINGS, ...readJson<Partial<Settings>>(store, KEYS.settings) },
+      // Defaults first, like the server render: reading saved settings here would make
+      // the first browser render differ from the HTML (hydration error). init() loads them.
+      settings: { ...DEFAULT_SETTINGS },
       saveStatus: 'idle',
       pendingSaves: 0,
 
       init() {
+        if (!initializing) {
+          // Settings saved on this device apply at once, before the bridge answers.
+          set({
+            settings: { ...DEFAULT_SETTINGS, ...readJson<Partial<Settings>>(store, KEYS.settings) },
+          });
+        }
         initializing ??= (async () => {
           const player = await bridge.getCurrentPlayer();
           queue = new SaveQueue(bridge, store, {

@@ -123,7 +123,10 @@ describe('progress store', () => {
     await vi.runOnlyPendingTimersAsync();
     expect(page.control.calls).toContain('saveSettings');
 
+    // A new page starts with the defaults (same as the server HTML), then init() applies them.
     const next = openPage(page.store);
+    expect(next.state().settings).toMatchObject({ muted: true, language: 'fr' });
+    void next.state().init();
     expect(next.state().settings).toMatchObject({ muted: false, language: 'en' });
   });
 });

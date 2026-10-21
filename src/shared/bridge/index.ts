@@ -13,7 +13,7 @@ export function getBridge(): LabsBridge {
     bridge =
       process.env.NEXT_PUBLIC_LABS_BRIDGE === 'api'
         ? new ApiBridge(process.env.NEXT_PUBLIC_LABS_API_URL ?? '')
-        : new MockBridge(browserStore(), { latencyMs: 300 });
+        : new MockBridge(browserStore());
   }
   return bridge;
 }

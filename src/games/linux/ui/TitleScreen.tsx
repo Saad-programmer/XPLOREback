@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, useTransition, type KeyboardEvent } from 'react';
 import { getProgressStore, useProgress } from '@/src/shared/progress';
 import { missions } from '../content';
 import { GAME_TITLE } from '../meta';
 import { UI } from '../strings';
 import { requestFreshStart, titleMenu } from '../title';
+import { ConfirmDialog } from './ConfirmDialog';
 import { Galaxy } from './Galaxy';
 import { useReducedMotion, useText } from './game-context';
 import { Penguin } from './Penguin';
@@ -75,15 +76,22 @@ export function TitleScreen() {
   const reducedMotion = useReducedMotion();
   const progress = useProgress((s) => s.progress.linux);
   const [stage, setStage] = useState<Stage>('boot');
-  const [leaving, setLeaving] = useState(false);
+  // The menu waits for progress: otherwise it shows "Start", then rebuilds as
+  // "Continue / New game" and every item moves under the player's mouse.
+  const [ready, setReady] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [target, setTarget] = useState<string | null>(null);
+  const [navigating, startNavigation] = useTransition();
   const menuRef = useRef<HTMLUListElement>(null);
   const menu = titleMenu(missions, progress);
+  const showMenu = stage === 'menu' && ready;
 
   useEffect(() => {
     void getProgressStore()
       .getState()
       .loadProgress('linux')
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setReady(true));
   }, []);
 
   // Enter (or a click) skips the boot and opens the menu.
@@ -103,19 +111,22 @@ export function TitleScreen() {
   }, [stage]);
 
   useEffect(() => {
-    if (stage === 'menu') menuRef.current?.querySelector<HTMLElement>('button, a')?.focus();
-  }, [stage]);
+    if (!showMenu) return;
+    menuRef.current?.querySelector<HTMLElement>('button, a')?.focus();
+    // Fetch the likely next screens now, so the click feels instant.
+    router.prefetch(`/linux/${menu.continueTo.id}`);
+    router.prefetch(`/linux/${missions[0].id}`);
+  }, [showMenu, menu.continueTo.id, router]);
 
-  const play = (missionId: string) => {
-    setLeaving(true); // stops the galaxy before the game screen loads
-    router.push(`/linux/${missionId}`);
+  const play = (missionId: string, item: string) => {
+    setTarget(item);
+    startNavigation(() => router.push(`/linux/${missionId}`));
   };
 
-  const newGame = () => {
-    const first = missions[0];
-    if (menu.hasProgress && !window.confirm(t(UI.newGameConfirm))) return;
-    requestFreshStart(first.id);
-    play(first.id);
+  const startNewGame = () => {
+    setConfirming(false);
+    requestFreshStart(missions[0].id);
+    play(missions[0].id, 'new');
   };
 
   /** Up and down arrows move between menu items, like a console menu. */
@@ -131,9 +142,15 @@ export function TitleScreen() {
     items[next]?.focus();
   };
 
+  const loading = (item: string) =>
+    navigating && target === item ? (
+      <span className={styles.detail}>{t(UI.loadingShort)}</span>
+    ) : null;
+
   return (
     <main className={styles.screen}>
-      <Galaxy paused={leaving} reducedMotion={reducedMotion} />
+      {/* The galaxy stops as soon as a mission starts loading. */}
+      <Galaxy paused={navigating} reducedMotion={reducedMotion} />
       <div className={styles.content}>
         <Logo
           instant={reducedMotion}
@@ -141,40 +158,50 @@ export function TitleScreen() {
         />
 
         {stage === 'press' && <p className={styles.press}>{t(UI.pressStart)}</p>}
+        {stage === 'menu' && !ready && <p className={styles.press}>{t(UI.loadingShort)}</p>}
 
-        {stage === 'menu' && (
-          <nav aria-label={t(UI.titleMenu)}>
+        {showMenu && (
+          <nav aria-label={t(UI.titleMenu)} aria-busy={navigating || undefined}>
             <ul className={styles.menu} ref={menuRef} onKeyDown={onMenuKey}>
               {menu.hasProgress && (
-                <li>
+                <li key="continue">
                   <button
                     type="button"
                     className={styles.item}
-                    onClick={() => play(menu.continueTo.id)}
+                    disabled={navigating}
+                    onClick={() => play(menu.continueTo.id, 'continue')}
                   >
                     {t(UI.continue)}
-                    <span className={styles.detail}>
-                      {menu.finished
-                        ? t(UI.allDone)
-                        : `${t(UI.missionLabel)} ${menu.continueTo.order}: ${t(menu.continueTo.title)}`}
-                    </span>
+                    {loading('continue') ?? (
+                      <span className={styles.detail}>
+                        {menu.finished
+                          ? t(UI.allDone)
+                          : `${t(UI.missionLabel)} ${menu.continueTo.order}: ${t(menu.continueTo.title)}`}
+                      </span>
+                    )}
                   </button>
                 </li>
               )}
-              <li>
-                <button type="button" className={styles.item} onClick={newGame}>
+              <li key="new">
+                <button
+                  type="button"
+                  className={styles.item}
+                  disabled={navigating}
+                  onClick={() => (menu.hasProgress ? setConfirming(true) : startNewGame())}
+                >
                   {menu.hasProgress ? t(UI.newGame) : t(UI.start)}
+                  {loading('new')}
                 </button>
               </li>
-              <li>
+              <li key="missions">
                 <Link className={styles.item} href="/linux/missions">
                   {t(UI.missions)}
                 </Link>
               </li>
-              <li>
+              <li key="settings">
                 <SettingsMenu buttonClass={styles.item} menuClass={styles.settings} textButton />
               </li>
-              <li>
+              <li key="xplore">
                 {/* Xplore is another app on the same domain (Multi-Zones): a plain link. */}
                 {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
                 <a className={styles.item} href="/">
@@ -185,6 +212,15 @@ export function TitleScreen() {
           </nav>
         )}
       </div>
+      {confirming && (
+        <ConfirmDialog
+          message={t(UI.newGameConfirm)}
+          confirmLabel={t(UI.startAgain)}
+          cancelLabel={t(UI.cancel)}
+          onConfirm={startNewGame}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
     </main>
   );
 }

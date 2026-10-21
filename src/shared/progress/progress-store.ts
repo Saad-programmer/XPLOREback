@@ -80,6 +80,7 @@ export function createProgressStore({
 }: Dependencies): ProgressStore {
   let queue: SaveQueue | null = null;
   let initializing: Promise<void> | null = null;
+  let settingsTouched = false;
   let timer: ReturnType<typeof setInterval> | null = null;
   /** Checkpoints saved on this device but not yet sent to the server. */
   const unsent = new Map<string, Checkpoint>();
@@ -123,6 +124,18 @@ export function createProgressStore({
           });
         }
         initializing ??= (async () => {
+          // Settings load in parallel and never block the screen.
+          void bridge
+            .getSettings()
+            .then((settings) => {
+              // The player changed a setting meanwhile: theirs wins.
+              if (settingsTouched) return;
+              set({ settings });
+              writeJson(store, KEYS.settings, settings);
+            })
+            .catch(() => {
+              // Keep the settings saved on this device.
+            });
           const player = await bridge.getCurrentPlayer();
           queue = new SaveQueue(bridge, store, {
             storageKey: KEYS.queue(player.id),
@@ -137,13 +150,6 @@ export function createProgressStore({
           set({ player, pendingSaves: queue.pending });
           // Saves left from a previous visit (e.g. the network was down).
           if (queue.pending) void queue.flush();
-          try {
-            const settings = await bridge.getSettings();
-            set({ settings });
-            writeJson(store, KEYS.settings, settings);
-          } catch {
-            // Keep the settings saved on this device.
-          }
         })();
         initializing.catch(() => {
           initializing = null;
@@ -152,15 +158,14 @@ export function createProgressStore({
       },
 
       async loadProgress(game) {
-        await get().init();
-        const progress = await bridge.getProgress(game);
+        // In parallel: the request does not need the player first.
+        const [, progress] = await Promise.all([get().init(), bridge.getProgress(game)]);
         set((state) => ({ progress: { ...state.progress, [game]: progress } }));
         return progress;
       },
 
       async startMission(game, missionId) {
-        await get().init();
-        const start = await bridge.startMission(game, missionId);
+        const [, start] = await Promise.all([get().init(), bridge.startMission(game, missionId)]);
         const local = readJson<Checkpoint>(store, KEYS.checkpoint(playerId(), game, missionId));
         return { ...start, checkpoint: newest(local, start.checkpoint) };
       },
@@ -204,6 +209,7 @@ export function createProgressStore({
       },
 
       updateSettings(patch) {
+        settingsTouched = true;
         const settings = { ...get().settings, ...patch };
         set({ settings });
         writeJson(store, KEYS.settings, settings);

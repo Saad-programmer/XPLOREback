@@ -474,3 +474,7 @@ The code is the source of truth; these are the differences from the proposal abo
 - Saved settings (language, sound...) apply after the page loads, so the first browser render matches the server HTML (it caused a hydration error with English selected).
 - A modal dialog must close when its page is hidden: Next.js keeps visited pages alive, and an open modal made the next page inert (the "menu crash").
 - `devIndicators: false`: no Next.js badge in the corner during development.
+- Modal dialogs use `useModalDialog` (`src/shared/ui`): it closes the dialog on unmount or hidden page, and ignores close events that are not the player's. The browser delivers `close` events late, so after React's development double mount a stale event used to close the hub's game panel right after it opened.
+- No `window.confirm()`: New game and Restart use an in-game `ConfirmDialog`. The browser popup froze the page and Chrome can silently answer "Cancel".
+- The title menu opens only once progress is known, so its items never move under the mouse; the clicked item shows "Loading…" and the likely next missions are prefetched.
+- The mock bridge has no artificial delay any more, and the progress store runs independent bridge calls in parallel (settings never block). Game screen in dev: terminal at ~0.8 s instead of ~2.1 s.

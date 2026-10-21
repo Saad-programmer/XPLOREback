@@ -1,0 +1,56 @@
+.dialog {
+  --aug-border-all: 2px;
+  --aug-border-bg: var(--zone, #bb9af7);
+  --aug-tl: 16px;
+  --aug-br: 16px;
+  width: min(26rem, calc(100vw - 2rem));
+  padding: var(--space-6);
+  border: 0;
+  background: var(--storm);
+  color: var(--text);
+}
+
+.dialog::backdrop {
+  background: rgb(12 13 24 / 0.7);
+  backdrop-filter: blur(2px);
+}
+
+.message {
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+.cancel,
+.confirm {
+  min-height: 2.5rem;
+  padding: 0 var(--space-4);
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  cursor: pointer;
+}
+
+.cancel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: transparent;
+}
+
+.cancel:hover {
+  border-color: var(--zone, #bb9af7);
+}
+
+.confirm {
+  --aug-tr: 8px;
+  --aug-bl: 8px;
+  border: 0;
+  background: var(--zone, #bb9af7);
+  color: var(--deep);
+}

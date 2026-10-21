@@ -25,12 +25,6 @@ export const HUB = {
   },
   propose: { en: 'Propose a game', fr: 'Proposer un jeu' },
   replayIntro: { en: 'Replay intro', fr: 'Revoir l’intro' },
-  introStart: {
-    en: 'Click or press Enter to start',
-    fr: 'Clique ou appuie sur Entrée pour commencer',
-  },
   skip: { en: 'Skip', fr: 'Passer' },
-  soundOn: { en: 'Sound on', fr: 'Son activé' },
-  soundOff: { en: 'Sound off', fr: 'Son coupé' },
   introLabel: { en: 'Xplore Labs intro', fr: 'Intro Xplore Labs' },
 } satisfies Record<string, LocalizedText>;

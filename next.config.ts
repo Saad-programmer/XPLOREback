@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   // Served at /labs on the Xplore domain (Multi-Zones, PRD section 12).
   basePath: BASE_PATH,
   cacheComponents: true,
+  // No "N" badge in the corner during development (errors still show when they happen).
+  devIndicators: false,
   partialPrefetching: true,
   redirects() {
     return [

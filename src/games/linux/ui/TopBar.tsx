@@ -7,6 +7,7 @@ import { needsPassword } from '../game-store';
 import { ZONES } from '../meta';
 import { UI } from '../strings';
 import { useGame, useGameStore, useText } from './game-context';
+import { ConfirmDialog } from './ConfirmDialog';
 import { Icon } from './Icon';
 import { PasswordBox } from './PasswordBox';
 import { SettingsMenu } from './SettingsMenu';
@@ -37,8 +38,10 @@ export function TopBar() {
     else void document.documentElement.requestFullscreen?.();
   };
 
+  const [confirmRestart, setConfirmRestart] = useState(false);
   const restart = () => {
-    if (window.confirm(t(UI.restartConfirm))) void store.getState().start({ fresh: true });
+    setConfirmRestart(false);
+    void store.getState().start({ fresh: true });
   };
 
   return (
@@ -94,7 +97,12 @@ export function TopBar() {
             />
           </button>
           <SettingsMenu buttonClass={styles.icon} />
-          <button type="button" className={styles.icon} onClick={restart} title={t(UI.restart)}>
+          <button
+            type="button"
+            className={styles.icon}
+            onClick={() => setConfirmRestart(true)}
+            title={t(UI.restart)}
+          >
             <Icon name="restart" label={t(UI.restart)} />
           </button>
           <button
@@ -127,6 +135,15 @@ export function TopBar() {
         {needsPassword(mission) && <PasswordBox />}
         <SaveIndicator />
       </div>
+      {confirmRestart && (
+        <ConfirmDialog
+          message={t(UI.restartConfirm)}
+          confirmLabel={t(UI.startAgain)}
+          cancelLabel={t(UI.cancel)}
+          onConfirm={restart}
+          onCancel={() => setConfirmRestart(false)}
+        />
+      )}
     </header>
   );
 }

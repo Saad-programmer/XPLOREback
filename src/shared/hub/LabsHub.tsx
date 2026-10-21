@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { Penguin } from '@/src/games/linux/ui/Penguin';
 import { GAMES, type GameEntry } from '../games';
 import { useText } from '../i18n/use-text';
 import { getProgressStore, useProgress } from '../progress';
+import { useModalDialog } from '../ui/use-modal-dialog';
 import { useReducedMotion } from '../ui/use-reduced-motion';
 import { GameThumb } from './GameThumb';
 import { introSeen } from './intro';
@@ -18,11 +19,7 @@ const noSubscription = () => () => {};
 /** Intro panel shown before entering a game (PRD section 8). */
 function GamePanel({ game, onClose }: { game: GameEntry | 'yours'; onClose: () => void }) {
   const t = useText();
-  const dialog = useRef<HTMLDialogElement>(null);
-
-  useEffect(() => {
-    dialog.current?.showModal();
-  }, []);
+  const dialog = useModalDialog(onClose);
 
   const accent = game === 'yours' ? '#bb9af7' : game.accent;
   return (
@@ -30,7 +27,6 @@ function GamePanel({ game, onClose }: { game: GameEntry | 'yours'; onClose: () =
       ref={dialog}
       className={styles.panel}
       style={{ '--accent': accent } as CSSProperties}
-      onClose={onClose}
       onClick={(event) => event.target === event.currentTarget && dialog.current?.close()}
       data-augmented-ui="tl-clip br-clip border"
     >
@@ -97,6 +93,7 @@ export function LabsHub() {
     () => false,
   );
   const [introState, setIntroState] = useState<'auto' | 'replay' | 'closed'>('auto');
+  const closeIntro = useCallback(() => setIntroState('closed'), []);
   const intro = introState === 'replay' || (introState === 'auto' && firstVisit && !reducedMotion);
 
   useEffect(() => {
@@ -175,7 +172,7 @@ export function LabsHub() {
       </footer>
 
       {open && <GamePanel game={open} onClose={() => setOpen(null)} />}
-      {intro && <IntroVideo onDone={() => setIntroState('closed')} />}
+      {intro && <IntroVideo onDone={closeIntro} />}
     </div>
   );
 }

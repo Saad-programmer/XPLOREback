@@ -123,7 +123,26 @@ describe('progress store', () => {
     await vi.runOnlyPendingTimersAsync();
     expect(page.control.calls).toContain('saveSettings');
 
+    // A new page starts with the defaults (same as the server HTML), then init() applies them.
     const next = openPage(page.store);
+    expect(next.state().settings).toMatchObject({ muted: true, language: 'fr' });
+    void next.state().init();
     expect(next.state().settings).toMatchObject({ muted: false, language: 'en' });
+  });
+});
+
+describe('settings loading', () => {
+  it('never lets a late server answer overwrite a setting the player just changed', async () => {
+    const store = memoryStore();
+    const { bridge } = flakyBridge(store);
+    let answer: (value: Awaited<ReturnType<typeof bridge.getSettings>>) => void = () => {};
+    bridge.getSettings = () => new Promise((resolve) => (answer = resolve));
+    const progress = createProgressStore({ bridge, store });
+
+    await progress.getState().init(); // does not wait for the settings
+    progress.getState().updateSettings({ language: 'en' });
+    answer({ ...progress.getState().settings, language: 'fr' });
+    await Promise.resolve();
+    expect(progress.getState().settings.language).toBe('en');
   });
 });

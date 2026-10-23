@@ -19,7 +19,5 @@ export function markIntroSeen(): void {
   }
 }
 
-export const INTRO_VIDEO = {
-  sound: asset('intro/XploreLabs_Intro_16x9_sound.mp4'),
-  silent: asset('intro/Silent-XploreLabs_Intro_16x9.mp4'),
-};
+/** The one intro video (with sound). */
+export const INTRO_VIDEO = asset('intro/XploreLabs_Intro_16x9_sound.mp4');

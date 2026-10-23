@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useText } from '../i18n/use-text';
-import { getProgressStore } from '../progress';
 import { INTRO_VIDEO, markIntroSeen } from './intro';
 import styles from './IntroVideo.module.css';
 import { HUB } from './strings';
@@ -12,7 +11,8 @@ import { HUB } from './strings';
  * then fades into the hub. The hub is already rendered underneath.
  *
  * Browsers block video with sound until the visitor has interacted with the
- * site, so it tries the version with sound and falls back to the silent one.
+ * site. Then the same video plays muted, and the first click or key press
+ * (other than Esc, which skips) turns its sound on.
  */
 export function IntroVideo({ onDone }: { onDone: () => void }) {
   const t = useText();
@@ -29,34 +29,33 @@ export function IntroVideo({ onDone }: { onDone: () => void }) {
       markIntroSeen();
       setLeaving(true);
     };
-    const onKey = (event: KeyboardEvent) => event.key === 'Escape' && finish();
+    // A click or key press is the interaction browsers wait for: sound on.
+    const unmute = () => {
+      element.muted = false;
+    };
+    const onKey = (event: KeyboardEvent) => (event.key === 'Escape' ? finish() : unmute());
     window.addEventListener('keydown', onKey);
+    window.addEventListener('pointerdown', unmute);
     element.addEventListener('ended', finish);
 
-    const playSilent = () => {
-      element.src = INTRO_VIDEO.silent;
+    element.src = INTRO_VIDEO;
+    element.muted = false;
+    void element.play().catch((error: Error) => {
+      if (!active || error.name === 'AbortError') return;
+      // Sound blocked: same video, muted.
       element.muted = true;
       // Even muted autoplay can fail (power saving): show the hub instead.
-      return element.play().catch((error: Error) => {
-        if (!active || error.name === 'AbortError') return;
-        console.info('[labs] intro not played:', error.name);
+      element.play().catch((retry: Error) => {
+        if (!active || retry.name === 'AbortError') return;
+        console.info('[labs] intro not played:', retry.name);
         onDone();
       });
-    };
-    const soundAllowed = !getProgressStore().getState().settings.muted;
-    if (soundAllowed) {
-      element.src = INTRO_VIDEO.sound;
-      element.muted = false;
-      void element.play().catch((error: Error) => {
-        if (active && error.name !== 'AbortError') void playSilent();
-      });
-    } else {
-      void playSilent();
-    }
+    });
 
     return () => {
       active = false;
       window.removeEventListener('keydown', onKey);
+      window.removeEventListener('pointerdown', unmute);
       element.removeEventListener('ended', finish);
       element.pause();
     };

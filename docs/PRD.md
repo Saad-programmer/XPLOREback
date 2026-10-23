@@ -278,11 +278,10 @@ Mock-up of the game screen (mission 3):
 
 **Intro video (Labs entrance)**
 
-Xplore Labs opens with a short intro video before the hub, like a console boot screen. The video files already exist: `XploreLabs_Intro_16x9_sound.mp4` (with sound, about 1.7 MB) and `Silent-XploreLabs_Intro_16x9.mp4` (silent, about 0.9 MB).
+Xplore Labs opens with a short intro video before the hub, like a console boot screen. The video is `XploreLabs_Intro_16x9_sound.mp4` (with sound, about 1.6 MB). It is the only intro file; the older silent version was removed.
 
-- First visit to `/labs`: a full-screen start screen shows the poster image (first frame of the video) and "Click or press Enter to start".
-- That click unlocks sound (browsers block autoplay with sound), then the version with sound plays full screen.
-- If the player's settings have sound muted, the silent version plays instead.
+- First visit to `/labs`: the video plays at once, full screen, with sound.
+- Browsers block autoplay with sound until the visitor has interacted with the site. Then the same video plays muted, and the first click or key press turns the sound on.
 - A Skip button (and Esc) is always visible. When the video ends or is skipped, it fades into the hub.
 - Plays on the first visit only (remembered on the device). After that, `/labs` opens straight on the hub. A "Replay intro" link sits in the hub footer.
 - Reduced motion: no video, the hub opens directly.

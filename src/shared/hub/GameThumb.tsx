@@ -64,7 +64,7 @@ export function GameThumb({ id, overlay = false }: { id: GameId; overlay?: boole
               [96, 56],
               [60, 66],
             ].map(([x, y]) => (
-              <circle key={`${x}-${y}`} cx={x} cy={y} r="7" fill="var(--deep)" />
+              <circle key={`${x}-${y}`} cx={x} cy={y} r="7" fill="#0a1330" />
             ))}
           </g>
         )}

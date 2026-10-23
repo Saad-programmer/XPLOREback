@@ -283,7 +283,7 @@ Xplore Labs opens with a short intro video before the hub, like a console boot s
 - First visit to `/labs`: the video plays at once, full screen, with sound.
 - Browsers block autoplay with sound until the visitor has interacted with the site. Then the same video plays muted, and the first click or key press turns the sound on.
 - A Skip button (and Esc) is always visible. When the video ends or is skipped, it fades into the hub.
-- Plays on the first visit only (remembered on the device). After that, `/labs` opens straight on the hub. A "Replay intro" link sits in the hub footer.
+- Plays on the first visit only (remembered on the device). After that, `/labs` opens straight on the hub.
 - Reduced motion: no video, the hub opens directly.
 - Performance and safety: the hub renders first and stays usable underneath; the video loads only when needed (`preload="none"` until the start screen shows); if the video fails to load, the hub appears at once.
 - Files live in `public/intro/` and are served at `/labs/intro/...`.
@@ -292,6 +292,7 @@ Xplore Labs opens with a short intro video before the hub, like a console boot s
 
 The first page of Xplore Labs, at `/labs`, works like game portals such as Friv or Y8: a grid of rectangle game cards, one per game.
 
+- Background of the website pages: a calm, living starfield in the deep blue of the Xplore Labs logo (drifting stars, soft nebula glows, a rare shooting star), like a dimmed view of the title screen's galaxy. It pauses when hidden and stays still with reduced motion.
 - A navbar on every website page (hub, game details, mission map): Xplore Labs logo, Games and Missions links, language switch, and the player (avatar, name, level and XP bar from the server points) with a menu for the settings and "Back to Xplore". On phones the links and settings move into a side drawer.
 - Each card: the game's capsule art (`public/games/<game>/cover/`), game name, subject tag (Linux, SQL, Git...), status badge (Play now, Coming soon). Games without capsule art yet show a simple icon.
 - Hover or focus: a short looping preview (a tiny terminal typing commands for Linux) appears over the capsule art.

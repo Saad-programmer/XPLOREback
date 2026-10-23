@@ -4,7 +4,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at 1px 1px, rgb(169 177 214 / 0.08) 1px, transparent 0) 0 0 / 14px 14px,
-    var(--deep);
+    #0a1330;
   color: var(--accent);
 }
 
@@ -12,7 +12,7 @@
 .thumb[data-overlay] {
   height: 100%;
   aspect-ratio: auto;
-  background: rgb(22 22 30 / 0.84);
+  background: rgb(7 14 38 / 0.84);
   backdrop-filter: blur(3px);
 }
 

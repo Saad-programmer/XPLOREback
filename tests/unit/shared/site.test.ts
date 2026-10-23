@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { checkAbout } from '@/src/games/linux/content/load';
 import { GAMES } from '@/src/shared/games';
+import { generateStarfield, STAR_TILE, starPosition, twinkle } from '@/src/shared/site/stars';
 import { levelOf } from '@/src/shared/site/strings';
 
 const read = (path: string) => readFileSync(join(process.cwd(), path), 'utf8');
@@ -73,6 +74,61 @@ describe('game details content', () => {
     }
     for (const file of ['xplore-labs-logo.svg', 'xplore-labs-mark.png']) {
       expect(existsSync(join(process.cwd(), 'public/brand', file))).toBe(true);
+    }
+  });
+});
+
+describe('website starfield', () => {
+  const stars = generateStarfield();
+
+  it('is the same on every visit (seeded)', () => {
+    expect(generateStarfield()).toEqual(stars);
+    expect(generateStarfield(1)).not.toEqual(stars);
+  });
+
+  it('has far, many stars and near, few pixel sparkles', () => {
+    const far = stars.filter((s) => s.depth < 0.5);
+    const near = stars.filter((s) => s.depth > 0.5);
+    expect(far.length).toBeGreaterThan(near.length * 5);
+    expect(far.every((s) => !s.sparkle)).toBe(true);
+    expect(near.some((s) => s.sparkle)).toBe(true);
+  });
+
+  it('keeps every star inside the tile while it drifts and scrolls', () => {
+    for (const [time, scroll] of [
+      [0, 0],
+      [3600, 0],
+      [12.5, 4000],
+      [0, -300],
+    ]) {
+      for (const star of stars) {
+        const { x, y } = starPosition(star, time, scroll);
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(x).toBeLessThan(STAR_TILE);
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(y).toBeLessThan(STAR_TILE);
+      }
+    }
+  });
+
+  it('moves near stars faster than far ones (parallax)', () => {
+    const far = stars.find((s) => s.depth < 0.2)!;
+    const near = stars.find((s) => s.depth > 0.5)!;
+    const moved = (s: typeof far) => {
+      const a = starPosition({ ...s, x: 450, y: 450 }, 0, 0);
+      const b = starPosition({ ...s, x: 450, y: 450 }, 10, 0);
+      return Math.hypot(b.x - a.x, b.y - a.y);
+    };
+    expect(moved(near)).toBeGreaterThan(moved(far) * 3);
+  });
+
+  it('twinkles between 55% and 100% of a star brightness', () => {
+    for (const star of stars.slice(0, 20)) {
+      for (const t of [0, 1.3, 7, 99]) {
+        const value = twinkle(star, t);
+        expect(value).toBeGreaterThanOrEqual(star.alpha * 0.55 - 1e-9);
+        expect(value).toBeLessThanOrEqual(star.alpha + 1e-9);
+      }
     }
   });
 });

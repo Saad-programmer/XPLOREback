@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, RotateCcw } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useState, useSyncExternalStore, type CSSProperties } from 'react';
@@ -105,27 +105,17 @@ export function LabsHub() {
     () => !introSeen(),
     () => false,
   );
-  const [introState, setIntroState] = useState<'auto' | 'replay' | 'closed'>('auto');
-  const closeIntro = useCallback(() => setIntroState('closed'), []);
+  const [introClosed, setIntroClosed] = useState(false);
+  const closeIntro = useCallback(() => setIntroClosed(true), []);
   const closePropose = useCallback(() => setProposing(false), []);
-  const intro = introState === 'replay' || (introState === 'auto' && firstVisit && !reducedMotion);
+  const intro = !introClosed && firstVisit && !reducedMotion;
 
   return (
     <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-10 pb-12 sm:px-6 sm:pt-14">
-      <section className="flex flex-wrap items-end justify-between gap-6">
-        <div className="max-w-2xl">
-          <h1 className="font-pixel text-4xl leading-none font-semibold text-[#f2ecff] sm:text-5xl">
-            {t(HUB.title)}
-          </h1>
-          <p className="mt-4 leading-relaxed text-muted-foreground">{t(HUB.tagline)}</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={() => setIntroState('replay')}>
-          <RotateCcw aria-hidden="true" />
-          {t(HUB.replayIntro)}
-        </Button>
-      </section>
+      {/* The games speak for themselves; the title is for screen readers. */}
+      <h1 className="sr-only">{t(HUB.games)}</h1>
 
-      <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {GAMES.map((game) => (
           <li key={game.id}>
             <GameCard game={game} />

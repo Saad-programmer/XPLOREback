@@ -292,6 +292,7 @@ Xplore Labs opens with a short intro video before the hub, like a console boot s
 
 The first page of Xplore Labs, at `/labs`, works like game portals such as Friv or Y8: a grid of rectangle game cards, one per game.
 
+- Background of the website pages: a calm, living starfield in the deep blue of the Xplore Labs logo (drifting stars, soft nebula glows, a rare shooting star), like a dimmed view of the title screen's galaxy. It pauses when hidden and stays still with reduced motion.
 - A navbar on every website page (hub, game details, mission map): Xplore Labs logo, Games and Missions links, language switch, and the player (avatar, name, level and XP bar from the server points) with a menu for the settings and "Back to Xplore". On phones the links and settings move into a side drawer.
 - Each card: the game's capsule art (`public/games/<game>/cover/`), game name, subject tag (Linux, SQL, Git...), status badge (Play now, Coming soon). Games without capsule art yet show a simple icon.
 - Hover or focus: a short looping preview (a tiny terminal typing commands for Linux) appears over the capsule art.

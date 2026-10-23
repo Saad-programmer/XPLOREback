@@ -3,7 +3,8 @@
  * The game screens keep their own CSS modules, so nothing here may restyle them:
  * - no global Preflight: the reset below only applies inside `.site`
  *   (the website layout, and the menus and drawers it opens in portals);
- * - shadcn colors map to the Tokyo Night tokens of globals.css.
+ * - shadcn colors: the Tokyo Night text and accent tokens of globals.css, on
+ *   the deep navy of the Xplore Labs logo (the starfield background).
  */
 @layer theme, base, components, utilities;
 @import 'tailwindcss/theme.css' layer(theme);
@@ -19,28 +20,28 @@
   --font-sans: var(--font-mono), ui-monospace, Consolas, monospace;
   --font-pixel: var(--font-display), system-ui, sans-serif;
 
-  --color-background: var(--night);
+  --color-background: #070e26;
   --color-foreground: var(--text);
-  --color-card: #1f2335;
+  --color-card: #0e1834;
   --color-card-foreground: var(--text);
-  --color-popover: #1f2335;
+  --color-popover: #0e1834;
   --color-popover-foreground: var(--text);
   --color-primary: #7aa2f7;
   --color-primary-foreground: var(--deep);
-  --color-secondary: var(--storm);
+  --color-secondary: #16224a;
   --color-secondary-foreground: var(--text);
-  --color-muted: var(--storm);
+  --color-muted: #16224a;
   --color-muted-foreground: var(--muted);
-  --color-accent: #292e42;
+  --color-accent: #1a2a55;
   --color-accent-foreground: var(--text);
   --color-destructive: var(--danger);
-  --color-border: var(--line);
-  --color-input: var(--line);
+  --color-border: #24345f;
+  --color-input: #24345f;
   --color-ring: #7aa2f7;
   --color-ok: var(--ok);
   --color-warn: var(--warn);
   --color-faint: var(--faint);
-  --color-deep: var(--deep);
+  --color-deep: #0a1330;
 
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
@@ -55,7 +56,7 @@
   :where(.site, .site *)::after {
     margin: 0;
     padding: 0;
-    border: 0 solid var(--line);
+    border: 0 solid var(--color-border);
   }
 
   :where(.site) :where(h1, h2, h3, h4, h5, h6) {

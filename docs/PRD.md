@@ -283,7 +283,7 @@ Xplore Labs opens with a short intro video before the hub, like a console boot s
 - First visit to `/labs`: the video plays at once, full screen, with sound.
 - Browsers block autoplay with sound until the visitor has interacted with the site. Then the same video plays muted, and the first click or key press turns the sound on.
 - A Skip button (and Esc) is always visible. When the video ends or is skipped, it fades into the hub.
-- Plays on the first visit only (remembered on the device). After that, `/labs` opens straight on the hub. A "Replay intro" link sits in the hub footer.
+- Plays on the first visit only (remembered on the device). After that, `/labs` opens straight on the hub.
 - Reduced motion: no video, the hub opens directly.
 - Performance and safety: the hub renders first and stays usable underneath; the video loads only when needed (`preload="none"` until the start screen shows); if the video fails to load, the hub appears at once.
 - Files live in `public/intro/` and are served at `/labs/intro/...`.

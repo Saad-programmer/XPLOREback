@@ -478,6 +478,7 @@ The code is the source of truth; these are the differences from the proposal abo
 - No `window.confirm()`: New game and Restart use an in-game `ConfirmDialog`. The browser popup froze the page and Chrome can silently answer "Cancel".
 - The title menu opens only once progress is known, so its items never move under the mouse; the clicked item shows "Loading…" and the likely next missions are prefetched.
 - One intro video only (`XploreLabs_Intro_16x9_sound.mp4`): it plays with sound when the browser allows it, otherwise muted until the first click or key press. The silent file is gone, and the game's "sound off" setting no longer picks a different intro file. (Before, a new visitor always got the silent file: sound is off by default and new sites cannot autoplay sound.)
+- The hub shows only the game cards: its title, tagline and "Replay intro" button were removed (the text may move to a landing page). The intro still plays on the first visit.
 - The mock bridge has no artificial delay any more, and the progress store runs independent bridge calls in parallel (settings never block). Game screen in dev: terminal at ~0.8 s instead of ~2.1 s.
 
 **Website UI (navbar, game details page)**

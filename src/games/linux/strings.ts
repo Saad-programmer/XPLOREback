@@ -69,6 +69,7 @@ export const UI = {
   missionMap: { en: 'Mission map', fr: 'Carte des missions' },
   backToTitle: { en: 'Title screen', fr: 'Écran titre' },
   done: { en: 'Done', fr: 'Réussie' },
+  doneCount: { en: 'done', fr: 'réussies' },
   open: { en: 'Open', fr: 'Ouverte' },
   locked: { en: 'Locked', fr: 'Verrouillée' },
   playMission: { en: 'Play', fr: 'Jouer' },

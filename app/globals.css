@@ -31,42 +31,48 @@
   color-scheme: dark;
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+/*
+ * Element defaults sit in the base layer, under the Tailwind utilities of the
+ * website (app/site.css). CSS modules are not layered, so they still win.
+ */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
 
-html,
-body {
-  margin: 0;
-  min-height: 100%;
-}
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+  }
 
-body {
-  background:
-    radial-gradient(ellipse 80% 60% at 70% 0%, rgb(122 162 247 / 0.08), transparent 70%),
-    radial-gradient(ellipse 60% 50% at 0% 100%, rgb(187 154 247 / 0.07), transparent 70%),
-    var(--night);
-  color: var(--text);
-  font-family: var(--font-mono), ui-monospace, Consolas, monospace;
-  font-size: var(--text-base);
-  line-height: 1.5;
-}
+  body {
+    background:
+      radial-gradient(ellipse 80% 60% at 70% 0%, rgb(122 162 247 / 0.08), transparent 70%),
+      radial-gradient(ellipse 60% 50% at 0% 100%, rgb(187 154 247 / 0.07), transparent 70%),
+      var(--night);
+    color: var(--text);
+    font-family: var(--font-mono), ui-monospace, Consolas, monospace;
+    font-size: var(--text-base);
+    line-height: 1.5;
+  }
 
-a {
-  color: inherit;
-}
+  a {
+    color: inherit;
+  }
 
-button,
-input {
-  font: inherit;
-  color: inherit;
-}
+  button,
+  input {
+    font: inherit;
+    color: inherit;
+  }
 
-:focus-visible {
-  outline: 2px solid var(--zone);
-  outline-offset: 2px;
+  :focus-visible {
+    outline: 2px solid var(--zone);
+    outline-offset: 2px;
+  }
 }
 
 /* The player's "reduced motion" setting (the OS setting is handled per component). */

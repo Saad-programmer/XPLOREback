@@ -7,6 +7,7 @@ const content = generated as unknown as LinuxContent;
 export const missions: readonly Mission[] = content.missions;
 export const reactions = content.reactions;
 export const memes = content.memes;
+export const about = content.about;
 
 export function getMission(id: string): Mission | undefined {
   return missions.find((mission) => mission.id === id);

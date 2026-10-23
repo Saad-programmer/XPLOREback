@@ -1,82 +1,96 @@
 'use client';
 
+import { Plus, RotateCcw } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState, useSyncExternalStore, type CSSProperties } from 'react';
-import { Penguin } from '@/src/games/linux/ui/Penguin';
+import { useCallback, useState, useSyncExternalStore, type CSSProperties } from 'react';
+import { Badge } from '../components/ui/8bit/badge';
+import { Button } from '../components/ui/button';
 import { GAMES, type GameEntry } from '../games';
 import { useText } from '../i18n/use-text';
-import { getProgressStore, useProgress } from '../progress';
+import { GAME_COVERS } from '../site/covers';
 import { useModalDialog } from '../ui/use-modal-dialog';
 import { useReducedMotion } from '../ui/use-reduced-motion';
 import { GameThumb } from './GameThumb';
 import { introSeen } from './intro';
 import { IntroVideo } from './IntroVideo';
-import styles from './LabsHub.module.css';
 import { HUB } from './strings';
 
 const noSubscription = () => () => {};
 
-/** Intro panel shown before entering a game (PRD section 8). */
-function GamePanel({ game, onClose }: { game: GameEntry | 'yours'; onClose: () => void }) {
+/** "Your game here": how to propose a game to the club. */
+function ProposePanel({ onClose }: { onClose: () => void }) {
   const t = useText();
   const dialog = useModalDialog(onClose);
 
-  const accent = game === 'yours' ? '#bb9af7' : game.accent;
   return (
     <dialog
       ref={dialog}
-      className={styles.panel}
-      style={{ '--accent': accent } as CSSProperties}
+      aria-labelledby="propose-title"
+      className="m-auto w-[min(28rem,calc(100vw-2rem))] rounded-xl border border-border bg-card p-6 text-card-foreground shadow-2xl backdrop:bg-black/60 backdrop:backdrop-blur-sm"
       onClick={(event) => event.target === event.currentTarget && dialog.current?.close()}
-      data-augmented-ui="tl-clip br-clip border"
     >
-      {game === 'yours' ? (
-        <>
-          <h2 className={styles.panelTitle}>{t(HUB.yourGame)}</h2>
-          <p className={styles.panelText}>{t(HUB.yourGameText)}</p>
-        </>
-      ) : (
-        <>
-          <div className={styles.panelHead}>
-            {game.guide.kind === 'penguin' && (
-              <div className={styles.portrait}>
-                <Penguin mood="happy" size={72} />
-              </div>
-            )}
-            <div>
-              <span className={styles.tag}>{t(game.subject)}</span>
-              <h2 className={styles.panelTitle}>{t(game.title)}</h2>
-              {game.guide.kind === 'penguin' && (
-                <p className={styles.guide}>
-                  {t(HUB.guide)}: {game.guide.name}
-                </p>
-              )}
-            </div>
-          </div>
-          <p className={styles.panelText}>{t(game.blurb)}</p>
-          {game.status === 'soon' && <p className={styles.soonText}>{t(HUB.notYet)}</p>}
-        </>
-      )}
-      <div className={styles.panelActions}>
-        {game !== 'yours' && game.href && (
-          <Link
-            className={styles.playButton}
-            href={game.href}
-            data-augmented-ui="tr-clip bl-clip"
-            autoFocus
-          >
-            {t(HUB.play)}
-          </Link>
-        )}
-        <button
-          type="button"
-          className={styles.closeButton}
-          onClick={() => dialog.current?.close()}
-        >
+      <h2 id="propose-title" className="font-pixel text-2xl text-foreground">
+        {t(HUB.yourGame)}
+      </h2>
+      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t(HUB.yourGameText)}</p>
+      <div className="mt-6 flex justify-end">
+        <Button variant="secondary" autoFocus onClick={() => dialog.current?.close()}>
           {t(HUB.close)}
-        </button>
+        </Button>
       </div>
     </dialog>
+  );
+}
+
+/** A game card: the capsule art, and a terminal sneak peek on hover or focus. */
+function GameCard({ game }: { game: GameEntry }) {
+  const t = useText();
+  const cover = GAME_COVERS[game.id];
+  const playable = game.status === 'play';
+
+  return (
+    <Link
+      href={`/games/${game.id}`}
+      className="hub-card group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card transition duration-300 hover:-translate-y-1 hover:border-(--accent) hover:shadow-[0_12px_40px_-12px_var(--accent)] focus-visible:border-(--accent) focus-visible:ring-2 focus-visible:ring-(--accent) focus-visible:outline-none"
+      style={{ '--accent': game.accent } as CSSProperties}
+    >
+      <div className="relative aspect-[16/10] overflow-hidden bg-deep">
+        {cover ? (
+          <>
+            <Image
+              src={cover}
+              alt=""
+              fill
+              placeholder="blur"
+              sizes="(min-width: 1024px) 370px, (min-width: 640px) 50vw, 100vw"
+              className="object-cover transition duration-500 group-hover:scale-[1.03]"
+            />
+            <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+              <GameThumb id={game.id} overlay />
+            </div>
+          </>
+        ) : (
+          <div className={playable ? '' : 'opacity-70 saturate-50'}>
+            <GameThumb id={game.id} />
+          </div>
+        )}
+      </div>
+      <div className="flex flex-1 items-center justify-between gap-3 p-4">
+        <div className="min-w-0">
+          <p className="truncate font-pixel text-lg leading-tight text-foreground">
+            {t(game.title)}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{t(game.subject)}</p>
+        </div>
+        <Badge
+          font="retro"
+          className={playable ? 'bg-ok text-deep' : 'bg-secondary text-muted-foreground'}
+        >
+          {t(playable ? HUB.playNow : HUB.comingSoon)}
+        </Badge>
+      </div>
+    </Link>
   );
 }
 
@@ -84,8 +98,7 @@ function GamePanel({ game, onClose }: { game: GameEntry | 'yours'; onClose: () =
 export function LabsHub() {
   const t = useText();
   const reducedMotion = useReducedMotion();
-  const player = useProgress((s) => s.player);
-  const [open, setOpen] = useState<GameEntry | 'yours' | null>(null);
+  const [proposing, setProposing] = useState(false);
   // "Seen" lives in localStorage: false on the server, so the hub renders first (PRD section 8).
   const firstVisit = useSyncExternalStore(
     noSubscription,
@@ -94,85 +107,45 @@ export function LabsHub() {
   );
   const [introState, setIntroState] = useState<'auto' | 'replay' | 'closed'>('auto');
   const closeIntro = useCallback(() => setIntroState('closed'), []);
+  const closePropose = useCallback(() => setProposing(false), []);
   const intro = introState === 'replay' || (introState === 'auto' && firstVisit && !reducedMotion);
 
-  useEffect(() => {
-    void getProgressStore()
-      .getState()
-      .init()
-      .catch(() => {});
-  }, []);
-
   return (
-    <div className={styles.page}>
-      <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>{t(HUB.title)}</h1>
-          <p className={styles.tagline}>{t(HUB.tagline)}</p>
+    <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-10 pb-12 sm:px-6 sm:pt-14">
+      <section className="flex flex-wrap items-end justify-between gap-6">
+        <div className="max-w-2xl">
+          <h1 className="font-pixel text-4xl leading-none font-semibold text-[#f2ecff] sm:text-5xl">
+            {t(HUB.title)}
+          </h1>
+          <p className="mt-4 leading-relaxed text-muted-foreground">{t(HUB.tagline)}</p>
         </div>
-        <div className={styles.side}>
-          {player && (
-            <span className={styles.player}>
-              {player.name} <span className={styles.points}>{player.points}</span> {t(HUB.points)}
-            </span>
-          )}
-          {/* Xplore is another app on the same domain (Multi-Zones): a plain link. */}
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-          <a className={styles.back} href="/">
-            {t(HUB.backToXplore)}
-          </a>
-        </div>
-      </header>
-
-      <main>
-        <ul className={styles.grid}>
-          {GAMES.map((game) => (
-            <li key={game.id}>
-              <button
-                type="button"
-                className={`hub-card ${styles.card}`}
-                style={{ '--accent': game.accent } as CSSProperties}
-                data-status={game.status}
-                data-augmented-ui="tl-clip br-clip border"
-                onClick={() => setOpen(game)}
-              >
-                <GameThumb id={game.id} />
-                <span className={styles.cardBody}>
-                  <span className={styles.cardTitle}>{t(game.title)}</span>
-                  <span className={styles.meta}>
-                    <span className={styles.tag}>{t(game.subject)}</span>
-                    <span className={styles.badge} data-status={game.status}>
-                      {t(game.status === 'play' ? HUB.playNow : HUB.comingSoon)}
-                    </span>
-                  </span>
-                </span>
-              </button>
-            </li>
-          ))}
-          <li>
-            <button
-              type="button"
-              className={`hub-card ${styles.card} ${styles.yours}`}
-              onClick={() => setOpen('yours')}
-            >
-              <span className={styles.plus} aria-hidden="true">
-                +
-              </span>
-              <span className={styles.cardTitle}>{t(HUB.yourGame)}</span>
-              <span className={styles.yoursText}>{t(HUB.propose)}</span>
-            </button>
-          </li>
-        </ul>
-      </main>
-
-      <footer className={styles.footer}>
-        <button type="button" className={styles.replay} onClick={() => setIntroState('replay')}>
+        <Button variant="ghost" size="sm" onClick={() => setIntroState('replay')}>
+          <RotateCcw aria-hidden="true" />
           {t(HUB.replayIntro)}
-        </button>
-      </footer>
+        </Button>
+      </section>
 
-      {open && <GamePanel game={open} onClose={() => setOpen(null)} />}
+      <ul className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {GAMES.map((game) => (
+          <li key={game.id}>
+            <GameCard game={game} />
+          </li>
+        ))}
+        <li>
+          <button
+            type="button"
+            className="flex h-full min-h-56 w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border p-6 text-center text-muted-foreground transition-colors hover:border-primary hover:text-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            onClick={() => setProposing(true)}
+          >
+            <Plus className="size-8" aria-hidden="true" />
+            <span className="font-pixel text-lg text-foreground">{t(HUB.yourGame)}</span>
+            <span className="text-sm">{t(HUB.propose)}</span>
+          </button>
+        </li>
+      </ul>
+
+      {proposing && <ProposePanel onClose={closePropose} />}
       {intro && <IntroVideo onDone={closeIntro} />}
-    </div>
+    </main>
   );
 }

@@ -10,8 +10,10 @@ export interface GameEntry {
   status: 'play' | 'soon';
   /** Route of the game (title screen), null while it is not playable. */
   href: string | null;
+  /** Mission map of the game, if it has one. */
+  mapHref?: string;
   guide: { name: string; kind: string };
-  /** One or two sentences for the intro panel. */
+  /** One or two sentences for the details page. */
   blurb: LocalizedText;
   /** Card accent colour. */
   accent: string;
@@ -25,6 +27,7 @@ export const GAMES: GameEntry[] = [
     subject: 'Linux',
     status: 'play',
     href: '/linux',
+    mapHref: '/linux/missions',
     guide: { name: GUIDE_NAME, kind: 'penguin' },
     blurb: {
       en: 'You wake up inside the FST server. Type real Linux commands to find the passwords and escape, zone by zone.',

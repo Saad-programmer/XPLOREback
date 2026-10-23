@@ -130,3 +130,20 @@ export function parseContentFile<T>(
   }
   return { ok: true, value: parsed.data };
 }
+
+/**
+ * Checks a "More info" page (Markdown, shown on the game details page).
+ * The page already shows the game title, so the text starts at level-2 headings.
+ */
+export function checkAbout(text: string, fileName: string): string[] {
+  const errors: string[] = [];
+  if (!text.trim()) return [`${fileName}: is empty`];
+  if (!/^## \S/m.test(text)) errors.push(`${fileName}: needs at least one "## " heading`);
+  if (/^# \S/m.test(text))
+    errors.push(`${fileName}: do not use "# " headings (the page shows the title)`);
+  // Code may show <placeholders>: only check the prose.
+  const prose = text.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
+  if (/<\/?[a-z][^>]*>/i.test(prose))
+    errors.push(`${fileName}: raw HTML is not allowed, use Markdown only`);
+  return errors;
+}

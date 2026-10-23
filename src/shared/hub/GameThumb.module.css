@@ -8,6 +8,14 @@
   color: var(--accent);
 }
 
+/* Sneak peek over the capsule art: the art stays visible behind the terminal. */
+.thumb[data-overlay] {
+  height: 100%;
+  aspect-ratio: auto;
+  background: rgb(22 22 30 / 0.84);
+  backdrop-filter: blur(3px);
+}
+
 .term {
   position: absolute;
   inset: 14px 14px auto 14px;

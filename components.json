@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "app/site.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@/src/shared/components",
+    "ui": "@/src/shared/components/ui",
+    "utils": "@/src/shared/lib/utils",
+    "lib": "@/src/shared/lib",
+    "hooks": "@/src/shared/hooks"
+  },
+  "registries": {
+    "@8bitcn": "https://www.8bitcn.com/r/{name}.json"
+  }
+}

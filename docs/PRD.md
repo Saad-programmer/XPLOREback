@@ -293,9 +293,16 @@ Xplore Labs opens with a short intro video before the hub, like a console boot s
 
 The first page of Xplore Labs, at `/labs`, works like game portals such as Friv or Y8: a grid of rectangle game cards, one per game.
 
-- Each card: thumbnail, game name, subject tag (Linux, SQL, Git...), status badge (Play now, Coming soon).
-- Hover: the thumbnail plays a short looping preview animation (Rive or a small muted video) showing the game in action.
-- Click: opens a short intro panel (1 to 2 sentences, guide character, Play button) before entering the game.
+- A navbar on every website page (hub, game details, mission map): Xplore Labs logo, Games and Missions links, language switch, and the player (avatar, name, level and XP bar from the server points) with a menu for the settings and "Back to Xplore". On phones the links and settings move into a side drawer.
+- Each card: the game's capsule art (`public/games/<game>/cover/`), game name, subject tag (Linux, SQL, Git...), status badge (Play now, Coming soon). Games without capsule art yet show a simple icon.
+- Hover or focus: a short looping preview (a tiny terminal typing commands for Linux) appears over the capsule art.
+- Click: opens the game details page.
+
+**Game details page** (`/labs/games/<game>`)
+
+- The capsule art, next to: subject tag, title, 1 to 2 sentences, facts (number of missions, guide, runs in the browser), the player's progress, and a **Play now** button ("Continue" once started) that opens the game's title screen. Coming-soon games show a disabled button.
+- A **More info** button opens a longer description written in Markdown (story, what you learn, how to play, points, good to know), one file per language: `src/games/<game>/content/about.<lang>.md`. `npm run content` checks these files (headings, no raw HTML).
+- A link to the mission map when the game has one.
 - A last card "Your game here" invites students to propose and build new games.
 - Cards come from a list file (`src/shared/games.ts`), so adding a game to the hub is 1 entry.
 

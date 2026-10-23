@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs';
+import { readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { missions } from '@/src/games/linux/content';
@@ -71,10 +71,10 @@ describe('Labs hub', () => {
     expect(GAMES.filter((g) => g.status === 'play').every((g) => g.href)).toBe(true);
   });
 
-  it('ships both intro videos where the PRD says', () => {
-    for (const file of ['XploreLabs_Intro_16x9_sound.mp4', 'Silent-XploreLabs_Intro_16x9.mp4']) {
-      expect(existsSync(join(process.cwd(), 'public/intro', file))).toBe(true);
-    }
+  it('ships only the intro video with sound', () => {
+    expect(readdirSync(join(process.cwd(), 'public/intro'))).toEqual([
+      'XploreLabs_Intro_16x9_sound.mp4',
+    ]);
   });
 
   it('never forces the intro when storage is unavailable', () => {

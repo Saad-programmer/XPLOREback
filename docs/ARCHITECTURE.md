@@ -470,13 +470,14 @@ The code is the source of truth; these are the differences from the proposal abo
 
 **Fixes after Step 7 (feedback)**
 
-- The intro plays at once (no start screen, no sound switch), with a Skip button and Esc. It tries the version with sound; browsers that block sound before any interaction get the silent version. This replaces the start screen of PRD section 8, at the product owner's request.
+- The intro plays at once (no start screen, no sound switch), with a Skip button and Esc. It tries sound first; browsers that block sound before any interaction play it muted (see the one-video note below). This replaces the start screen of PRD section 8, at the product owner's request.
 - Saved settings (language, sound...) apply after the page loads, so the first browser render matches the server HTML (it caused a hydration error with English selected).
 - A modal dialog must close when its page is hidden: Next.js keeps visited pages alive, and an open modal made the next page inert (the "menu crash").
 - `devIndicators: false`: no Next.js badge in the corner during development.
 - Modal dialogs use `useModalDialog` (`src/shared/ui`): it closes the dialog on unmount or hidden page, and ignores close events that are not the player's. The browser delivers `close` events late, so after React's development double mount a stale event used to close the hub's game panel right after it opened.
 - No `window.confirm()`: New game and Restart use an in-game `ConfirmDialog`. The browser popup froze the page and Chrome can silently answer "Cancel".
 - The title menu opens only once progress is known, so its items never move under the mouse; the clicked item shows "Loading…" and the likely next missions are prefetched.
+- One intro video only (`XploreLabs_Intro_16x9_sound.mp4`): it plays with sound when the browser allows it, otherwise muted until the first click or key press. The silent file is gone, and the game's "sound off" setting no longer picks a different intro file. (Before, a new visitor always got the silent file: sound is off by default and new sites cannot autoplay sound.)
 - The mock bridge has no artificial delay any more, and the progress store runs independent bridge calls in parallel (settings never block). Game screen in dev: terminal at ~0.8 s instead of ~2.1 s.
 
 **Website UI (navbar, game details page)**

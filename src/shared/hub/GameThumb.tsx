@@ -4,13 +4,19 @@ import styles from './GameThumb.module.css';
 
 /**
  * Card thumbnails. The Linux one is a tiny terminal that types a command on
- * hover or focus (PRD: hover plays a short looping preview). Placeholder art
- * until the games have real covers in public/games/<game>/cover/.
+ * hover or focus (PRD: hover plays a short looping preview). With `overlay`
+ * it is a see-through layer shown over the capsule art. Games without capsule
+ * art yet (public/games/<game>/cover/) use the icon thumbnails.
  */
-export function GameThumb({ id }: { id: GameId }) {
+export function GameThumb({ id, overlay = false }: { id: GameId; overlay?: boolean }) {
   if (id === 'linux') {
     return (
-      <div className={styles.thumb} data-game="linux" aria-hidden="true">
+      <div
+        className={styles.thumb}
+        data-game="linux"
+        data-overlay={overlay || undefined}
+        aria-hidden="true"
+      >
         <div className={styles.term}>
           <p>
             <span className={styles.prompt}>intern@fst:~$</span>{' '}

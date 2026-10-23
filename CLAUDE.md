@@ -41,7 +41,11 @@ npm run typecheck    # tsc --noEmit
 
 ## Style rules
 
-- Own design tokens as CSS variables, CSS modules, augmented-ui. No Tailwind, no heavy UI kit.
+- Two styles, kept apart:
+  - **Game screens** (title screen, game screen, intro, anything game-styled): own design tokens as CSS variables, CSS modules, augmented-ui. No Tailwind classes there.
+  - **Website pages** (`app/(site)`: hub, game details, mission map): Tailwind CSS v4 + shadcn/ui (`src/shared/components/ui`), with 8bitcn pixel components (`ui/8bit`) as small accents. shadcn colors map to the same tokens (`app/site.css`).
+- Tailwind Preflight is never global: its reset only applies inside `.site` (the website layout). A shadcn component that renders in a portal (menu, drawer, dialog) needs the `site` class on its content.
+- Add shadcn components with `npx shadcn@latest add <name>` (8bitcn: `@8bitcn/<name>`), then check the `cn` import and keep remote fonts out (8bitcn's `retro` font is Pixelify Sans, in `app/site.css`).
 - Use the installed design skills (`frontend-design`, `algorithmic-art`, `motion-design`) for the title screen, hub and animations.
 - Respect reduced motion and keep heavy effects (CRT, galaxy) off or paused when not visible.
 - No copyrighted assets. Use placeholders for character art, memes and sounds. The penguin must not copy Tux.

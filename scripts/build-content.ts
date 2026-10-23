@@ -6,7 +6,12 @@
  */
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { checkCampaign, parseContentFile, parseMission } from '../src/games/linux/content/load';
+import {
+  checkAbout,
+  checkCampaign,
+  parseContentFile,
+  parseMission,
+} from '../src/games/linux/content/load';
 import {
   memesSchema,
   reactionsSchema,
@@ -57,6 +62,18 @@ else {
   }
 }
 
+const about = { en: '', fr: '' };
+for (const lang of ['en', 'fr'] as const) {
+  const file = `about.${lang}.md`;
+  const path = join(contentDir, file);
+  if (!existsSync(path)) {
+    errors.push(`${file}: missing (the game details page needs it)`);
+    continue;
+  }
+  about[lang] = readFileSync(path, 'utf8').replace(/\r\n/g, '\n');
+  errors.push(...checkAbout(about[lang], file));
+}
+
 if (errors.length || !reactionsFile.ok || !memesFile.ok) {
   console.error(`\nContent has ${errors.length} problem(s):\n`);
   for (const error of errors) console.error(`  - ${error}`);
@@ -71,9 +88,10 @@ const content: LinuxContent = {
   missions,
   reactions: reactionsFile.value as Reactions,
   memes: memesFile.value as Meme[],
+  about,
 };
 mkdirSync(outDir, { recursive: true });
 writeFileSync(join(outDir, 'content.json'), `${JSON.stringify(content, null, 2)}\n`);
 console.log(
-  `Content OK: ${missions.length} missions checked and solved, reactions and ${content.memes.length} memes checked.`,
+  `Content OK: ${missions.length} missions checked and solved, reactions, ${content.memes.length} memes and the about pages checked.`,
 );

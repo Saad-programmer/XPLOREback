@@ -35,7 +35,7 @@ The first game teaches **Linux**: you type real commands in a simulated terminal
 | Characters and effects | Rive, GSAP, canvas-confetti |
 | Sound | Howler.js |
 | State | Zustand |
-| Styling | CSS modules, CSS variables, augmented-ui |
+| Styling | Games: CSS modules, CSS variables, augmented-ui. Website pages: Tailwind CSS v4, shadcn/ui, 8bitcn accents |
 | Content | YAML + Zod |
 | Tests | Vitest (engine), Playwright (missions) |
 | Backend (later) | NestJS `labs` module in Xplore |
@@ -46,10 +46,12 @@ The first game teaches **Linux**: you type real commands in a simulated terminal
 xplore-labs/
   docs/PRD.md          full product spec
   public/intro/        Labs intro video (sound + silent)
-  app/                 Next.js routes (hub, title screen, mission map, game screen)
+  app/(site)/          website pages: hub, game details, mission map (navbar, Tailwind + shadcn)
+  app/linux/           game screens: title screen, missions
   src/shared/          bridge, progress, sound, memes, UI, theme, game registry
   src/games/linux/     engine, mission content, UI, theme
-  public/games/linux/  memes, sounds, characters, cover
+  public/games/linux/  memes, sounds, characters, cover (capsule art)
+  public/brand/        Xplore Labs logo and mark
   tests/               Vitest and Playwright tests
 ```
 

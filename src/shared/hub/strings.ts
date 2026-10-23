@@ -7,17 +7,9 @@ export const HUB = {
     en: 'Learn real technical skills by playing. Your progress is saved to your Xplore account.',
     fr: 'Apprends de vraies compétences techniques en jouant. Ta progression est enregistrée sur ton compte Xplore.',
   },
-  backToXplore: { en: 'Back to Xplore', fr: 'Retour à Xplore' },
-  points: { en: 'points', fr: 'points' },
   playNow: { en: 'Play now', fr: 'Jouer' },
   comingSoon: { en: 'Coming soon', fr: 'Bientôt' },
-  play: { en: 'Play', fr: 'Jouer' },
   close: { en: 'Close', fr: 'Fermer' },
-  guide: { en: 'Your guide', fr: 'Ton guide' },
-  notYet: {
-    en: 'This game is not ready yet. The club is working on it.',
-    fr: 'Ce jeu n’est pas encore prêt. Le club y travaille.',
-  },
   yourGame: { en: 'Your game here', fr: 'Ton jeu ici' },
   yourGameText: {
     en: 'Have an idea for a teaching game? Games, missions and memes are simple files: talk to the Xplore team and build it with us.',

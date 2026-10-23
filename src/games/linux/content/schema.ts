@@ -209,4 +209,6 @@ export interface LinuxContent {
   missions: Mission[];
   reactions: Reactions;
   memes: Meme[];
+  /** "More info" text of the game details page (Markdown), per language. */
+  about: { en: string; fr: string };
 }

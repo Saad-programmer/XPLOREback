@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { JetBrains_Mono, Pixelify_Sans } from 'next/font/google';
 import 'augmented-ui/augmented-ui.min.css';
+// site.css first: it declares the order of the CSS layers.
+import './site.css';
 import './globals.css';
 
 const mono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-mono' });

@@ -478,3 +478,16 @@ The code is the source of truth; these are the differences from the proposal abo
 - No `window.confirm()`: New game and Restart use an in-game `ConfirmDialog`. The browser popup froze the page and Chrome can silently answer "Cancel".
 - The title menu opens only once progress is known, so its items never move under the mouse; the clicked item shows "Loading…" and the likely next missions are prefetched.
 - The mock bridge has no artificial delay any more, and the progress store runs independent bridge calls in parallel (settings never block). Game screen in dev: terminal at ~0.8 s instead of ~2.1 s.
+
+**Website UI (navbar, game details page)**
+
+- The website pages live in the route group `app/(site)` (hub, `/games/[gameId]`, `/linux/missions`); URLs did not change. Its layout (`src/shared/site/SiteShell.tsx`) adds the navbar and the `site` class. Game screens (`app/linux/page.tsx`, `app/linux/[missionId]`) stay outside it.
+- Styling: Tailwind CSS v4 (PostCSS plugin) and shadcn/ui for the website only; the games keep CSS modules + augmented-ui. `app/site.css` loads Tailwind's theme and utilities but **not** its global Preflight: Next.js keeps CSS loaded after navigation (and visited pages alive), so a route-level import would still reach the game screens. The reset is scoped to `:where(.site, .site *)`, and portal content (dropdown menu, drawer) carries the `site` class.
+- `globals.css` element defaults moved into `@layer base`, so Tailwind utilities can override them; CSS modules are not layered and still win, so the game screens look the same.
+- shadcn colors are mapped to the Tokyo Night tokens in `@theme inline` (no `--muted`/`--accent` clash with our tokens). The site is dark only (`dark:` always on inside `.site`).
+- Components: shadcn (`src/shared/components/ui`) and three 8bitcn pixel components (`ui/8bit`: badge, button, progress, MIT) used as accents. 8bitcn's remote "Press Start 2P" font is replaced by Pixelify Sans.
+- Navbar (`SiteNav.tsx`): logo, Games / Missions, language switch, player menu (settings and "Back to Xplore" as a plain `<a>`), mobile drawer. The level and XP bar are display only: `levelOf(points)` with 100 points per level, points still come from the server.
+- Brand: `public/brand/xplore-labs-logo.svg` (navbar, optimized with SVGO), `xplore-labs-mark.png` (the X mark, cut from the logo sheet) and `app/icon.png` / `app/apple-icon.png` (favicon). `app/favicon.ico` was removed.
+- Capsule art: `public/games/linux/cover/capsule-art.jpg` (re-encoded to 1920 px, 2.4 MB to 0.27 MB), imported statically in `src/shared/site/covers.ts` so `next/image` adds the base path, the size and a blur placeholder. The hub crops it to 16:10; the details page shows it whole. No title is printed over it.
+- Game details page: `app/(site)/games/[gameId]/page.tsx` (static params from `GAMES`, `params` read inside `<Suspense>`). The "More info" Markdown is rendered on the server with `react-markdown` + `remark-gfm` (styled with Tailwind Typography), for both languages; the client shows the one matching the setting. `about.en.md` / `about.fr.md` are bundled and checked by `npm run content` (`checkAbout`).
+- The hub's game intro panel is replaced by the details page; the "Your game here" card keeps a small dialog.

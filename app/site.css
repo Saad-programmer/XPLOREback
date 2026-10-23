@@ -1,0 +1,103 @@
+/*
+ * Website pages (hub, game details, mission map): Tailwind CSS v4 + shadcn/ui.
+ * The game screens keep their own CSS modules, so nothing here may restyle them:
+ * - no global Preflight: the reset below only applies inside `.site`
+ *   (the website layout, and the menus and drawers it opens in portals);
+ * - shadcn colors map to the Tokyo Night tokens of globals.css.
+ */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import 'tw-animate-css';
+@plugin '@tailwindcss/typography';
+
+/* The website is dark only. */
+@custom-variant dark (&:where(.site, .site *));
+
+@theme inline {
+  /* --font-mono and --font-display come from next/font (app/layout.tsx). */
+  --font-sans: var(--font-mono), ui-monospace, Consolas, monospace;
+  --font-pixel: var(--font-display), system-ui, sans-serif;
+
+  --color-background: var(--night);
+  --color-foreground: var(--text);
+  --color-card: #1f2335;
+  --color-card-foreground: var(--text);
+  --color-popover: #1f2335;
+  --color-popover-foreground: var(--text);
+  --color-primary: #7aa2f7;
+  --color-primary-foreground: var(--deep);
+  --color-secondary: var(--storm);
+  --color-secondary-foreground: var(--text);
+  --color-muted: var(--storm);
+  --color-muted-foreground: var(--muted);
+  --color-accent: #292e42;
+  --color-accent-foreground: var(--text);
+  --color-destructive: var(--danger);
+  --color-border: var(--line);
+  --color-input: var(--line);
+  --color-ring: #7aa2f7;
+  --color-ok: var(--ok);
+  --color-warn: var(--warn);
+  --color-faint: var(--faint);
+  --color-deep: var(--deep);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+  --radius-xl: calc(var(--radius) + 6px);
+}
+
+/* Tailwind Preflight, limited to the website (game screens keep the browser defaults). */
+@layer base {
+  :where(.site, .site *),
+  :where(.site, .site *)::before,
+  :where(.site, .site *)::after {
+    margin: 0;
+    padding: 0;
+    border: 0 solid var(--line);
+  }
+
+  :where(.site) :where(h1, h2, h3, h4, h5, h6) {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  :where(.site) :where(ol, ul, menu) {
+    list-style: none;
+  }
+
+  :where(.site) :where(img, svg, video, canvas) {
+    display: block;
+    vertical-align: middle;
+  }
+
+  :where(.site) :where(img, video) {
+    max-width: 100%;
+    height: auto;
+  }
+
+  :where(.site) :where(button, input, select, textarea) {
+    background-color: transparent;
+    border-radius: 0;
+  }
+
+  :where(.site) :where(button, [role='button']) {
+    cursor: pointer;
+  }
+
+  :where(.site) a {
+    text-decoration: inherit;
+  }
+}
+
+/* 8bitcn accents use the game display font (Pixelify Sans) instead of a remote font. */
+.retro {
+  font-family: var(--font-display), system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+}

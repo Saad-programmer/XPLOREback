@@ -47,10 +47,10 @@ function useLinks() {
   const pathname = usePathname();
   return [
     {
-      href: '/',
+      href: '/games',
       label: SITE.games,
       icon: Gamepad2,
-      active: pathname === '/' || pathname.startsWith('/games'),
+      active: pathname.startsWith('/games'),
     },
     {
       href: '/linux/missions',
@@ -162,8 +162,8 @@ function SettingsItems() {
 function BackToXplore({ className }: { className?: string }) {
   const t = useText();
   return (
-    // Xplore is another app on the same domain (Multi-Zones): a plain link.
-    // eslint-disable-next-line @next/next/no-html-link-for-pages
+    // Xplore is another app on the same domain (Multi-Zones): a plain link, never
+    // next/link (it would stay under /labs).
     <a href="/" className={className}>
       <LogOut className="size-4" aria-hidden="true" />
       {t(SITE.backToXplore)}

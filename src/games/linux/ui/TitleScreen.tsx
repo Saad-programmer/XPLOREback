@@ -1,71 +1,77 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition, type KeyboardEvent } from 'react';
 import { getProgressStore, useProgress } from '@/src/shared/progress';
+import { GAME_COVERS } from '@/src/shared/site/covers';
+import { Starfield } from '@/src/shared/site/Starfield';
 import { missions } from '../content';
 import { GAME_TITLE } from '../meta';
 import { UI } from '../strings';
 import { requestFreshStart, titleMenu } from '../title';
 import { ConfirmDialog } from './ConfirmDialog';
-import { Galaxy } from './Galaxy';
 import { useReducedMotion, useText } from './game-context';
-import { Penguin } from './Penguin';
 import { SettingsMenu } from './SettingsMenu';
 import styles from './TitleScreen.module.css';
 
-const TYPE_MS = 95;
+type Stage = 'press' | 'menu';
 
-type Stage = 'boot' | 'press' | 'menu';
+const cover = GAME_COVERS.linux!;
 
-/** The title types itself in like a terminal command, then settles (PRD section 8). */
-function Logo({ onBooted, instant }: { onBooted: () => void; instant: boolean }) {
-  const [shown, setShown] = useState(instant ? GAME_TITLE.length : 0);
-  const done = shown >= GAME_TITLE.length;
+/**
+ * The capsule art as a living title screen: a slow zoom, a little parallax
+ * with the mouse and twinkling stars on top. The art already shows the game
+ * logo and the mascot, so the screen adds only the menu.
+ */
+function Backdrop({ paused, reducedMotion }: { paused: boolean; reducedMotion: boolean }) {
+  const art = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (done) {
-      const settle = setTimeout(onBooted, instant ? 0 : 650);
-      return () => clearTimeout(settle);
-    }
-    const timer = setInterval(() => setShown((n) => n + 1), TYPE_MS);
-    return () => clearInterval(timer);
-  }, [done, instant, onBooted]);
+    const element = art.current;
+    if (!element || reducedMotion) return;
+    const target = { x: 0, y: 0 };
+    const current = { x: 0, y: 0 };
+    let frame = 0;
+    const follow = () => {
+      current.x += (target.x - current.x) * 0.06;
+      current.y += (target.y - current.y) * 0.06;
+      element.style.setProperty('--px', `${current.x.toFixed(2)}px`);
+      element.style.setProperty('--py', `${current.y.toFixed(2)}px`);
+      const settled = Math.abs(target.x - current.x) + Math.abs(target.y - current.y) < 0.05;
+      frame = settled ? 0 : requestAnimationFrame(follow);
+    };
+    const onMove = (event: PointerEvent) => {
+      target.x = (event.clientX / window.innerWidth - 0.5) * -18;
+      target.y = (event.clientY / window.innerHeight - 0.5) * -12;
+      frame ||= requestAnimationFrame(follow);
+    };
+    window.addEventListener('pointermove', onMove);
+    return () => {
+      window.removeEventListener('pointermove', onMove);
+      cancelAnimationFrame(frame);
+    };
+  }, [reducedMotion]);
 
   return (
-    <div className={styles.logo} data-done={done || undefined}>
-      <div className={styles.mascot} aria-hidden="true">
-        <Penguin mood="happy" size={112} />
-        <svg className={styles.keyboard} width="64" height="16" viewBox="0 0 64 16">
-          <rect
-            x="0"
-            y="0"
-            width="64"
-            height="16"
-            rx="3"
-            fill="var(--storm)"
-            stroke="var(--line)"
-          />
-          {[0, 1, 2, 3, 4, 5, 6].map((key) => (
-            <rect
-              key={key}
-              className={styles.key}
-              x={4 + key * 8.4}
-              y="4"
-              width="6"
-              height="8"
-              rx="1.5"
-            />
-          ))}
-        </svg>
+    <div className={styles.backdrop} data-paused={paused || undefined} aria-hidden="true">
+      {/* Fills the sides on screens taller than the art (phones). */}
+      <Image src={cover} alt="" fill sizes="100vw" loading="eager" className={styles.fill} />
+      <div ref={art} className={styles.art}>
+        <Image
+          src={cover}
+          alt=""
+          fill
+          priority
+          placeholder="blur"
+          sizes="100vw"
+          quality={90}
+          className={styles.artImage}
+        />
       </div>
-      <h1 className={styles.title} aria-label={GAME_TITLE}>
-        <span aria-hidden="true">
-          {GAME_TITLE.slice(0, shown)}
-          <span className={styles.cursor}>_</span>
-        </span>
-      </h1>
+      <Starfield sky={false} paused={paused} />
+      <div className={styles.scrim} />
     </div>
   );
 }
@@ -75,7 +81,7 @@ export function TitleScreen() {
   const router = useRouter();
   const reducedMotion = useReducedMotion();
   const progress = useProgress((s) => s.progress.linux);
-  const [stage, setStage] = useState<Stage>('boot');
+  const [stage, setStage] = useState<Stage>('press');
   // The menu waits for progress: otherwise it shows "Start", then rebuilds as
   // "Continue / New game" and every item moves under the player's mouse.
   const [ready, setReady] = useState(false);
@@ -94,7 +100,7 @@ export function TitleScreen() {
       .finally(() => setReady(true));
   }, []);
 
-  // Enter (or a click) skips the boot and opens the menu.
+  // Enter (or a click) opens the menu.
   useEffect(() => {
     if (stage === 'menu') return;
     const open = (event: globalThis.KeyboardEvent | MouseEvent) => {
@@ -149,13 +155,11 @@ export function TitleScreen() {
 
   return (
     <main className={styles.screen}>
-      {/* The galaxy stops as soon as a mission starts loading. */}
-      <Galaxy paused={navigating} reducedMotion={reducedMotion} />
+      {/* Everything stops moving as soon as a mission starts loading. */}
+      <Backdrop paused={navigating} reducedMotion={reducedMotion} />
       <div className={styles.content}>
-        <Logo
-          instant={reducedMotion}
-          onBooted={() => setStage((s) => (s === 'boot' ? 'press' : s))}
-        />
+        {/* The art shows the logo; the title is for screen readers. */}
+        <h1 className="visually-hidden">{GAME_TITLE}</h1>
 
         {stage === 'press' && <p className={styles.press}>{t(UI.pressStart)}</p>}
         {stage === 'menu' && !ready && <p className={styles.press}>{t(UI.loadingShort)}</p>}
@@ -201,12 +205,11 @@ export function TitleScreen() {
               <li key="settings">
                 <SettingsMenu buttonClass={styles.item} menuClass={styles.settings} textButton />
               </li>
-              <li key="xplore">
-                {/* Xplore is another app on the same domain (Multi-Zones): a plain link. */}
-                {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-                <a className={styles.item} href="/">
-                  {t(UI.backToXplore)}
-                </a>
+              <li key="quit">
+                {/* One level up: the game's details page. */}
+                <Link className={styles.item} href="/games/linux">
+                  {t(UI.quit)}
+                </Link>
               </li>
             </ul>
           </nav>

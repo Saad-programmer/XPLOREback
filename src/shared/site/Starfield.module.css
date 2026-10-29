@@ -25,6 +25,14 @@
   animation: none;
 }
 
+/* Stars only, over other art (no sky colour). */
+.overlay {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .stars {
   position: absolute;
   inset: 0;

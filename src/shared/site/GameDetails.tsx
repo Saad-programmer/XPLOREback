@@ -69,7 +69,7 @@ export function GameDetails({ gameId, missionCount, about }: GameDetailsProps) {
         style={{ '--accent': game.accent } as CSSProperties}
       >
         <Link
-          href="/"
+          href="/games"
           className="inline-flex items-center gap-2 rounded-md text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />

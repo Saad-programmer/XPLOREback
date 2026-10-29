@@ -242,7 +242,7 @@ The game app has its own unique look, separate from the Xplore design. Since it 
 
 | Area | Content |
 | --- | --- |
-| Top bar | Xplore logo (link back), zone and mission name, mission goal in 1 line, player avatar and points, hint, mute, maximize |
+| Top bar | Back button (← + Xplore Labs logo, to the title screen), mission number and name, player avatar and points, Objective button (shows the goal), hint, mute, settings, restart, full screen, maximize |
 | Terminal (left, about 55% width) | Prompt, command input, output, history with arrow keys, Tab completion |
 | Live map (right, about 45% width) | Folder tree of the current mission, penguin avatar at the current folder, target highlighted |
 | Dialogue box (bottom) | Character portrait, typewriter text, next button, minimize button |
@@ -308,14 +308,13 @@ The first page of Xplore Labs, at `/labs`, works like game portals such as Friv 
 
 **Game title screen (Linux game)**
 
-The first screen after clicking the Linux game card, like a console game start screen.
+Opened by "Play now" on the game details page, like a console game start screen.
 
-- Background: an animated galaxy (slowly rotating spiral, nebula colors in purple, blue and pink, 2 to 3 parallax star layers, a rare shooting star). Optional slight movement with the mouse.
-- Center: the game logo in a pixel or game-style font, with the penguin attached on the left of the name. The logo appears with a terminal "boot" animation (letters typed with a blinking cursor), then settles.
-- Penguin idle animation: blinking, waving or tapping a tiny keyboard.
-- Below: "Press Enter to start", then a menu: Continue, New game, Settings (sound, meme sounds, language, reduced motion), Back to Xplore.
-- Optional title music, muted by default.
-- Performance: drawn on a canvas (no big video), paused when the game starts or the tab is hidden; reduced motion shows a still galaxy image.
+- The game's capsule art fills the screen: it already shows the logo and the mascot. It moves a little: a slow zoom, a small parallax with the mouse, and twinkling stars on top. On phones the whole art shows at the top over a blurred copy of itself.
+- Below the logo: "Press Enter to start", then a menu: Continue, New game, Missions, Settings (sound, meme sounds, language, reduced motion), Quit (back to the game details page).
+- Title music (coming): starts with "Press Enter", fades out as soon as the player leaves the title screen; its own "Music" switch in Settings, on by default.
+- Performance: one optimized image and CSS animations; everything pauses when a mission loads; reduced motion shows the still art.
+- Later, a layered version of the art (sky, nebula, planets, logo, animated mascot) can replace the flat image with the same layout.
 
 **Other pages**
 

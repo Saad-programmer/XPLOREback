@@ -1,6 +1,6 @@
 /**
  * The website background, as data: a calm field of stars drifting through the
- * brand's deep blue, like a dimmed view of the title screen's galaxy.
+ * brand's deep blue, in the spirit of the capsule art's space.
  *
  * Stars live on a square tile that repeats across the screen, so the density is
  * the same on a phone and on a wide monitor, and nothing is generated again on

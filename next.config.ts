@@ -12,7 +12,9 @@ const nextConfig: NextConfig = {
     return [
       // Running the app alone (npm run dev): open http://localhost:3000 and land on /labs.
       // On the Xplore domain the root belongs to Xplore, so this is never reached there.
-      { source: '/', destination: BASE_PATH, basePath: false, permanent: false },
+      { source: '/', destination: `${BASE_PATH}/games`, basePath: false, permanent: false },
+      // /labs will be the landing page; until it exists, it opens the games hub.
+      { source: '/', destination: '/games', permanent: false },
     ];
   },
 };

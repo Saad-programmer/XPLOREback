@@ -1,5 +1,5 @@
 import { LabsHub } from '@/src/shared/hub/LabsHub';
 
-export default function LabsHome() {
+export default function GamesPage() {
   return <LabsHub />;
 }

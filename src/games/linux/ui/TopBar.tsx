@@ -1,10 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useId, useState } from 'react';
+import logo from '@/public/brand/xplore-labs-logo.svg';
 import { useProgress } from '@/src/shared/progress';
 import { SaveIndicator } from '@/src/shared/ui/SaveIndicator';
 import { needsPassword } from '../game-store';
-import { ZONES } from '../meta';
 import { UI } from '../strings';
 import { useGame, useGameStore, useText } from './game-context';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -24,7 +26,7 @@ export function TopBar() {
   const maximized = useProgress((s) => s.settings.maximized);
   const updateSettings = useProgress((s) => s.updateSettings);
   const [fullscreen, setFullscreen] = useState(false);
-  const zone = ZONES.find((z) => z.id === mission.zone)!;
+  const goalId = useId();
   const playing = phase === 'playing';
 
   useEffect(() => {
@@ -47,18 +49,19 @@ export function TopBar() {
   return (
     <header className={styles.bar}>
       <div className={styles.row}>
-        {/* Xplore is another app on the same domain: a plain link, not next/link,
-            which would stay under /labs (Next.js Multi-Zones guide). */}
-        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
-        <a className={styles.brand} href="/" title={t(UI.backToXplore)}>
-          Xplore
-        </a>
-        <div className={styles.title}>
-          <span className={styles.zone}>{t(zone.title)}</span>
-          <h1 className={styles.mission}>
-            <span className={styles.order}>{mission.order}.</span> {t(mission.title)}
-          </h1>
-        </div>
+        {/* One level up: the game's title screen (progress is already saved). */}
+        <Link
+          className={styles.back}
+          href="/linux"
+          aria-label={t(UI.backToTitleScreen)}
+          title={t(UI.backToTitleScreen)}
+        >
+          <Icon name="back" label="" />
+          <Image src={logo} alt="" className={styles.logo} />
+        </Link>
+        <h1 className={styles.mission}>
+          <span className={styles.order}>{mission.order}.</span> {t(mission.title)}
+        </h1>
         <div className={styles.player}>
           {player && (
             <>
@@ -73,6 +76,14 @@ export function TopBar() {
           )}
         </div>
         <nav className={styles.tools} aria-label="Game">
+          <button type="button" className={styles.goalButton} popoverTarget={goalId}>
+            <Icon name="goal" label="" />
+            {t(UI.goal)}
+          </button>
+          <div id={goalId} popover="auto" className={styles.goalPanel}>
+            <p className={styles.goalLabel}>{t(UI.goal)}</p>
+            <p className={styles.goalText}>{t(mission.objective)}</p>
+          </div>
           <button
             type="button"
             className={styles.hint}
@@ -128,10 +139,7 @@ export function TopBar() {
           </button>
         </nav>
       </div>
-      <div className={styles.row}>
-        <p className={styles.goal}>
-          <span className={styles.goalLabel}>{t(UI.goal)}</span> {t(mission.objective)}
-        </p>
+      <div className={`${styles.row} ${styles.end}`}>
         {needsPassword(mission) && <PasswordBox />}
         <SaveIndicator />
       </div>

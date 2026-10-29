@@ -12,32 +12,37 @@
   flex-wrap: wrap;
 }
 
-.brand {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  text-decoration: none;
-  color: var(--muted);
+.end {
+  justify-content: flex-end;
 }
 
-.brand:hover {
+/* Back to the title screen: arrow + Xplore Labs logo. */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.back:hover,
+.back:focus-visible {
+  border-color: var(--line);
+  background: var(--storm);
   color: var(--text);
 }
 
-.title {
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-3);
-  min-width: 0;
-  flex: 1;
-}
-
-.zone {
-  color: var(--zone);
-  font-size: var(--text-sm);
-  white-space: nowrap;
+.logo {
+  width: auto;
+  height: 1.75rem;
 }
 
 .mission {
+  flex: 1;
+  min-width: 0;
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--text-xl);
@@ -121,15 +126,35 @@
   color: var(--muted);
 }
 
-.goal {
+.goalButton {
+  font-family: var(--font-display);
+}
+
+/* The mission goal, opened from the top bar (HTML popover). */
+.goalPanel {
+  position: fixed;
+  inset: auto;
+  top: 4.5rem;
+  right: var(--space-6);
   margin: 0;
-  flex: 1;
-  min-width: 14rem;
+  max-width: min(26rem, calc(100vw - 2rem));
+  padding: var(--space-4);
+  border: 1px solid var(--zone);
+  border-radius: var(--radius);
+  background: var(--storm);
   color: var(--text);
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.45);
 }
 
 .goalLabel {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
   color: var(--zone);
+}
+
+.goalText {
+  margin: 0;
+  line-height: 1.5;
 }
 
 @media (max-width: 760px) {

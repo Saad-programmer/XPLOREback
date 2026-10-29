@@ -21,9 +21,14 @@ interface ShootingStar {
  * and a canvas of drifting, twinkling stars with a rare shooting star.
  * Stops when the tab is hidden or the page is left (Next.js hides visited
  * pages and cleans up their effects); one still frame with reduced motion.
+ *
+ * `sky={false}` draws only the stars, on a transparent layer (title screen,
+ * over the capsule art). `paused` freezes it, e.g. while a mission loads.
  */
-export function Starfield() {
+export function Starfield({ sky = true, paused = false }: { sky?: boolean; paused?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Survives pause and resume, so the stars do not jump back to their start.
+  const elapsedRef = useRef(0);
   const reducedMotion = useReducedMotion();
 
   useEffect(() => {
@@ -37,7 +42,7 @@ export function Starfield() {
     let dpr = 1;
     let frame = 0;
     let last = 0;
-    let elapsed = 0;
+    let elapsed = elapsedRef.current;
     let shooting: ShootingStar | null = null;
     // Random is fine here: this runs in an effect, never during render.
     let nextShootingStar = 8 + Math.random() * 10;
@@ -115,10 +120,11 @@ export function Starfield() {
       const dt = Math.min(0.1, (now - last) / 1000);
       last = now;
       elapsed += dt;
+      elapsedRef.current = elapsed;
       draw(dt);
     };
 
-    const running = () => !reducedMotion && document.visibilityState === 'visible';
+    const running = () => !reducedMotion && !paused && document.visibilityState === 'visible';
     const start = () => {
       if (frame || !running()) return;
       last = performance.now();
@@ -153,11 +159,11 @@ export function Starfield() {
       window.removeEventListener('scroll', redraw);
       document.removeEventListener('visibilitychange', onVisibility);
     };
-  }, [reducedMotion]);
+  }, [reducedMotion, paused]);
 
   return (
-    <div className={styles.sky} aria-hidden="true">
-      <div className={styles.nebula} data-still={reducedMotion || undefined} />
+    <div className={sky ? styles.sky : styles.overlay} aria-hidden="true">
+      {sky && <div className={styles.nebula} data-still={reducedMotion || undefined} />}
       <canvas ref={canvasRef} className={styles.stars} />
     </div>
   );

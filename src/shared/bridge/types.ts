@@ -17,6 +17,11 @@ export interface MissionResult {
   attempts: number;
   bestTimeS: number;
   shortestCmdLen: number | null;
+  /**
+   * Commands of the player's shortest winning run, shown in the map recap.
+   * Missing for results saved before recaps existed.
+   */
+  solution?: string[];
   firstCompletedAt: string;
 }
 
@@ -57,6 +62,19 @@ export interface SubmitStats {
   attempts: number;
   timeS: number;
   shortestCmdLen: number | null;
+  /** Commands typed during this winning run (see `solutionOf`). */
+  commands?: string[];
+}
+
+/** The server keeps at most this many commands per solution, each cut to this length. */
+export const SOLUTION_LIMITS = { commands: 40, length: 200 } as const;
+
+/** The commands a result keeps: the last ones of the run, each one trimmed and cut. */
+export function solutionOf(commands: readonly string[]): string[] {
+  return commands
+    .map((command) => command.trim().slice(0, SOLUTION_LIMITS.length))
+    .filter(Boolean)
+    .slice(-SOLUTION_LIMITS.commands);
 }
 
 export interface SubmitResult {

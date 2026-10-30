@@ -43,6 +43,37 @@
   --color-faint: var(--faint);
   --color-deep: #0a1330;
 
+  /* Mission map: floating islands, energy along the route, the next level calling. */
+  --animate-island-float: island-float 7s ease-in-out infinite;
+  --animate-route-flow: route-flow 1.4s linear infinite;
+  --animate-node-pulse: node-pulse 1.8s ease-out infinite;
+  --animate-pixel-bob: island-float 1.6s ease-in-out infinite;
+
+  @keyframes island-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-9px);
+    }
+  }
+
+  @keyframes route-flow {
+    to {
+      stroke-dashoffset: -28;
+    }
+  }
+
+  @keyframes node-pulse {
+    from {
+      box-shadow: 0 0 0 0 rgb(122 162 247 / 0.7);
+    }
+    to {
+      box-shadow: 0 0 0 16px rgb(122 162 247 / 0);
+    }
+  }
+
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 2px);

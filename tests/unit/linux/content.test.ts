@@ -23,6 +23,8 @@ victory:
   - { mood: happy, text: "Done" }
 rewards: { points: 10, no_hint_bonus: 5 }
 concept: "cat reads files"
+recap:
+  - { command: cat, text: "Prints a file", example: "cat secret.txt" }
 solution: ["cat secret.txt"]
 `;
 
@@ -136,6 +138,20 @@ describe('parseMission', () => {
     );
     expect(errorsOf(yaml)).toContain(
       'test-mission.yaml: goal: already reached before the player does anything',
+    );
+  });
+
+  it('needs a recap that teaches real commands', () => {
+    expect(errorsOf(VALID.replace(/recap:\n.*\n/, ''))).toEqual([
+      expect.stringContaining('test-mission.yaml: recap:'),
+    ]);
+    const unknown = VALID.replace('command: cat,', 'command: catt,');
+    expect(errorsOf(unknown)).toContain(
+      'test-mission.yaml: recap: "catt" is not a command of the game',
+    );
+    const badExample = VALID.replace('example: "cat secret.txt"', 'example: "open secret.txt"');
+    expect(errorsOf(badExample)).toContain(
+      'test-mission.yaml: recap: example "open secret.txt" does not start with a command of the game',
     );
   });
 });

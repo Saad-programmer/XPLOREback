@@ -67,6 +67,18 @@ concept:
   en: 'Files starting with a dot are hidden. ls -a shows them.'
   fr: 'Les fichiers qui commencent par un point sont cachés. ls -a les montre.'
 
+recap:
+  - command: ls -a
+    text:
+      en: 'Lists ALL files, even the hidden ones whose name starts with a dot.'
+      fr: 'Liste TOUS les fichiers, même les cachés dont le nom commence par un point.'
+    example: ls -a
+  - command: cat
+    text:
+      en: 'Reads a file, hidden or not: just type its full name, dot included.'
+      fr: 'Lit un fichier, caché ou non : tape son nom complet, point compris.'
+    example: cat .secret_scroll
+
 solution:
   - ls
   - ls -a

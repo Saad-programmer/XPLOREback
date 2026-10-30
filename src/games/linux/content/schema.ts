@@ -25,6 +25,15 @@ export const mood = z.enum(MOODS);
 
 export const dialogueLine = z.object({ mood, text: localizedText }).strict();
 
+/** One line of a mission recap: a command taught, what it does, an example. */
+export const recapEntry = z
+  .object({
+    command: z.string().min(1),
+    text: localizedText,
+    example: z.string().min(1).optional(),
+  })
+  .strict();
+
 /** YAML reads `mode: 600` as a number, so both forms are accepted. */
 const mode = z
   .union([z.string(), z.number().int()])
@@ -135,6 +144,8 @@ export const missionSchema = z
       .strict(),
     /** Shown after the victory: the concept learned, in one sentence. */
     concept: localizedText,
+    /** "What you learned" in the mission map's recap, unlocked once the mission is done. */
+    recap: z.array(recapEntry).min(1),
     /** Commands that solve the mission. Checked at build time, shown when the player gives up. */
     solution: z.array(z.string().min(1)).min(1),
   })

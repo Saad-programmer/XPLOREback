@@ -52,6 +52,7 @@ xplore-labs/
   src/games/linux/     engine, mission content, UI, theme
   public/games/linux/  memes, sounds, characters, cover (capsule art)
   public/brand/        Xplore Labs logo and mark
+  design/              source art (map islands), not deployed
   tests/               Vitest and Playwright tests
 ```
 

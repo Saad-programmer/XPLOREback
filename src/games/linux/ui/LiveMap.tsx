@@ -6,7 +6,7 @@ import { buildMapTree, type MapNode } from '../map-model';
 import { UI } from '../strings';
 import { useGame, useGameStore, useReducedMotion, useText } from './game-context';
 import styles from './LiveMap.module.css';
-import { Penguin } from './Penguin';
+import { PenguinInSvg } from './Penguin';
 import type { Mood } from '../content/schema';
 import type { PenguinAct } from '../reactions';
 
@@ -164,7 +164,7 @@ export function LiveMap() {
                     penguin && penguin.act !== 'sleep' && store.getState().clearPenguin(penguin.id)
                   }
                 >
-                  <Penguin size={28} mood={penguin ? ACT_MOOD[penguin.act] : 'neutral'} />
+                  <PenguinInSvg size={28} mood={penguin ? ACT_MOOD[penguin.act] : 'neutral'} />
                   {penguin?.act === 'search' && (
                     <g className={styles.magnifier} aria-hidden="true">
                       <circle

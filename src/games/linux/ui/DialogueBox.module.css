@@ -14,10 +14,18 @@
   --aug-tl: 10px;
   --aug-br: 10px;
   display: grid;
-  place-items: center;
+  /* A bust: the face art is cut at the hoodie, so it sits on the frame's bottom edge. */
+  place-items: end center;
   width: 84px;
   height: 84px;
-  background: var(--night);
+  overflow: hidden;
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      color-mix(in srgb, var(--zone) 28%, transparent),
+      transparent 70%
+    ),
+    var(--night);
 }
 
 .body {
@@ -115,9 +123,9 @@
     height: 60px;
   }
 
-  .portrait svg {
-    width: 52px;
-    height: 52px;
+  .portrait img {
+    width: 56px;
+    height: 56px;
   }
 
   .actions {

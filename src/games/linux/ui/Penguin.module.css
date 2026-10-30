@@ -1,0 +1,19 @@
+.face {
+  display: block;
+  user-select: none;
+  /* A new mood pops in (the component is keyed by mood where it changes). */
+  animation: appear 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes appear {
+  from {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .face {
+    animation: none;
+  }
+}

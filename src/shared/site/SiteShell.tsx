@@ -10,7 +10,7 @@ import { Starfield } from './Starfield';
  * (app/site.css), so the game screens keep their own styles. `isolate` keeps
  * the starfield background behind the page and above the body colour.
  */
-export function SiteShell({ children }: { children: ReactNode }) {
+export function SiteShell({ children, footer }: { children: ReactNode; footer: ReactNode }) {
   const reducedMotion = useProgress((s) => s.settings.reducedMotion);
   return (
     <div
@@ -20,6 +20,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <Starfield />
       <SiteNav />
       {children}
+      {footer}
     </div>
   );
 }

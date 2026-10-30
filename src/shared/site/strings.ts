@@ -19,6 +19,15 @@ export const SITE = {
   switchLanguage: { en: 'Passer en français', fr: 'Switch to English' },
   backToXplore: { en: 'Back to Xplore', fr: 'Retour à Xplore' },
   guest: { en: 'Loading…', fr: 'Chargement…' },
+  footerTagline: {
+    en: 'Xplore Labs: the teaching games of Xplore, the ILISI student club.',
+    fr: 'Xplore Labs : les jeux pour apprendre du club Xplore, le club étudiant de la filière ILISI.',
+  },
+  foundedBy: { en: 'Founded by', fr: 'Fondé par' },
+  developedBy: { en: 'Developed by', fr: 'Développé par' },
+  githubProfile: { en: 'GitHub profile of', fr: 'Profil GitHub de' },
+  feedback: { en: 'Your feedback', fr: 'Votre avis' },
+  backToTop: { en: 'Back to top', fr: 'Retour en haut' },
 } satisfies Record<string, LocalizedText>;
 
 /** Points per level of the navbar XP bar (display only: points come from the server). */

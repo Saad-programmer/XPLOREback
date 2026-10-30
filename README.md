@@ -74,6 +74,8 @@ npm test                     # engine unit tests
 | `NEXT_PUBLIC_LABS_BRIDGE` | game | `mock` now, `api` at integration |
 | `NEXT_PUBLIC_LABS_API_URL` | game | Xplore NestJS URL |
 | `LABS_HMAC_SECRET` | NestJS only | long random string, never in the frontend |
+| `GITHUB_TOKEN` | footer (server, optional) | read-only token ("Metadata: read" on this repo): lists the repo's contributors as developers. Without it the footer shows a fallback list |
+| `NEXT_PUBLIC_FEEDBACK_URL` | footer (optional) | where the "Your feedback" button leads; the button is hidden while it is empty |
 
 ## Roadmap
 

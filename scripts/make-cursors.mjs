@@ -48,7 +48,10 @@ function nearest([r, g, b], colors) {
 
 /** Bounding boxes of the opaque figures, left to right. */
 async function findFigures() {
-  const { data, info } = await sharp(SOURCE).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const { data, info } = await sharp(SOURCE)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   const K = 4;
   const W = Math.ceil(info.width / K);
   const H = Math.ceil(info.height / K);
@@ -62,14 +65,20 @@ async function findFigures() {
     if (!mask[start] || seen[start]) continue;
     const stack = [start];
     seen[start] = 1;
-    let minX = W, minY = H, maxX = 0, maxY = 0, area = 0;
+    let minX = W,
+      minY = H,
+      maxX = 0,
+      maxY = 0,
+      area = 0;
     while (stack.length) {
       const p = stack.pop();
       const x = p % W;
       const y = (p / W) | 0;
       area++;
-      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
-      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
       for (const q of [p - 1, p + 1, p - W, p + W]) {
         if (q < 0 || q >= W * H || seen[q] || !mask[q] || Math.abs((q % W) - x) > 1) continue;
         seen[q] = 1;
@@ -126,23 +135,36 @@ const same = (a, b) => a && b && a[0] === b[0] && a[1] === b[1] && a[2] === b[2]
  */
 function fixKeyhole(grid) {
   const gold = PALETTE.gold;
-  let minX = Infinity, minY = Infinity, maxX = -1, maxY = -1;
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -1,
+    maxY = -1;
   grid.forEach((row, y) =>
     row.forEach((p, x) => {
       if (!same(p, gold)) return;
-      minX = Math.min(minX, x); maxX = Math.max(maxX, x);
-      minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+      minX = Math.min(minX, x);
+      maxX = Math.max(maxX, x);
+      minY = Math.min(minY, y);
+      maxY = Math.max(maxY, y);
     }),
   );
   if (maxX < 0) return grid;
   // The body is the lower part of the gold area (the shackle is above it).
   const bodyTop = Math.round(minY + (maxY - minY) * 0.4);
   for (let y = bodyTop + 1; y < maxY; y++)
-    for (let x = minX + 1; x < maxX; x++) if (grid[y][x] && !same(grid[y][x], PALETTE.white)) grid[y][x] = gold;
+    for (let x = minX + 1; x < maxX; x++)
+      if (grid[y][x] && !same(grid[y][x], PALETTE.white)) grid[y][x] = gold;
   const cx = Math.round((minX + maxX) / 2);
   const cy = Math.round((bodyTop + maxY) / 2);
   const navy = PALETTE.navy;
-  for (const [dx, dy] of [[0, -1], [-1, -1], [0, 0], [-1, 0], [0, 1], [0, 2]]) {
+  for (const [dx, dy] of [
+    [0, -1],
+    [-1, -1],
+    [0, 0],
+    [-1, 0],
+    [0, 1],
+    [0, 2],
+  ]) {
     const x = cx + dx;
     const y = cy + dy - 1;
     if (grid[y]?.[x]) grid[y][x] = navy;
@@ -154,7 +176,8 @@ function fixKeyhole(grid) {
 function place(grid, name) {
   const height = grid.length;
   const width = grid[0].length;
-  if (width > SIZE || height > SIZE) throw new Error(`${name}: ${width}x${height} is larger than ${SIZE}`);
+  if (width > SIZE || height > SIZE)
+    throw new Error(`${name}: ${width}x${height} is larger than ${SIZE}`);
   let left;
   let top;
   let hotspot;
@@ -183,13 +206,16 @@ function place(grid, name) {
 
 mkdirSync(OUT, { recursive: true });
 const boxes = await findFigures();
-if (boxes.length !== NAMES.length) throw new Error(`Expected ${NAMES.length} cursors, found ${boxes.length}`);
+if (boxes.length !== NAMES.length)
+  throw new Error(`Expected ${NAMES.length} cursors, found ${boxes.length}`);
 for (const [index, name] of NAMES.entries()) {
   let grid = await shrink(boxes[index], name);
   if (name === 'locked') grid = fixKeyhole(grid);
   const { pixels, hotspot } = place(grid, name);
   const raw = { raw: { width: SIZE, height: SIZE, channels: 4 } };
-  await sharp(pixels, raw).png({ compressionLevel: 9 }).toFile(join(OUT, `${name}.png`));
+  await sharp(pixels, raw)
+    .png({ compressionLevel: 9 })
+    .toFile(join(OUT, `${name}.png`));
   await sharp(pixels, raw)
     .resize(SIZE * 2, SIZE * 2, { kernel: 'nearest' })
     .png({ compressionLevel: 9 })

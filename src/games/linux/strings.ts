@@ -24,6 +24,7 @@ export const UI = {
   memeSounds: { en: 'Meme sounds', fr: 'Sons des memes' },
   sound: { en: 'Sound', fr: 'Son' },
   reducedMotion: { en: 'Reduced motion', fr: 'Animations réduites' },
+  classicCursor: { en: 'Classic cursor', fr: 'Curseur classique' },
   language: { en: 'Language', fr: 'Langue' },
   wrongPassword: {
     en: 'Nope, that is not the password. Read it again, carefully.',

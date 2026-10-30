@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 import { checkAbout } from '@/src/games/linux/content/load';
 import { GAMES } from '@/src/shared/games';
@@ -157,5 +158,36 @@ describe('footer credits', () => {
 
   it('always has someone to credit', () => {
     expect(FALLBACK_DEVELOPERS.length).toBeGreaterThan(0);
+  });
+});
+
+describe('pixel cursors', () => {
+  const css = read('app/cursors.css');
+
+  it('ships every cursor at 32 px and 64 px', async () => {
+    for (const name of ['default', 'pointer', 'locked', 'busy']) {
+      const one = await sharp(join(process.cwd(), `public/brand/cursors/${name}.png`)).metadata();
+      const two = await sharp(
+        join(process.cwd(), `public/brand/cursors/${name}@2x.png`),
+      ).metadata();
+      expect([one.width, one.height, two.width, two.height]).toEqual([32, 32, 64, 64]);
+    }
+  });
+
+  it('clicks where the cursor points: each hotspot is on a visible pixel', async () => {
+    for (const name of ['default', 'pointer', 'locked']) {
+      const match = css.match(new RegExp(String.raw`cursors/${name}\.png'\) (\d+) (\d+)`));
+      expect(match, name).not.toBeNull();
+      const [x, y] = [Number(match![1]), Number(match![2])];
+      const { data, info } = await sharp(join(process.cwd(), `public/brand/cursors/${name}.png`))
+        .ensureAlpha()
+        .raw()
+        .toBuffer({ resolveWithObject: true });
+      expect(data[(y * info.width + x) * 4 + 3], `${name} hotspot ${x},${y}`).toBe(255);
+    }
+  });
+
+  it('keeps the native text cursor in the terminal and text fields', () => {
+    expect(css).toMatch(/\.xterm,[\s\S]*cursor: text/);
   });
 });

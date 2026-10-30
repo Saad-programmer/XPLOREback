@@ -48,6 +48,7 @@ npm run typecheck    # tsc --noEmit
 - Add shadcn components with `npx shadcn@latest add <name>` (8bitcn: `@8bitcn/<name>`), then check the `cn` import and keep remote fonts out (8bitcn's `retro` font is Pixelify Sans, in `app/site.css`).
 - Use the installed design skills (`frontend-design`, `algorithmic-art`, `motion-design`) for the title screen, hub and animations.
 - Respect reduced motion and keep heavy effects (CRT, galaxy) off or paused when not visible.
+- Cursors: pixel cursors from `node scripts/make-cursors.mjs`, applied in `app/cursors.css`. Keep the native text cursor wherever players type, and the "Classic cursor" setting working.
 - No copyrighted assets. Memes and sounds are placeholders for now. The penguin (Pixel) must not copy Tux: its art is in `public/games/linux/characters/pixel/`; after changing the source art, run `node scripts/cut-mascot.mjs` to rebuild the faces.
 
 ## Tests

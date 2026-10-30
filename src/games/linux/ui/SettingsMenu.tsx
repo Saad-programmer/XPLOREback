@@ -8,7 +8,7 @@ import { useText } from './game-context';
 import { Icon } from './Icon';
 import styles from './SettingsMenu.module.css';
 
-type Toggle = 'muted' | 'memeSounds' | 'reducedMotion';
+type Toggle = 'muted' | 'memeSounds' | 'reducedMotion' | 'classicCursor';
 
 /** Sound, meme sounds, reduced motion and language (PRD sections 7 and 8). Uses the HTML popover API. */
 export function SettingsMenu({
@@ -31,6 +31,7 @@ export function SettingsMenu({
     { key: 'muted', label: t(UI.sound), checked: !settings.muted },
     { key: 'memeSounds', label: t(UI.memeSounds), checked: settings.memeSounds },
     { key: 'reducedMotion', label: t(UI.reducedMotion), checked: settings.reducedMotion },
+    { key: 'classicCursor', label: t(UI.classicCursor), checked: settings.classicCursor },
   ];
   const flip = (key: Toggle) => updateSettings({ [key]: !settings[key] } as Partial<Settings>);
 

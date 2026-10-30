@@ -25,7 +25,6 @@ export const SITE = {
   },
   foundedBy: { en: 'Founded by', fr: 'Fondé par' },
   developedBy: { en: 'Developed by', fr: 'Développé par' },
-  githubProfile: { en: 'GitHub profile of', fr: 'Profil GitHub de' },
   feedback: { en: 'Your feedback', fr: 'Votre avis' },
   backToTop: { en: 'Back to top', fr: 'Retour en haut' },
 } satisfies Record<string, LocalizedText>;

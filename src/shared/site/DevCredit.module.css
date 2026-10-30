@@ -1,0 +1,262 @@
+/*
+ * Credit ticket, ported from the Xplore platform's footer (club.ilisi.ma) so both
+ * sites share it. Only the colour variables are mapped to the Labs theme.
+ */
+
+@property --dev-credit-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.credit {
+  --card: var(--color-card, #0e1834);
+  --ring: var(--color-ring, #7aa2f7);
+  --primary: var(--color-primary, #7aa2f7);
+  --hairline: rgb(255 255 255 / 0.1);
+
+  position: relative;
+  display: inline-flex;
+  padding: 2px;
+  border-radius: 9999px;
+  background:
+    conic-gradient(
+      from var(--dev-credit-angle),
+      transparent 0 55%,
+      #38bdf8 70%,
+      #6366f1 80%,
+      #ec4899 88%,
+      transparent 100%
+    ),
+    var(--hairline);
+  box-shadow: 0 10px 30px -16px rgb(99 102 241 / 0.6);
+  transition:
+    transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.35s;
+  animation: spin 4s linear infinite;
+}
+
+.credit:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 34px -14px rgb(99 102 241 / 0.55);
+}
+
+.credit:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+.inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.375rem 1.125rem 0.375rem 0.375rem;
+  border-radius: 9999px;
+  background: var(--card);
+}
+
+.avatar {
+  position: relative;
+  display: grid;
+  flex-shrink: 0;
+  animation: float 3.6s ease-in-out infinite;
+}
+
+.avatar img {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 2px var(--card),
+    0 0 0 3.5px #6366f1;
+}
+
+.avatar::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid rgb(56 189 248);
+  border-radius: 9999px;
+  opacity: 0;
+  animation: ping 3.6s ease-out infinite;
+}
+
+/* Role badge on top of the avatar: a crown for the founder, code for developers. */
+.badge {
+  position: absolute;
+  top: -0.7rem;
+  left: 50%;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 9999px;
+  color: #fff;
+  background: linear-gradient(135deg, rgb(56 189 248), rgb(99 102 241) 55%, rgb(236 72 153));
+  box-shadow:
+    0 0 0 2px var(--card),
+    0 4px 10px -3px #6366f1b3;
+  translate: -50%;
+}
+
+.credit:hover .badge {
+  animation: hop 0.6s ease-in-out;
+}
+
+/* The name rises letter by letter when the ticket scrolls into view, then waves on hover. */
+.name > span {
+  display: inline-block;
+  white-space: pre;
+  opacity: 0;
+}
+
+.credit[data-seen] .name > span {
+  opacity: 1;
+  animation: rise 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.credit[data-seen]:hover .name > span {
+  animation: wave 0.5s ease-in-out;
+}
+
+.github {
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.credit:hover .github {
+  transform: rotate(360deg);
+}
+
+/* Founder: smaller, golden, slower. */
+.credit[data-founder] {
+  padding: 1.5px;
+  background:
+    conic-gradient(
+      from var(--dev-credit-angle),
+      transparent 0 60%,
+      #fde68a 74%,
+      #f59e0b 82%,
+      transparent 92%
+    ),
+    var(--hairline);
+  box-shadow: none;
+  animation-duration: 7s;
+}
+
+.credit[data-founder]:hover {
+  box-shadow: 0 12px 28px -14px rgb(245 158 11 / 0.5);
+}
+
+.credit[data-founder] .inner {
+  gap: 0.5rem;
+  padding: 0.25rem 0.75rem 0.25rem 0.25rem;
+}
+
+.credit[data-founder] .avatar img {
+  width: 2rem;
+  height: 2rem;
+  box-shadow:
+    0 0 0 2px var(--card),
+    0 0 0 3px #f59e0b;
+}
+
+.credit[data-founder] .avatar::after {
+  border-color: rgb(245 158 11);
+}
+
+.credit[data-founder] .badge {
+  top: -0.55rem;
+  width: 1rem;
+  height: 1rem;
+  background: linear-gradient(135deg, rgb(251 191 36), rgb(245 158 11) 55%, rgb(217 119 6));
+  box-shadow: 0 0 0 2px var(--card);
+}
+
+.credit[data-founder]:hover .badge {
+  animation: none;
+}
+
+@keyframes spin {
+  100% {
+    --dev-credit-angle: 360deg;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes ping {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.9);
+  }
+  60%,
+  100% {
+    opacity: 0;
+    transform: scale(1.25);
+  }
+}
+
+@keyframes rise {
+  0% {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(0.6em);
+  }
+  100% {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: none;
+  }
+  40% {
+    color: var(--primary);
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes hop {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+  30% {
+    transform: translateY(-3px) rotate(-8deg);
+  }
+  60% {
+    transform: translateY(0) rotate(6deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credit,
+  .avatar,
+  .avatar::after,
+  .credit[data-seen] .name > span,
+  .credit[data-seen]:hover .name > span {
+    animation: none;
+  }
+
+  .name > span {
+    opacity: 1;
+  }
+
+  .credit:hover {
+    transform: none;
+  }
+}

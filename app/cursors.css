@@ -1,0 +1,88 @@
+/*
+ * Pixel-art cursors for the whole app (website and game screens).
+ * Files: public/brand/cursors, made by scripts/make-cursors.mjs, which prints the
+ * hotspots used below. Relative url()s: the bundler adds the /labs base path.
+ * The text cursor stays native in the terminal and text fields, and the
+ * "Classic cursor" setting (data-classic-cursor on <html>) turns all of this off.
+ * Each rule is written twice: plain 32 px first, then sharper on high-density
+ * screens where image-set() is supported.
+ */
+:root:not([data-classic-cursor]) {
+  cursor:
+    url('../public/brand/cursors/default.png') 1 1,
+    auto;
+  cursor:
+    image-set(
+        url('../public/brand/cursors/default.png') 1x,
+        url('../public/brand/cursors/default@2x.png') 2x
+      )
+      1 1,
+    auto;
+}
+
+:root:not([data-classic-cursor])
+  :is(
+    a[href],
+    button,
+    [role='button'],
+    [role='tab'],
+    [role='menuitem'],
+    [role='menuitemcheckbox'],
+    [role='menuitemradio'],
+    [role='option'],
+    label,
+    summary,
+    select,
+    input[type='checkbox'],
+    input[type='radio']
+  ):not(:disabled, [aria-disabled='true'], [data-disabled]) {
+  cursor:
+    url('../public/brand/cursors/pointer.png') 11 1,
+    pointer;
+  cursor:
+    image-set(
+        url('../public/brand/cursors/pointer.png') 1x,
+        url('../public/brand/cursors/pointer@2x.png') 2x
+      )
+      11 1,
+    pointer;
+}
+
+:root:not([data-classic-cursor]) :is(:disabled, [aria-disabled='true'], [data-disabled]) {
+  cursor:
+    url('../public/brand/cursors/locked.png') 1 1,
+    not-allowed;
+  cursor:
+    image-set(
+        url('../public/brand/cursors/locked.png') 1x,
+        url('../public/brand/cursors/locked@2x.png') 2x
+      )
+      1 1,
+    not-allowed;
+}
+
+:root:not([data-classic-cursor]) [aria-busy='true'],
+:root:not([data-classic-cursor]) [aria-busy='true'] * {
+  cursor:
+    url('../public/brand/cursors/busy.png') 16 16,
+    progress;
+  cursor:
+    image-set(
+        url('../public/brand/cursors/busy.png') 1x,
+        url('../public/brand/cursors/busy@2x.png') 2x
+      )
+      16 16,
+    progress;
+}
+
+/* Typing needs the precise native text cursor. */
+:root:not([data-classic-cursor])
+  :is(
+    input:not([type='checkbox'], [type='radio'], [type='range'], [type='button'], [type='submit']),
+    textarea,
+    [contenteditable='true'],
+    .xterm,
+    .xterm *
+  ) {
+  cursor: text;
+}

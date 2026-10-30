@@ -136,6 +136,13 @@ function SettingsItems() {
       >
         {t(SITE.reducedMotion)}
       </DropdownMenuCheckboxItem>
+      <DropdownMenuCheckboxItem
+        checked={settings.classicCursor}
+        onCheckedChange={(on) => updateSettings({ classicCursor: on })}
+        onSelect={(event) => event.preventDefault()}
+      >
+        {t(SITE.classicCursor)}
+      </DropdownMenuCheckboxItem>
       <DropdownMenuSeparator />
       <DropdownMenuLabel className="flex items-center gap-2 text-xs text-muted-foreground">
         <Languages className="size-3.5" aria-hidden="true" />
@@ -195,6 +202,12 @@ function MobileMenu() {
       label: SITE.reducedMotion,
       on: settings.reducedMotion,
       set: (on: boolean) => ({ reducedMotion: on }),
+    },
+    {
+      key: 'cursor',
+      label: SITE.classicCursor,
+      on: settings.classicCursor,
+      set: (on: boolean) => ({ classicCursor: on }),
     },
   ];
 

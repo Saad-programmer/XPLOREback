@@ -92,6 +92,8 @@ export interface Settings {
   crt: boolean;
   language: Lang;
   maximized: boolean;
+  /** The system cursor instead of the game's pixel cursors. */
+  classicCursor: boolean;
 }
 
 /** Sound off by default (class mode), see PRD section 7. */
@@ -102,6 +104,7 @@ export const DEFAULT_SETTINGS: Settings = {
   crt: false,
   language: 'fr',
   maximized: false,
+  classicCursor: false,
 };
 
 /** The only way game code talks to Xplore (PRD section 12). */

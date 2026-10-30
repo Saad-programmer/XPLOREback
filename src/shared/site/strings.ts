@@ -15,6 +15,7 @@ export const SITE = {
   sound: { en: 'Sound', fr: 'Son' },
   memeSounds: { en: 'Meme sounds', fr: 'Sons des memes' },
   reducedMotion: { en: 'Reduced motion', fr: 'Animations réduites' },
+  classicCursor: { en: 'Classic cursor', fr: 'Curseur classique' },
   language: { en: 'Language', fr: 'Langue' },
   switchLanguage: { en: 'Passer en français', fr: 'Switch to English' },
   backToXplore: { en: 'Back to Xplore', fr: 'Retour à Xplore' },

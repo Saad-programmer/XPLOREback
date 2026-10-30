@@ -186,6 +186,7 @@ export function createGameStore({
           attempts: Math.max(meta.attempts, 1),
           timeS,
           shortestCmdLen,
+          commands: shell ? [...shell.history()] : [],
         });
         set({ victory: { outcome, hintsUsed: meta.hintsUsed } });
       } catch (error) {

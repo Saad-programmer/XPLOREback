@@ -79,6 +79,23 @@ concept:
   en: 'pwd shows where you are, ls lists what is there, and cat reads a file.'
   fr: "pwd montre où tu es, ls liste ce qu'il y a, et cat lit un fichier."
 
+recap:
+  - command: pwd
+    text:
+      en: 'Prints the folder you are in (print working directory).'
+      fr: 'Affiche le dossier où tu te trouves (print working directory).'
+    example: pwd
+  - command: ls
+    text:
+      en: 'Lists the files and folders where you are.'
+      fr: 'Liste les fichiers et dossiers là où tu es.'
+    example: ls
+  - command: cat
+    text:
+      en: 'Prints the content of a file.'
+      fr: "Affiche le contenu d'un fichier."
+    example: cat welcome.txt
+
 solution:
   - pwd
   - ls

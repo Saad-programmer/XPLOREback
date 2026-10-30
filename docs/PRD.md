@@ -318,7 +318,8 @@ Opened by "Play now" on the game details page, like a console game start screen.
 
 **Other pages**
 
-- Mission map: zones and missions with locked, open and done states.
+- Mission map: a world of floating islands, one per zone, each showing its Linux ideas (home folder, hidden files, search, pipes, permissions, a log investigation). The islands float gently; a glowing route links the levels in order (lit where the player has been, dotted ahead), and zones without missions yet say "Soon". Each level is a node on its island: done (green, 1 to 3 stars: 3 without hints, 2 with one, else 1), open (pulsing, with Pixel standing on the next one) or locked (padlock). The last level of a zone is a bigger node. On phones the islands form a vertical zigzag.
+- Mission panel: clicking a node opens a side panel (from the bottom on phones) with two tabs. **Mission**: the goal, stars, best score, hints used and Play or Replay. **Recap**, locked with a padlock until the mission is done: "What you learned" (each command the mission teaches, what it does, an example, and the key idea) and "Your solution" (the commands the player typed in their shortest winning run).
 - Profile panel: skill stickers, best scores, unlocked sounds.
 - Admin page (v2): weekly case, meme approval, simple stats.
 

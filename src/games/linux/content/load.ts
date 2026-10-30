@@ -1,6 +1,7 @@
 import { load } from 'js-yaml';
 import { z } from 'zod';
 import { goalWithSecrets, isGoalMet, passwordsOf } from '../engine/goals';
+import { createRegistry } from '../engine/commands';
 import { createShell } from '../engine/shell';
 import { missionSchema, SECRET_NAMES, type Mission } from './schema';
 
@@ -94,6 +95,16 @@ export function checkMission(mission: Mission): string[] {
     if (output.includes(password)) shell.submitAnswer(password);
   }
   if (!shell.isGoalReached()) errors.push('solution: does not reach the goal');
+
+  // A recap teaches real commands only.
+  const registry = createRegistry();
+  for (const entry of mission.recap) {
+    const name = entry.command.trim().split(/\s+/)[0];
+    if (!registry.get(name)) errors.push(`recap: "${entry.command}" is not a command of the game`);
+    const example = entry.example?.trim().split(/\s+/)[0];
+    if (example && !registry.get(example))
+      errors.push(`recap: example "${entry.example}" does not start with a command of the game`);
+  }
   return errors;
 }
 

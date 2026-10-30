@@ -82,6 +82,23 @@ concept:
   en: 'cd folder goes into a folder, cd .. goes back up, and cd alone takes you home.'
   fr: "cd dossier entre dans un dossier, cd .. remonte d'un niveau, et cd tout seul te ramène à la maison."
 
+recap:
+  - command: cd
+    text:
+      en: 'Goes into a folder (change directory).'
+      fr: 'Entre dans un dossier (change directory).'
+    example: cd door-1
+  - command: cd ..
+    text:
+      en: 'Goes back up one folder: .. is always the folder above.'
+      fr: 'Remonte d’un dossier : .. est toujours le dossier du dessus.'
+    example: cd ..
+  - command: cd
+    text:
+      en: 'With nothing after it, cd takes you back home (~).'
+      fr: 'Sans rien après, cd te ramène à la maison (~).'
+    example: cd
+
 solution:
   - ls
   - cd door-1

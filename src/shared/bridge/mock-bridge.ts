@@ -4,6 +4,7 @@ import {
   BridgeError,
   DEFAULT_SETTINGS,
   emptyProgress,
+  solutionOf,
   type Checkpoint,
   type GameId,
   type GameProgress,
@@ -110,6 +111,7 @@ export class MockBridge implements LabsBridge {
           attempts: stats.attempts,
           bestTimeS: stats.timeS,
           shortestCmdLen: stats.shortestCmdLen,
+          solution: stats.commands && solutionOf(stats.commands),
           firstCompletedAt: this.now(),
         };
     progress.totalPoints += pointsAwarded;
@@ -164,5 +166,13 @@ function mergeResult(previous: MissionResult, score: number, stats: SubmitStats)
     attempts: previous.attempts + stats.attempts,
     bestTimeS: Math.min(previous.bestTimeS, stats.timeS),
     shortestCmdLen: shortest.length ? Math.min(...shortest) : null,
+    solution: shorterSolution(previous.solution, stats.commands),
   };
+}
+
+/** The recap shows the player's shortest winning run. */
+function shorterSolution(previous: string[] | undefined, commands: string[] | undefined) {
+  if (!commands) return previous;
+  const next = solutionOf(commands);
+  return previous && previous.length <= next.length ? previous : next;
 }

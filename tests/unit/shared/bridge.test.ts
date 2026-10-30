@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { ApiBridge } from '@/src/shared/bridge/api-bridge';
 import { MAX_CHECKPOINT_BYTES, MOCK_SECRET, MockBridge } from '@/src/shared/bridge/mock-bridge';
 import { personalPassword } from '@/src/shared/bridge/password';
-import { BridgeError, DEFAULT_SETTINGS } from '@/src/shared/bridge/types';
+import {
+  BridgeError,
+  DEFAULT_SETTINGS,
+  SOLUTION_LIMITS,
+  solutionOf,
+} from '@/src/shared/bridge/types';
 import { memoryStore } from '@/src/shared/storage';
 import { checkpoint, NO_HINTS } from './fakes';
 
@@ -88,6 +93,31 @@ describe('MockBridge', () => {
     const bridge = new MockBridge(memoryStore());
     const result = await bridge.submitMission('linux', 'm1', null, { ...NO_HINTS, hintsUsed: 1 });
     expect(result.pointsAwarded).toBe(10);
+  });
+
+  it('keeps the shortest winning run for the recap', async () => {
+    const bridge = new MockBridge(memoryStore());
+    const run = (commands: string[]) =>
+      bridge.submitMission('linux', 'm1', null, { ...NO_HINTS, commands });
+    await run(['ls', '  ls -a  ', '', 'cat .secret_scroll']);
+    expect((await bridge.getProgress('linux')).missions.m1.solution).toEqual([
+      'ls',
+      'ls -a',
+      'cat .secret_scroll',
+    ]);
+    await run(['ls', 'pwd', 'ls -a', 'cd ..', 'cat .secret_scroll']);
+    expect((await bridge.getProgress('linux')).missions.m1.solution).toHaveLength(3);
+    await run(['cat .secret_scroll']);
+    expect((await bridge.getProgress('linux')).missions.m1.solution).toEqual([
+      'cat .secret_scroll',
+    ]);
+  });
+
+  it('caps a saved solution like the server does', () => {
+    const long = Array.from({ length: 60 }, (_, i) => `echo ${i}`);
+    expect(solutionOf(long)).toHaveLength(SOLUTION_LIMITS.commands);
+    expect(solutionOf(long).at(-1)).toBe('echo 59');
+    expect(solutionOf(['x'.repeat(500)])[0]).toHaveLength(SOLUTION_LIMITS.length);
   });
 
   it('keeps everything in the store, like a server would', async () => {

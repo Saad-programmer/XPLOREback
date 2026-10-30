@@ -53,6 +53,71 @@ describe.each(['wake-up-hello-world', 'wake-up-first-door', 'archive-hidden-scro
   },
 );
 
+describe('mission 4, moving day (mkdir, mv, cp, touch)', () => {
+  const mission = getMission('archive-moving-day')!;
+  const play = async (lines: string[]) => {
+    const start = await new MockBridge(memoryStore()).startMission('linux', mission.id);
+    const { shell } = createMissionShell(mission, start, 'en');
+    for (const line of lines) shell.run(line);
+    return shell;
+  };
+  const setup = ['cd desk', 'mkdir courses exams', 'touch exams/revisions.txt'];
+
+  it('is solved by following TODO.txt', async () => {
+    expect((await play(mission.solution)).isGoalReached()).toBe(true);
+  });
+
+  it('needs the recipe COPIED, not moved', async () => {
+    const shell = await play([
+      ...setup,
+      'mv linux-course.pdf network-course.pdf courses/',
+      'mv exam-2025.txt exams/',
+      'mv msemen-recipe.txt president/',
+    ]);
+    expect(shell.isGoalReached()).toBe(false);
+  });
+
+  it('needs the courses MOVED, not copied', async () => {
+    const shell = await play([
+      ...setup,
+      'cp linux-course.pdf network-course.pdf courses/',
+      'mv exam-2025.txt exams/',
+      'cp msemen-recipe.txt president/',
+    ]);
+    expect(shell.isGoalReached()).toBe(false);
+  });
+});
+
+describe('mission 5, clean up carefully (ls -l, rm)', () => {
+  const mission = getMission('archive-clean-up')!;
+  const start = async () => {
+    const begin = await new MockBridge(memoryStore()).startMission('linux', mission.id);
+    return createMissionShell(mission, begin, 'en').shell;
+  };
+
+  it('shows the empty copies with a size of 0 in ls -l', async () => {
+    const shell = await start();
+    shell.run('cd downloads');
+    const listing = shell.run('ls -l').stdout;
+    expect(listing).toMatch(/ 0 .*grades-S5\.pdf/);
+    expect(listing).not.toMatch(/ 0 .*grades-S5-final-v2\.pdf/);
+  });
+
+  it('is solved by deleting only the empty copies', async () => {
+    const shell = await start();
+    for (const line of mission.solution) shell.run(line);
+    expect(shell.isGoalReached()).toBe(true);
+  });
+
+  it('cannot be won once the real grades are deleted', async () => {
+    const shell = await start();
+    shell.run('cd downloads');
+    shell.run('rm grades-S5-final-v2.pdf');
+    shell.run('rm grades-S5.pdf grades-S5-final.pdf grades-S5-FINAL-really.pdf');
+    expect(shell.isGoalReached()).toBe(false);
+  });
+});
+
 describe('checkpoints', () => {
   it('restore the file system, folder, history and stats', async () => {
     const mission = getMission('wake-up-first-door')!;

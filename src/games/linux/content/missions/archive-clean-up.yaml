@@ -1,0 +1,113 @@
+# Mission 5 — deleting carefully: ls -l, rm. Last mission of the archive.
+id: archive-clean-up
+zone: archive
+order: 5
+title:
+  en: Clean up, carefully
+  fr: Le grand ménage
+objective:
+  en: Delete the empty copies of the grades, keep the real file
+  fr: Supprime les copies vides des notes, garde le vrai fichier
+
+briefing:
+  - mood: thinking
+    text:
+      en: 'Deliberations are coming. Someone downloaded the S5 grades... four times. Wach normal?'
+      fr: 'Les délibérations approchent. Quelqu’un a téléchargé les notes du S5... quatre fois. Wach normal ?'
+  - mood: disappointed
+    text:
+      en: 'Three of those files are empty, broken downloads. Only one is real. And on Linux, rm does not warn you: there is no trash bin.'
+      fr: 'Trois de ces fichiers sont vides, des téléchargements ratés. Un seul est le vrai. Et sous Linux, rm ne prévient pas : pas de corbeille.'
+  - mood: neutral
+    text:
+      en: 'Go into downloads. ls -l shows the details of each file, including its size. 0 means empty.'
+      fr: 'Va dans downloads. ls -l montre les détails de chaque fichier, dont sa taille. 0, ça veut dire vide.'
+  - mood: happy
+    text:
+      en: 'Delete the fake ones with rm, keep the real one. Gently, hein.'
+      fr: 'Supprime les faux avec rm, garde le vrai. Doucement, hein.'
+
+filesystem:
+  /home/intern:
+    downloads:
+      type: dir
+      children:
+        grades-S5.pdf: ''
+        grades-S5-final.pdf: ''
+        grades-S5-final-v2.pdf: |
+          FSTM - ILISI 2 - Semester 5 grades (provisional)
+          Linux ................ 18/20 (thanks to a certain penguin)
+          Networks ............. 14/20
+          Databases ............ 15/20
+          Deliberation: Monday, 9:00. Bring msemen for the jury.
+        grades-S5-FINAL-really.pdf: ''
+        linux-summary.txt: |
+          My Linux summary: ls lists, cd moves, cat reads, rm deletes FOREVER.
+
+start_dir: '~'
+
+goal:
+  type: all
+  goals:
+    - { type: file_absent, path: '~/downloads/grades-S5.pdf' }
+    - { type: file_absent, path: '~/downloads/grades-S5-final.pdf' }
+    - { type: file_absent, path: '~/downloads/grades-S5-FINAL-really.pdf' }
+    - { type: file_exists, path: '~/downloads/grades-S5-final-v2.pdf', nodeType: file }
+
+hints:
+  - en: 'Go into downloads and compare the files with ls -l: look at the size column, just before the date.'
+    fr: 'Entre dans downloads et compare les fichiers avec ls -l : regarde la colonne de la taille, juste avant la date.'
+  - en: 'The fake ones weigh 0 bytes. rm file deletes a file, and you can give it several files at once.'
+    fr: 'Les faux font 0 octet. rm fichier supprime un fichier, et tu peux lui en donner plusieurs à la fois.'
+  - en: 'In downloads: rm grades-S5.pdf grades-S5-final.pdf grades-S5-FINAL-really.pdf'
+    fr: 'Dans downloads : rm grades-S5.pdf grades-S5-final.pdf grades-S5-FINAL-really.pdf'
+
+reactions:
+  - on: rm grades-S5-final-v2.pdf
+    mood: shocked
+    text:
+      en: 'You deleted the REAL grades?! No trash bin, remember. Restart the mission (↻) before the President hears about this.'
+      fr: 'Tu as supprimé les VRAIES notes ?! Pas de corbeille, souviens-toi. Recommence la mission (↻) avant que le Président l’apprenne.'
+  - on: rm linux-summary.txt
+    mood: disappointed
+    text:
+      en: 'That was a Linux summary, not a broken download. Exams are coming, khoya. Be careful with rm.'
+      fr: "C'était un résumé de Linux, pas un téléchargement raté. Les examens arrivent, khoya. Attention avec rm."
+  - on: cat grades-S5-final-v2.pdf
+    mood: laughing
+    text:
+      en: '18 in Linux? You are welcome.'
+      fr: '18 en Linux ? De rien.'
+
+victory:
+  - mood: proud
+    text:
+      en: 'Clean. One file, the right one. You would make a good sysadmin... or a good class delegate.'
+      fr: 'Propre. Un seul fichier, le bon. Tu ferais un bon sysadmin... ou un bon délégué.'
+  - mood: happy
+    text:
+      en: 'The archive is done. Next stop: the search hall, where the logs are as long as exam week.'
+      fr: 'Les archives, c’est fini. Prochain arrêt : le hall de recherche, où les logs sont aussi longs que la semaine des examens.'
+
+rewards: { points: 10, no_hint_bonus: 5 }
+
+concept:
+  en: 'ls -l shows details like the size of each file. rm deletes files forever: check before you delete.'
+  fr: 'ls -l montre des détails comme la taille de chaque fichier. rm supprime pour toujours : vérifie avant de supprimer.'
+
+recap:
+  - command: ls -l
+    text:
+      en: 'Long listing: permissions, owner, size in bytes, date and name. A size of 0 means an empty file.'
+      fr: 'Liste détaillée : permissions, propriétaire, taille en octets, date et nom. Une taille de 0, c’est un fichier vide.'
+    example: ls -l
+  - command: rm
+    text:
+      en: 'Deletes files, several at once if you want. There is no trash bin: deleted means gone.'
+      fr: 'Supprime des fichiers, plusieurs à la fois si tu veux. Pas de corbeille : supprimé veut dire disparu.'
+    example: rm grades-S5.pdf grades-S5-final.pdf
+
+solution:
+  - cd downloads
+  - ls -l
+  - rm grades-S5.pdf grades-S5-final.pdf grades-S5-FINAL-really.pdf

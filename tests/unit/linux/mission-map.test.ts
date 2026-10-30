@@ -25,14 +25,18 @@ const withDone = (...ids: string[]) => ({
 describe('mission map', () => {
   it('opens only the first mission for a new player', () => {
     const states = missionStates(missions, undefined);
-    expect(states.map((s) => s.state)).toEqual(['open', 'locked', 'locked']);
+    expect(states.map((s) => s.state)).toEqual(['open', ...missions.slice(1).map(() => 'locked')]);
     expect(states[0].current).toBe(true);
     expect(states[2].needs).toBe(missions[1]);
   });
 
   it('unlocks the next mission when one is done', () => {
     const states = missionStates(missions, withDone(missions[0].id));
-    expect(states.map((s) => s.state)).toEqual(['done', 'open', 'locked']);
+    expect(states.map((s) => s.state)).toEqual([
+      'done',
+      'open',
+      ...missions.slice(2).map(() => 'locked'),
+    ]);
     expect(states[1].current).toBe(true);
     expect(states[0].result).toEqual(done);
   });

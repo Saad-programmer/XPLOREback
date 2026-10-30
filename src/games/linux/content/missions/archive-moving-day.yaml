@@ -1,0 +1,146 @@
+# Mission 4 — organising files: mkdir, mv, cp, touch.
+id: archive-moving-day
+zone: archive
+order: 4
+title:
+  en: Moving day
+  fr: Jour de déménagement
+objective:
+  en: Tidy the intern's desk by following TODO.txt
+  fr: Range le bureau du stagiaire en suivant TODO.txt
+
+briefing:
+  - mood: neutral
+    text:
+      en: "Still in the archive, office wing. Look at the last intern's desk... it's a souk in there."
+      fr: "Toujours aux archives, côté bureaux. Regarde le bureau du dernier stagiaire... c'est le souk."
+  - mood: shocked
+    text:
+      en: 'The President is coming to inspect in ten minutes. If he sees this mess, safi, we are finished.'
+      fr: "Le Président passe inspecter dans dix minutes. S'il voit ce bordel, safi, on est finis."
+  - mood: thinking
+    text:
+      en: 'Go into the desk folder and read TODO.txt. The intern wrote down everything he never did.'
+      fr: "Va dans le dossier desk et lis TODO.txt. Le stagiaire a tout noté... et il n'a rien fait."
+  - mood: happy
+    text:
+      en: 'Express lesson: mkdir creates a folder, mv moves a file, cp copies it, touch creates an empty file.'
+      fr: 'Cours express : mkdir crée un dossier, mv déplace un fichier, cp le copie, touch crée un fichier vide.'
+
+filesystem:
+  /home/intern:
+    desk:
+      type: dir
+      children:
+        TODO.txt: |
+          TODO before the President sees this desk:
+          1. Make two folders here: courses and exams
+          2. Move both course PDFs into courses
+          3. Move the exam into exams
+          4. Create an empty file exams/revisions.txt (one day I will revise)
+          5. COPY (do not move!) msemen-recipe.txt into president/
+        linux-course.pdf: |
+          FSTM - ILISI 1 - Linux course
+          Chapter 1: the terminal is your friend.
+        network-course.pdf: |
+          FSTM - ILISI 1 - Networks course
+          Chapter 1: have you tried turning it off and on again?
+        exam-2025.txt: |
+          Linux exam, June 2025. Duration: 2h. Documents not allowed.
+          Question 1: what does rm -rf / do? (Do NOT try it.)
+        msemen-recipe.txt: |
+          Msemen, the club recipe:
+          flour, fine semolina, salt, water, oil, butter, and patience.
+          Fold, fold again, cook on a hot pan. Share with the President.
+        president:
+          type: dir
+          children:
+            note.txt: |
+              The President's folder. Snacks welcome. Msemen especially.
+
+start_dir: '~'
+
+goal:
+  type: all
+  goals:
+    - { type: file_exists, path: '~/desk/courses/linux-course.pdf', nodeType: file }
+    - { type: file_exists, path: '~/desk/courses/network-course.pdf', nodeType: file }
+    - { type: file_absent, path: '~/desk/linux-course.pdf' }
+    - { type: file_absent, path: '~/desk/network-course.pdf' }
+    - { type: file_exists, path: '~/desk/exams/exam-2025.txt', nodeType: file }
+    - { type: file_absent, path: '~/desk/exam-2025.txt' }
+    - { type: file_exists, path: '~/desk/exams/revisions.txt', nodeType: file }
+    - { type: file_exists, path: '~/desk/president/msemen-recipe.txt', nodeType: file }
+    - { type: file_exists, path: '~/desk/msemen-recipe.txt', nodeType: file }
+
+hints:
+  - en: 'Start with the list: cd desk, then cat TODO.txt. Do the steps one by one.'
+    fr: 'Commence par la liste : cd desk, puis cat TODO.txt. Fais les étapes une par une.'
+  - en: 'mkdir courses exams creates two folders at once. mv file folder/ moves a file into a folder, and cp file folder/ copies it.'
+    fr: 'mkdir courses exams crée deux dossiers d’un coup. mv fichier dossier/ déplace un fichier dans un dossier, et cp fichier dossier/ le copie.'
+  - en: 'In desk: mkdir courses exams — mv linux-course.pdf network-course.pdf courses/ — mv exam-2025.txt exams/ — touch exams/revisions.txt — cp msemen-recipe.txt president/'
+    fr: 'Dans desk : mkdir courses exams — mv linux-course.pdf network-course.pdf courses/ — mv exam-2025.txt exams/ — touch exams/revisions.txt — cp msemen-recipe.txt president/'
+
+reactions:
+  - on: mv msemen-recipe.txt president/
+    mood: shocked
+    text:
+      en: 'You MOVED the recipe? TODO.txt said COPY. Now the desk has no msemen. Use cp, and restart (↻) if you need the original back.'
+      fr: "Tu as DÉPLACÉ la recette ? TODO.txt disait COPIER. Le bureau n'a plus de msemen. Utilise cp, et recommence (↻) s'il te faut l'original."
+  - on: rm msemen-recipe.txt
+    mood: shocked
+    text:
+      en: 'You deleted the msemen recipe?! The President will never forgive this. Restart the mission (↻), quickly.'
+      fr: 'Tu as supprimé la recette du msemen ?! Le Président ne te le pardonnera jamais. Recommence la mission (↻), vite.'
+  - on: cat msemen-recipe.txt
+    mood: happy
+    text:
+      en: 'Ah, the club recipe. Do not show it to the other clubs.'
+      fr: 'Ah, la recette du club. Ne la montre pas aux autres clubs. Hchouma.'
+
+victory:
+  - mood: proud
+    text:
+      en: 'Desk tidy, recipe saved. The President walked by and smiled. He never smiles.'
+      fr: 'Bureau rangé, recette sauvée. Le Président est passé et il a souri. Il ne sourit jamais.'
+  - mood: laughing
+    text:
+      en: 'He still asked where the msemen was. Classic.'
+      fr: 'Il a quand même demandé où étaient les msemens. Classique.'
+
+rewards: { points: 10, no_hint_bonus: 5 }
+
+concept:
+  en: 'mkdir creates folders, mv moves (or renames) a file, cp copies it and keeps the original, touch creates an empty file.'
+  fr: "mkdir crée des dossiers, mv déplace (ou renomme) un fichier, cp le copie en gardant l'original, touch crée un fichier vide."
+
+recap:
+  - command: mkdir
+    text:
+      en: 'Creates folders. Give several names to create several at once.'
+      fr: 'Crée des dossiers. Donne plusieurs noms pour en créer plusieurs d’un coup.'
+    example: mkdir courses exams
+  - command: mv
+    text:
+      en: 'Moves files into a folder (the last name). Used with two file names, it renames.'
+      fr: 'Déplace des fichiers dans un dossier (le dernier nom). Avec deux noms de fichiers, il renomme.'
+    example: mv linux-course.pdf network-course.pdf courses/
+  - command: cp
+    text:
+      en: 'Copies a file: the original stays where it was.'
+      fr: "Copie un fichier : l'original reste à sa place."
+    example: cp msemen-recipe.txt president/
+  - command: touch
+    text:
+      en: 'Creates an empty file (or updates the date of an existing one).'
+      fr: "Crée un fichier vide (ou met à jour la date d'un fichier existant)."
+    example: touch exams/revisions.txt
+
+solution:
+  - cd desk
+  - cat TODO.txt
+  - mkdir courses exams
+  - mv linux-course.pdf network-course.pdf courses/
+  - mv exam-2025.txt exams/
+  - touch exams/revisions.txt
+  - cp msemen-recipe.txt president/

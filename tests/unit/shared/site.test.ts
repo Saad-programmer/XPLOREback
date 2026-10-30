@@ -3,6 +3,7 @@ import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { checkAbout } from '@/src/games/linux/content/load';
 import { GAMES } from '@/src/shared/games';
+import { developersFrom, FALLBACK_DEVELOPERS, FOUNDER } from '@/src/shared/site/credits';
 import { generateStarfield, STAR_TILE, starPosition, twinkle } from '@/src/shared/site/stars';
 import { levelOf } from '@/src/shared/site/strings';
 
@@ -130,5 +131,31 @@ describe('website starfield', () => {
         expect(value).toBeLessThanOrEqual(star.alpha + 1e-9);
       }
     }
+  });
+});
+
+describe('footer credits', () => {
+  it('lists the repo contributors as developers: people only, founder apart, most active first', () => {
+    const developers = developersFrom(
+      [
+        { login: 'friend', type: 'User', contributions: 3 },
+        { login: 'dependabot[bot]', type: 'Bot', contributions: 40 },
+        { login: FOUNDER.login, type: 'User', contributions: 1 },
+        { login: 'Ali-Dev06', type: 'User', contributions: 120 },
+      ],
+      { 'Ali-Dev06': 'Ali Zouhdi' },
+    );
+    expect(developers.map((d) => [d.login, d.name])).toEqual([
+      ['Ali-Dev06', 'Ali Zouhdi'],
+      ['friend', 'friend'],
+    ]);
+    expect(developers[0]).toMatchObject({
+      profileUrl: 'https://github.com/Ali-Dev06',
+      avatarUrl: 'https://avatars.githubusercontent.com/Ali-Dev06?size=96',
+    });
+  });
+
+  it('always has someone to credit', () => {
+    expect(FALLBACK_DEVELOPERS.length).toBeGreaterThan(0);
   });
 });

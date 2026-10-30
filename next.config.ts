@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
   // No "N" badge in the corner during development (errors still show when they happen).
   devIndicators: false,
   partialPrefetching: true,
+  images: {
+    // GitHub avatars of the people credited in the footer.
+    remotePatterns: [{ protocol: 'https', hostname: 'avatars.githubusercontent.com' }],
+  },
   redirects() {
     return [
       // Running the app alone (npm run dev): open http://localhost:3000 and land on /labs.

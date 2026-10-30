@@ -70,9 +70,9 @@ export const NODE_SPOTS: Record<ZoneId, Point[]> = {
     { x: 0.63, y: 0.58 },
   ],
   archive: [
-    { x: 0.38, y: 0.58 },
-    { x: 0.55, y: 0.53 },
-    { x: 0.68, y: 0.6 },
+    { x: 0.33, y: 0.6 },
+    { x: 0.51, y: 0.51 },
+    { x: 0.71, y: 0.6 },
   ],
   'search-hall': [
     { x: 0.52, y: 0.62 },

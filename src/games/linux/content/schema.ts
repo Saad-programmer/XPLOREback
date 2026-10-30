@@ -83,6 +83,7 @@ export const goal: z.ZodType<Goal> = z.lazy(() =>
         nodeType: z.enum(['file', 'dir']).optional(),
       })
       .strict(),
+    z.object({ type: z.literal('file_absent'), path: z.string().min(1) }).strict(),
     z
       .object({
         type: z.literal('file_content'),

@@ -7,6 +7,8 @@ export type Goal =
   /** The player submits a value, usually "{{password}}". */
   | { type: 'password'; value: string }
   | { type: 'file_exists'; path: string; nodeType?: 'file' | 'dir' }
+  /** The path must be gone (e.g. files the player had to delete). */
+  | { type: 'file_absent'; path: string }
   | { type: 'file_content'; path: string; equals?: string; contains?: string }
   | { type: 'cwd'; path: string }
   /** Octal permissions, e.g. "644". */
@@ -34,6 +36,8 @@ export function isGoalMet(goal: Goal, ctx: GoalContext): boolean {
       const node = ctx.vfs.stat(resolve(goal.path));
       return node !== null && (!goal.nodeType || node.type === goal.nodeType);
     }
+    case 'file_absent':
+      return ctx.vfs.stat(resolve(goal.path)) === null;
     case 'file_content': {
       const node = ctx.vfs.stat(resolve(goal.path));
       if (node?.type !== 'file') return false;
@@ -74,6 +78,7 @@ export function goalWithSecrets(goal: Goal, secrets: Record<string, string>): Go
     case 'password':
       return { ...goal, value: fill(goal.value) };
     case 'file_exists':
+    case 'file_absent':
     case 'cwd':
       return { ...goal, path: fill(goal.path) };
     case 'file_content':

@@ -502,3 +502,11 @@ The code is the source of truth; these are the differences from the proposal abo
 - Capsule art: `public/games/linux/cover/capsule-art.jpg` (re-encoded to 1920 px, 2.4 MB to 0.27 MB), imported statically in `src/shared/site/covers.ts` so `next/image` adds the base path, the size and a blur placeholder. The hub crops it to 16:10; the details page shows it whole. No title is printed over it.
 - Game details page: `app/(site)/games/[gameId]/page.tsx` (static params from `GAMES`, `params` read inside `<Suspense>`). The "More info" Markdown is rendered on the server with `react-markdown` + `remark-gfm` (styled with Tailwind Typography), for both languages; the client shows the one matching the setting. `about.en.md` / `about.fr.md` are bundled and checked by `npm run content` (`checkAbout`).
 - The hub's game intro panel is replaced by the details page; the "Your game here" card keeps a small dialog.
+
+**Step 8 (missions 4 to 10 + bonus), part 1: the Archive**
+
+- Mission 4 "Moving day" (`archive-moving-day`): tidy the intern's desk by following `TODO.txt` (`mkdir`, `mv`, `cp`, `touch`); no password, the goal checks the final layout. Moving the recipe instead of copying it, or copying the courses instead of moving them, does not count.
+- Mission 5 "Clean up, carefully" (`archive-clean-up`): `ls -l` shows three empty copies (size 0) next to the real grades file; delete only them with `rm`. Deleting the real file makes the mission impossible until a restart (Pixel says so).
+- New goal type `file_absent` (engine + schema): a path that must be gone.
+- Tone (product owner's choice): Darija touches and local references (FSTM, exams, msemen, the club's Président) in the dialogue; the server's files stay in English.
+- Mission tests now cover the wrong paths, and the mission-map tests no longer assume a number of missions.

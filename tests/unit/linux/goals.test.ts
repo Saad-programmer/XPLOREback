@@ -43,6 +43,15 @@ describe('goal checker', () => {
     expect(shell.isGoalReached()).toBe(true);
   });
 
+  it('file_absent: the file must be deleted', () => {
+    const { shell } = goalShell({ type: 'file_absent', path: '~/notes.txt' });
+    expect(shell.isGoalReached()).toBe(false);
+    shell.run('mv notes.txt room/');
+    expect(shell.isGoalReached()).toBe(true);
+    const deleted = goalShell({ type: 'file_absent', path: 'log.txt' }).shell;
+    expect(deleted.run('rm log.txt').goalReached).toBe(true);
+  });
+
   it('file_content: equals and contains', () => {
     const { shell } = goalShell({ type: 'file_content', path: 'evidence.txt', contains: 'b' });
     shell.run('grep a log.txt > evidence.txt');

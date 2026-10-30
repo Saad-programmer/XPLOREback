@@ -5,7 +5,7 @@ import { GUIDE_NAME } from '../meta';
 import { UI } from '../strings';
 import { useGame, useGameStore, useReducedMotion, useText } from './game-context';
 import styles from './DialogueBox.module.css';
-import { Penguin } from './Penguin';
+import { Penguin, preloadPenguinFaces } from './Penguin';
 import { linuxSound } from './sound';
 
 const CHAR_MS = 22;
@@ -46,6 +46,7 @@ export function DialogueBox() {
   const store = useGameStore();
   const dialogue = useGame((s) => s.dialogue);
   const hidden = useGame((s) => s.dialogueHidden);
+  useEffect(() => preloadPenguinFaces(), []);
   if (!dialogue) return null;
 
   const line = dialogue.lines[dialogue.index];
@@ -60,7 +61,7 @@ export function DialogueBox() {
           className={styles.reopen}
           onClick={() => store.getState().setDialogueHidden(false)}
         >
-          <Penguin mood={line.mood} size={28} />
+          <Penguin key={line.mood} mood={line.mood} size={28} />
           {t(UI.expand)}
         </button>
       </div>
@@ -70,7 +71,7 @@ export function DialogueBox() {
   return (
     <aside className={styles.box} aria-label={GUIDE_NAME} data-kind={dialogue.kind}>
       <div className={styles.portrait} data-augmented-ui="tl-clip br-clip border">
-        <Penguin mood={line.mood} size={72} />
+        <Penguin key={line.mood} mood={line.mood} size={80} />
       </div>
       <div className={styles.body}>
         <span className={styles.name}>{GUIDE_NAME}</span>

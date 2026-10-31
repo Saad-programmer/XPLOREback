@@ -4,6 +4,7 @@ import { Plus } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useState, useSyncExternalStore, type CSSProperties } from 'react';
+import { asset } from '../asset';
 import { Badge } from '../components/ui/8bit/badge';
 import { Button } from '../components/ui/button';
 import { GAMES, type GameEntry } from '../games';
@@ -70,6 +71,15 @@ function GameCard({ game }: { game: GameEntry }) {
               <GameThumb id={game.id} overlay />
             </div>
           </>
+        ) : game.id === 'network' ? (
+          <iframe
+            className="pointer-events-none absolute inset-0 h-full w-full border-0"
+            src={asset('games/nextHop/index.html#shot=title:0')}
+            title="Next Hop preview"
+            loading="lazy"
+            tabIndex={-1}
+            aria-hidden="true"
+          />
         ) : (
           <div className={playable ? '' : 'opacity-70 saturate-50'}>
             <GameThumb id={game.id} />

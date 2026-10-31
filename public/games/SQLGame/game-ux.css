@@ -1,0 +1,40 @@
+@media (max-width: 960px) {
+  .seek {
+    grid-template-areas:
+      "top"
+      "desk"
+      "side"
+      "schema"
+      "bar";
+  }
+}
+
+.menu-row-about {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (max-width: 700px) {
+  .menu-head p {
+    display: none;
+  }
+
+  .menu-group > p,
+  .menu-rules {
+    display: none;
+  }
+
+  .menu-row-about {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  #language-picker button {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}

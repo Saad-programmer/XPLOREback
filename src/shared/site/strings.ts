@@ -62,3 +62,47 @@ export const DETAILS = {
   },
   aboutTitle: { en: 'About the game', fr: 'À propos du jeu' },
 } satisfies Record<string, LocalizedText>;
+
+export const NETWORK_GAME = {
+  version: { en: 'v1.0.0', fr: 'v1.0.0' },
+  title: { en: 'Next Hop', fr: 'Next Hop' },
+  tagline: {
+    en: 'Route the packet. Read the header. Dodge the Internet.',
+    fr: 'Route le paquet. Lis l’en-tête. Évite Internet.',
+  },
+  descriptionStart: {
+    en: 'A retro-cyberpunk flappy puzzle game where',
+    fr: 'Un jeu de puzzle rétro-cyberpunk où',
+  },
+  packet: { en: 'you are the packet', fr: 'tu es le paquet' },
+  descriptionEnd: {
+    en: 'and the network is trying to drop you.',
+    fr: 'et où le réseau tente de te faire tomber.',
+  },
+  developedBy: {
+    en: 'Developed by Saad AIT YAHIA',
+    fr: 'Développé par Saad AIT YAHIA',
+  },
+  playGame: { en: 'Play the Game', fr: 'Jouer' },
+  stats: [
+    { value: '10', label: { en: 'Chapters', fr: 'Chapitres' } },
+    { value: '50', label: { en: 'Levels', fr: 'Niveaux' } },
+    { value: '12', label: { en: 'Manual Lessons', fr: 'Leçons du manuel' } },
+    { value: '∞', label: { en: 'Endless Mode', fr: 'Mode infini' } },
+  ],
+  previewAlt: {
+    en: 'Next Hop game menu with the packet ready to route',
+    fr: 'Menu du jeu Next Hop avec le paquet prêt à être routé',
+  },
+} satisfies {
+  version: LocalizedText;
+  title: LocalizedText;
+  tagline: LocalizedText;
+  descriptionStart: LocalizedText;
+  packet: LocalizedText;
+  descriptionEnd: LocalizedText;
+  developedBy: LocalizedText;
+  playGame: LocalizedText;
+  stats: { value: string; label: LocalizedText }[];
+  previewAlt: LocalizedText;
+};

@@ -19,6 +19,8 @@ import { getProgressStore, useProgress } from '../progress';
 import { useReducedMotion } from '../ui/use-reduced-motion';
 import { GAME_COVERS } from './covers';
 import { DETAILS } from './strings';
+import { NetworkGameDetails } from './NetworkGameDetails';
+import { SqlGamePreview } from './SqlGamePreview';
 
 interface GameDetailsProps {
   gameId: GameId;
@@ -40,7 +42,7 @@ export function GameDetails({ gameId, missionCount, about }: GameDetailsProps) {
   const aboutRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!playable) return;
+    if (!playable || game.id === 'network') return;
     void getProgressStore()
       .getState()
       .loadProgress(game.id)
@@ -49,6 +51,8 @@ export function GameDetails({ gameId, missionCount, about }: GameDetailsProps) {
 
   const done = progress ? Object.keys(progress.missions).length : 0;
   const started = done > 0 || Boolean(progress?.currentMissionId);
+
+  if (game.id === 'network') return <NetworkGameDetails />;
 
   const toggle = (next: boolean) => {
     setOpen(next);
@@ -78,7 +82,9 @@ export function GameDetails({ gameId, missionCount, about }: GameDetailsProps) {
 
         <section className="mt-6 grid gap-8 lg:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] lg:items-center lg:gap-12">
           <div className="hub-card relative overflow-hidden rounded-2xl border border-border bg-deep shadow-[0_24px_70px_-28px_var(--accent)]">
-            {cover ? (
+            {game.id === 'sql' ? (
+              <SqlGamePreview />
+            ) : cover ? (
               <Image
                 src={cover}
                 alt={t(game.title)}

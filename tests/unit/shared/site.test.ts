@@ -3,7 +3,9 @@ import { join } from 'node:path';
 import sharp from 'sharp';
 import { describe, expect, it } from 'vitest';
 import { checkAbout } from '@/src/games/linux/content/load';
+import { SQL_GAME_ABOUT } from '@/src/games/SQLGame/content/about';
 import { GAMES } from '@/src/shared/games';
+import { pickText } from '@/src/shared/i18n/text';
 import { developersFrom, FALLBACK_DEVELOPERS, FOUNDER } from '@/src/shared/site/credits';
 import { generateStarfield, STAR_TILE, starPosition, twinkle } from '@/src/shared/site/stars';
 import { levelOf } from '@/src/shared/site/strings';
@@ -66,6 +68,17 @@ describe('game details content', () => {
       expect(checkAbout(read(`src/games/linux/content/about.${lang}.md`), lang)).toEqual([]);
     }
     expect(headings('fr')).toBe(headings('en'));
+  });
+
+  it('ships SQLGame with a valid bilingual description', () => {
+    const game = GAMES.find((entry) => entry.id === 'sql')!;
+    expect(game.title).toEqual({ en: 'SQLGame', fr: 'SQLGame' });
+    expect(pickText(game.blurb, 'en')).toContain('A detective game. A war game.');
+    for (const language of ['en', 'fr'] as const) {
+      expect(checkAbout(SQL_GAME_ABOUT[language], `sql-${language}.md`)).toEqual([]);
+    }
+    const headings = (text: string) => text.match(/^#{2,3} /gm)?.join('');
+    expect(headings(SQL_GAME_ABOUT.fr)).toBe(headings(SQL_GAME_ABOUT.en));
   });
 
   it('has capsule art for every playable game and the brand files', () => {

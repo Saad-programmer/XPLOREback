@@ -1,135 +1,549 @@
-.box {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-4) var(--space-4) var(--space-6);
-  border-top: 1px solid var(--line);
-  background: linear-gradient(to bottom, var(--storm), var(--deep));
+/*
+ * Pixel's dialogue box, "capsule console" design (HANDOFF T1, preview in
+ * docs/design/dialogue-preview.html). --accent colours the rail and the name tag,
+ * --frame the border, the docking bay and the button. Briefings keep the frame
+ * neutral, so a pink or gold zone never looks like a mistake or a victory.
+ */
+.box,
+.collapsed {
+  --cut: 14px;
+  --panel: #0e1834;
+  --bay: #0a1230;
+  --neutral: #7aa2f7;
+  --accent: var(--zone);
+  --frame: var(--neutral);
 }
 
-.portrait {
-  --aug-border-all: 1px;
-  --aug-border-bg: var(--zone);
-  --aug-tl: 10px;
-  --aug-br: 10px;
+.box[data-tone='hint'],
+.collapsed[data-tone='hint'] {
+  --accent: #4cc9ff;
+  --frame: #4cc9ff;
+}
+
+.box[data-tone='mistake'],
+.collapsed[data-tone='mistake'] {
+  --accent: var(--danger);
+  --frame: var(--danger);
+}
+
+.box[data-tone='victory'],
+.collapsed[data-tone='victory'] {
+  --accent: var(--warn);
+  --frame: var(--warn);
+}
+
+/* Frame: two clipped layers, the outer one is the border. */
+.box {
+  position: relative;
+  margin: 0 var(--space-3) var(--space-3);
+  padding: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--frame),
+    color-mix(in srgb, var(--frame) 35%, var(--line)) 45%,
+    var(--line)
+  );
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+}
+
+.inner {
+  position: relative;
   display: grid;
-  /* A bust: the face art is cut at the hoodie, so it sits on the frame's bottom edge. */
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: var(--space-4);
+  min-height: 128px;
+  padding: var(--space-3) 14px var(--space-3) var(--space-3);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.035), transparent 40%), var(--panel);
+  clip-path: polygon(
+    calc(var(--cut) - 1px) 0,
+    100% 0,
+    100% calc(100% - var(--cut) + 1px),
+    calc(100% - var(--cut) + 1px) 100%,
+    0 100%,
+    0 calc(var(--cut) - 1px)
+  );
+}
+
+/* Signal rail: a lit, segmented strip along the top, with a slow shimmer. */
+.rail {
+  position: absolute;
+  top: 0;
+  left: 120px;
+  right: 34%;
+  height: 3px;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    var(--accent) 0 60%,
+    transparent 60% 63%,
+    var(--accent) 63% 74%,
+    transparent 74% 77%,
+    var(--accent) 77% 82%,
+    transparent 82%
+  );
+  opacity: 0.9;
+  box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+
+.rail::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 30%;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.85), transparent);
+  animation: shimmer 2.8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(380%);
+  }
+}
+
+/* Hardware details: screws and status LEDs. */
+.screw {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #8b93b8, var(--line) 70%);
+  box-shadow: 0 0 0 1px #0a1022;
+}
+
+.s1 {
+  top: 7px;
+  right: 8px;
+}
+
+.s2 {
+  bottom: 7px;
+  left: 8px;
+}
+
+.s3 {
+  bottom: 7px;
+  right: 26px;
+}
+
+.leds {
+  position: absolute;
+  top: 7px;
+  right: 22px;
+  display: flex;
+  gap: 4px;
+}
+
+.leds i {
+  width: 6px;
+  height: 3px;
+  background: #2a3354;
+}
+
+.leds i:first-child {
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+.box[data-typing] .leds i:first-child {
+  animation: blink 0.6s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Docking bay for Pixel's face. It never moves when the mood changes. */
+.bay {
+  position: relative;
+  width: 96px;
+  min-height: 104px;
+  display: grid;
   place-items: end center;
-  width: 84px;
-  height: 84px;
   overflow: hidden;
   background:
     radial-gradient(
-      circle at 50% 35%,
-      color-mix(in srgb, var(--zone) 28%, transparent),
-      transparent 70%
+      70% 55% at 50% 100%,
+      color-mix(in srgb, var(--frame) 35%, transparent),
+      transparent 75%
     ),
-    var(--night);
+    linear-gradient(180deg, #0d1638, var(--bay));
+  clip-path: polygon(
+    10px 0,
+    100% 0,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    0 100%,
+    0 10px
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--frame) 45%, var(--line));
 }
 
-.body {
+.bay::before,
+.bay::after {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  width: 2px;
+  background: repeating-linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--frame) 55%, transparent) 0 4px,
+    transparent 4px 8px
+  );
+  opacity: 0.6;
+}
+
+.bay::before {
+  left: 4px;
+}
+
+.bay::after {
+  right: 4px;
+}
+
+.bay img {
+  position: relative;
+  z-index: 1;
+}
+
+/* A lit platform under Pixel. */
+.floor {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 5px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--frame);
+  box-shadow: 0 0 12px 2px color-mix(in srgb, var(--frame) 70%, transparent);
+  opacity: 0.85;
+}
+
+.sparks i {
+  position: absolute;
+  z-index: 2;
+  width: 8px;
+  height: 8px;
+  background: #ffe7a8;
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  opacity: 0.55;
+  animation: twinkle 1.8s ease-in-out infinite;
+}
+
+.sparks i:nth-child(1) {
+  top: 10px;
+  left: 12px;
+}
+
+.sparks i:nth-child(2) {
+  top: 22px;
+  right: 10px;
+  animation-delay: 0.6s;
+}
+
+.sparks i:nth-child(3) {
+  top: 46px;
+  left: 8px;
+  width: 6px;
+  height: 6px;
+  animation-delay: 1.1s;
+}
+
+@keyframes twinkle {
+  50% {
+    transform: scale(0.4) rotate(45deg);
+    opacity: 0.15;
+  }
+}
+
+/* Name tag and text. */
+.copy {
+  position: relative;
   min-width: 0;
-  max-width: 72ch;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 2px;
 }
 
-.name {
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  color: var(--zone);
+/* Connector from the bay: Pixel is the one speaking. */
+.copy::before {
+  content: '';
+  position: absolute;
+  left: -13px;
+  top: 8px;
+  width: 8px;
+  height: 12px;
+  background: var(--frame);
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  opacity: 0.85;
+}
+
+.tag {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 8px;
+  font: 700 0.8125rem/1.4 var(--font-display);
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 13%, transparent);
+  clip-path: polygon(0 0, calc(100% - 7px) 0, 100% 7px, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+}
+
+.tagIcon {
+  width: 13px;
+  height: 13px;
+}
+
+.role {
+  color: var(--faint);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: pre;
 }
 
 .text {
-  margin: var(--space-1) 0 0;
-  min-height: 3em;
+  margin: 0;
+  max-width: 76ch;
   font-size: 1rem;
-  line-height: 1.55;
+  line-height: 1.45;
+  color: var(--text);
   cursor: pointer;
 }
 
+.caret {
+  display: inline-block;
+  width: 9px;
+  height: 1.05em;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: var(--accent);
+  animation: blink 0.85s steps(1) infinite;
+}
+
+/* The rest of the line keeps its place, so the box does not grow while typing. */
 .rest {
   visibility: hidden;
 }
 
+/* Actions. */
 .actions {
   display: flex;
   align-items: flex-end;
   gap: var(--space-2);
-  align-self: end;
+  padding-right: 6px;
 }
 
 .next {
-  --aug-tr: 8px;
-  --aug-bl: 8px;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  min-height: 2.5rem;
+  justify-content: center;
+  gap: 6px;
+  min-width: 110px;
+  height: 40px;
   padding: 0 var(--space-4);
   border: 0;
-  background: var(--zone);
-  color: var(--deep);
-  font-family: var(--font-display);
-  font-size: var(--text-base);
+  font: 700 0.875rem/1 var(--font-display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0b1230;
+  background: var(--frame);
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  box-shadow:
+    inset 0 2px 0 rgb(255 255 255 / 0.35),
+    inset 0 -3px 0 rgb(0 0 0 / 0.22);
   cursor: pointer;
+  transition:
+    filter 160ms,
+    transform 120ms;
+}
+
+.next:hover {
+  filter: brightness(1.12);
+}
+
+.next:active {
+  transform: translateY(1px);
+  filter: brightness(0.9);
+}
+
+/* The cut corners clip a normal outline: draw the focus ring inside. */
+.next:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 3px #fff;
+}
+
+/* While typing: an outlined "Skip". */
+.box[data-typing] .next {
+  color: var(--frame);
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--frame);
+}
+
+.box[data-typing] .next:focus-visible {
+  box-shadow:
+    inset 0 0 0 2px var(--frame),
+    inset 0 0 0 4px #fff;
 }
 
 .step {
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
+  font: 600 0.75rem var(--font-mono);
   opacity: 0.75;
 }
 
 .minimize {
   display: grid;
   place-items: center;
-  width: 2rem;
-  height: 2rem;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--line);
-  border-radius: var(--radius);
-  background: transparent;
+  background: #121c3d;
   color: var(--muted);
   cursor: pointer;
 }
 
+.minimize:hover,
+.minimize:focus-visible {
+  color: var(--text);
+  border-color: var(--frame);
+}
+
+/* Minimized: Pixel's round face; the terminal never moves under it. */
 .collapsed {
-  border-top: 1px solid var(--line);
-  padding: var(--space-1) var(--space-4);
-  background: var(--deep);
+  padding: 0 var(--space-3) var(--space-3);
 }
 
 .reopen {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
+  padding: 6px 14px 6px 6px;
   border: 0;
-  background: none;
-  color: var(--muted);
+  color: var(--text);
+  background: var(--panel);
+  clip-path: polygon(
+    10px 0,
+    100% 0,
+    100% calc(100% - 10px),
+    calc(100% - 10px) 100%,
+    0 100%,
+    0 10px
+  );
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--frame) 55%, var(--line));
+  font: 0.8125rem var(--font-mono);
   cursor: pointer;
 }
 
-.reopen:hover {
-  color: var(--text);
+.reopen:hover,
+.reopen:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--frame);
 }
 
+.face {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--bay);
+  box-shadow:
+    0 0 0 2px var(--frame),
+    0 0 14px color-mix(in srgb, var(--frame) 55%, transparent);
+}
+
+/* A line is still waiting to be read. */
+.dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--panel);
+}
+
+.reopenText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.3;
+}
+
+.reopenText b {
+  font: 700 0.8125rem var(--font-display);
+  letter-spacing: 0.08em;
+  color: var(--accent);
+}
+
+/* Phone and narrow windows (same breakpoint as the game screen). */
 @media (max-width: 760px) {
   .box {
-    grid-template-columns: auto 1fr;
-    padding-inline: var(--space-3);
+    margin: 0 var(--space-2) var(--space-2);
   }
 
-  .portrait {
-    width: 60px;
-    height: 60px;
+  .inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px 12px;
+    min-height: 150px;
+    padding: 10px;
   }
 
-  .portrait img {
-    width: 56px;
-    height: 56px;
+  .bay {
+    width: 68px;
+    min-height: 76px;
+    align-self: start;
+  }
+
+  .bay img {
+    width: 62px;
+    height: 62px;
+  }
+
+  .copy::before {
+    left: -9px;
+  }
+
+  .text {
+    font-size: 0.875rem;
   }
 
   .actions {
     grid-column: 1 / -1;
     justify-content: flex-end;
+    padding-right: 0;
+  }
+
+  .rail {
+    left: 84px;
+    right: 20%;
+  }
+
+  .collapsed {
+    padding: 0 var(--space-2) var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rail::after,
+  .caret,
+  .sparks i,
+  .box[data-typing] .leds i:first-child {
+    animation: none;
   }
 }

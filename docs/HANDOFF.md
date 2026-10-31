@@ -63,7 +63,7 @@ All pass, and:
 
 | Id | Task | Branch | Depends on | Size |
 | --- | --- | --- | --- | --- |
-| T1 | Dialogue box redesign | `feature/dialogue-box` | — | M |
+| T1 | Dialogue box redesign | `feature/dialogue-box` | — | **done** |
 | T2 | Search hall: missions 6 and 7 | `step-8/search-hall` | — | M |
 | T3 | Pipe factory: missions 8 and 9 | `step-8/pipe-factory` | T2 merged | M |
 | T4 | Guarded vault: mission 10 (campaign finale) | `step-8/guarded-vault` | T3 merged | S |
@@ -72,7 +72,7 @@ All pass, and:
 | T7 | README refresh + CONTRIBUTING | `step-9/docs` | T2–T6 merged | S |
 | T8 | Final v1 check | — | all | S |
 
-T1 and T6 can run in parallel with the missions. Missions go one zone at a time, in order: each one sets the `order` the next one continues from, and they touch the same test file.
+T6 can run in parallel with the missions. Missions go one zone at a time, in order: each one sets the `order` the next one continues from, and they touch the same test file.
 
 ### 1.1 Where things live
 
@@ -109,7 +109,9 @@ T1 and T6 can run in parallel with the missions. Missions go one zone at a time,
 
 ---
 
-## 2. T1 — Dialogue box redesign
+## 2. T1 — Dialogue box redesign (done)
+
+> **Done on 2026-10-31** (branch `feature/dialogue-box`). Built as specified below, with the default colour fix of 2.4. One change from the spec: the helper returns a tone (`dialogueStyle(kind, mood) → { tone, icon }` in `src/games/linux/dialogue-style.ts`) and the CSS module turns the tone into colours, so the zone colour stays a CSS variable. This section is kept as the reference of the design.
 
 **Goal:** replace the plain dialogue panel with the approved "capsule console" design, so Pixel's lines feel like a game's dialogue system. PRD section 6, UI guide section 5.6.
 

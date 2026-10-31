@@ -156,11 +156,14 @@ The whole screen sits in one framed window (cut corners, thin border in the zone
 - Subtle dotted grid background.
 
 ### 5.6 Dialogue box (bottom)
-- **Portrait** on the left: Pixel's bust (head and hoodie, 80 px) in a small frame with cut corners and a glow in the zone colour. The **expression changes** with each line (8 expressions).
-- **Name** "Pixel" in the zone colour (pixel font), then the **text**, which appears letter by letter (typewriter, about 45 letters per second, with soft "blip" sounds). Lines are 1 to 3 sentences, up to ~200 characters, in French or English.
-- **Next** button (with "1/4" step counter) and a **minimize** button: the box shrinks to a small pill with Pixel's face to reopen it, so it never hides the terminal.
-- Kinds of lines: briefing (start of mission), hints, reactions to mistakes and jokes, victory lines.
-- Height today: about 110 px on desktop.
+"Capsule console" design (2026-10-31; preview: `docs/design/dialogue-preview.html`).
+- **Frame:** full width, cut corners, a 2 px border that fades from the line's colour to grey, a lit segmented **signal rail** along the top (with a slow shimmer), tiny screws and status LEDs (the first one blinks while the text types).
+- **Docking bay** on the left: Pixel's bust (84 px, 62 px on phones) on a glowing floor, with dashed side rails. The **expression changes** with each line (8 expressions); the bay never moves.
+- **Name tag** `PIXEL // GUIDE` (pixel font), with an icon per kind of line, then the **text**, which appears letter by letter (typewriter, about 45 letters per second, with soft "blip" sounds). Lines are 1 to 3 sentences, up to ~200 characters, in French or English.
+- **Buttons:** an outlined **Skip** while typing, then a filled **Next** with a "2/4" step counter; a **minimize** button. Enter or Space also advance when the player is not typing in the terminal.
+- **Minimized:** Pixel's face in a round glowing frame with "Reopen", and a dot when lines are still waiting. It never hides the terminal.
+- **Colour per kind of line:** briefing and info = zone colour on the rail and tag, neutral blue frame; hint = cyan `#4CC9FF` with a lightbulb; mistake (a reaction where Pixel is shocked or disappointed) = pink `#F7768E` with "!"; victory = gold `#E0AF68` with a star and sparkles in the bay.
+- Height: about 130 px on desktop, 150 px or more on phones (the buttons get their own row).
 
 ### 5.7 Effects and overlays
 - **Shake:** the screen shakes on a wrong command.

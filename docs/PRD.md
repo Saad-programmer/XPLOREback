@@ -145,7 +145,7 @@ Each game has its own guide character who talks to the player in a dialogue box 
 - Text appears with a typewriter effect and talk blips. Click or Enter shows the full line at once; a second press goes to the next line.
 - The character changes expression for each line.
 - The box can be minimized so it never hides the terminal.
-- **Redesign approved for build (2026-10-30), see [`HANDOFF.md`](HANDOFF.md) task T1:** a "capsule console" look. Cut corners; a lit "signal rail" on top; Pixel in a docking bay with a glowing floor; a `PIXEL // GUIDE` name tag with an icon per kind of line; "PASSER" while typing, then "SUIVANT 2/4"; minimized to Pixel's round face. The accent colour follows the kind of line: briefing = zone colour, hint = cyan, mistake = pink, victory = gold with sparkles. Live preview: `docs/design/dialogue-preview.html`.
+- **Redesign (built 2026-10-31, [`HANDOFF.md`](HANDOFF.md) task T1):** a "capsule console" look. Cut corners; a lit "signal rail" on top; Pixel in a docking bay with a glowing floor; a `PIXEL // GUIDE` name tag with an icon per kind of line; "PASSER" while typing, then "SUIVANT 2/4"; minimized to Pixel's round face. The accent colour follows the kind of line: briefing = zone colour (on the top strip and the name tag only, so a pink or gold zone never looks like a mistake or a victory), hint = cyan, mistake = pink, victory = gold with sparkles. Enter or Space advance the dialogue when the player is not typing. Design preview: `docs/design/dialogue-preview.html`.
 
 **Expressions (minimum set):** neutral, happy, thinking, shocked, proud, disappointed, laughing, sleeping.
 
@@ -623,7 +623,7 @@ v1 is the only committed scope. Each later phase starts only when the gate befor
 | 6–7 | Title screen, intro video, hub, game details page, mission map with recaps, footer, cursors | done |
 | 8 | Missions 4 to 10 + bonus case | in progress: missions 4–5 done, 6 to 10 and the bonus case to do |
 | 9 | Playwright e2e, README, CONTRIBUTING | to do |
-| UI | Dialogue box redesign | approved, to build |
+| UI | Dialogue box redesign | done |
 
 Every remaining task is specified in [`HANDOFF.md`](HANDOFF.md). Phase B (NestJS `labs` module, api bridge, `/labs` rewrite in Xplore) starts after v1 Phase A.
 

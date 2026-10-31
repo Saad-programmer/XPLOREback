@@ -510,3 +510,10 @@ The code is the source of truth; these are the differences from the proposal abo
 - New goal type `file_absent` (engine + schema): a path that must be gone.
 - Tone (product owner's choice): Darija touches and local references (FSTM, exams, msemen, the club's Président) in the dialogue; the server's files stay in English.
 - Mission tests now cover the wrong paths, and the mission-map tests no longer assume a number of missions.
+
+**Dialogue box redesign (HANDOFF T1)**
+
+- `ui/DialogueBox.tsx` + `DialogueBox.module.css` rebuilt in the "capsule console" design of `docs/design/dialogue-preview.html`: cut-corner frame, signal rail, screws and LEDs, docking bay with Pixel's face, `PIXEL // GUIDE` tag, outlined Skip while typing then Next with the step counter, minimized round face (with a dot while lines are waiting). CSS only, no new asset or dependency; the self-hosted fonts are used, not the preview's Google Fonts.
+- Colours come from `dialogueStyle(kind, mood)` (`src/games/linux/dialogue-style.ts`, unit-tested), which returns a tone (`zone`, `hint`, `mistake`, `victory`) and an icon. The CSS module maps the tone to `--accent` (rail, tag, caret) and `--frame` (border, bay, button). A `reaction` counts as a mistake only when Pixel is shocked or disappointed; jokes keep the zone tone. Briefings put the zone colour on the rail and tag only, with a neutral blue frame, so the pink vault and the gold search hall never look like a mistake or a victory.
+- Each line is its own `OpenDialogue` component (keyed by dialogue id and line index), which holds the typewriter state, so the Skip / Next button knows when the line is complete.
+- Enter and Space advance the dialogue (show the whole line, then the next one) unless the focus is in the terminal, a text field, a button or link, or a dialog.

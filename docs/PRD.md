@@ -1,8 +1,10 @@
 # Xplore Labs — Linux Game PRD
 
-Last updated: 2026-10-18 · Author: Ali Zouhdi (Ali-Hero)
+Last updated: 2026-10-30 · Author: Ali Zouhdi (Ali-Hero)
 
 > Every `[TO FILL: ...]` marker is listed in section 17. Nothing in that list blocks the start of development in mock mode.
+>
+> **Remaining work for v1 (Phase A) is broken into tasks in [`HANDOFF.md`](HANDOFF.md).** Where this PRD and the code differ, the code and [`ARCHITECTURE.md`](ARCHITECTURE.md) section 7 win.
 
 ## 1. Overview
 
@@ -14,7 +16,7 @@ The game is a separate Next.js web app with its own repo, look and deploys. It i
 
 **Names:** Xplore Labs is the hub that holds all teaching games. The Linux game is the first one, working title **Root Escape** [TO FILL: final game name].
 
-**Status:** ready to start development as a standalone app (mock mode). Integration needs the information in section 17.
+**Status (2026-10-30):** in development as a standalone app (mock mode). Build steps 0 to 7 are done and a preview runs at <https://xplore-labs.vercel.app/labs>. Step 8 is in progress: missions 1 to 5 are playable. Integration with Xplore (Phase B) needs the information in section 17. Details in section 15.
 
 ## 2. Goals, non-goals and success metrics
 
@@ -129,11 +131,13 @@ Each game has its own guide character who talks to the player in a dialogue box 
 
 | | Penguin (Linux) | Dolphin (SQL, later) |
 | --- | --- | --- |
-| Name | [TO FILL: penguin name] | [TO FILL: dolphin name] |
+| Name | **Pixel** (kept unless the club picks another name; one constant in `src/games/linux/meta.ts`) | [TO FILL: dolphin name] |
 | Personality | Confident, a bit cocky old sysadmin in a tiny body | Calm, smart, a bit nerdy, loves order and tables |
 | Running joke | Thinks sudo fixes everything, and is always wrong | Gets offended when a DELETE has no WHERE |
-| Look | Hoodie, headset or tiny keyboard | Glasses, holds a tablet with tables |
+| Look | Royal-blue zip hoodie, backpack, small laptop showing `>_` | Glasses, holds a tablet with tables |
 | Talk blips | Short, high and cute | Soft and bubbly |
+
+**Recurring character:** **le Président**, the club's president, never seen on screen. He inspects desks, loves msemen and "never smiles". Used as a running joke in the dialogue and as a suspect in the bonus detective case. Jokes about him stay friendly, and he must agree to them before launch (section 7: memes about real people only with their agreement).
 
 **Dialogue box**
 
@@ -141,6 +145,7 @@ Each game has its own guide character who talks to the player in a dialogue box 
 - Text appears with a typewriter effect and talk blips. Click or Enter shows the full line at once; a second press goes to the next line.
 - The character changes expression for each line.
 - The box can be minimized so it never hides the terminal.
+- **Redesign (built 2026-10-31, [`HANDOFF.md`](HANDOFF.md) task T1):** a "capsule console" look. Cut corners; a lit "signal rail" on top; Pixel in a docking bay with a glowing floor; a `PIXEL // GUIDE` name tag with an icon per kind of line; "PASSER" while typing, then "SUIVANT 2/4"; minimized to Pixel's round face. The accent colour follows the kind of line: briefing = zone colour (on the top strip and the name tag only, so a pink or gold zone never looks like a mistake or a victory), hint = cyan, mistake = pink, victory = gold with sparkles. Enter or Space advance the dialogue when the player is not typing. Design preview: `docs/design/dialogue-preview.html`.
 
 **Expressions (minimum set):** neutral, happy, thinking, shocked, proud, disappointed, laughing, sleeping.
 
@@ -163,11 +168,11 @@ Each game has its own guide character who talks to the player in a dialogue box 
 | Wrong password | Shakes its head |
 | Mission success | Victory dance + confetti |
 
-The character art is made by a club member or the team. [TO FILL: who designs the characters]
+The character art is original AI-generated art made for the club: a design board and 8 expressions in `public/games/linux/characters/pixel/source/`, cut into one face per mood by `node scripts/cut-mascot.mjs`. A Rive version with animated moods can replace the faces later.
 
 ## 7. Humor, memes and sounds
 
-Humor is part of the teaching, not decoration: each joke is tied to a mistake or a concept so the lesson sticks. The humor tone is [TO FILL: Moroccan student humor (Darija, local references), international dev memes, or a mix].
+Humor is part of the teaching, not decoration: each joke is tied to a mistake or a concept so the lesson sticks. The humor tone is **Moroccan student humor**: Darija touches ("safi", "wach normal?", "khoya", "hchouma") and local references (FSTM, exams and deliberations, msemen, mint tea, le Président), mixed with classic dev jokes. The server's own files (logs, notes, TODO lists) stay in English, like a real server; only the dialogue is translated.
 
 **Reactions to classic mistakes**
 
@@ -244,8 +249,8 @@ The game app has its own unique look, separate from the Xplore design. Since it 
 | --- | --- |
 | Top bar | Back button (← + Xplore Labs logo, to the title screen), mission number and name, player avatar and points, Objective button (shows the goal), hint, mute, settings, restart, full screen, maximize |
 | Terminal (left, about 55% width) | Prompt, command input, output, history with arrow keys, Tab completion |
-| Live map (right, about 45% width) | Folder tree of the current mission, penguin avatar at the current folder, target highlighted |
-| Dialogue box (bottom) | Character portrait, typewriter text, next button, minimize button |
+| Live map (right, about 45% width) | Folder tree of the current mission, penguin avatar at the current folder. "Fog of war": it shows only what the player has discovered (`ls`, `cd`, `cat`, `find`, files created), so it never gives the answer away |
+| Dialogue box (bottom) | Character portrait, name tag, typewriter text, skip / next button with step counter, minimize button (redesign: section 6) |
 | Overlays | Victory screen, memes, confetti, zone transition |
 
 Mock-up of the game screen (mission 3):
@@ -325,12 +330,15 @@ Opened by "Play now" on the game details page, like a console game start screen.
 
 **Visual style**
 
-- Own design tokens (colors, fonts, spacing) as CSS variables in the game app. The dark galaxy background can echo Xplore's starry style so the jump between apps feels natural.
-- Panel and button shapes with [augmented-ui](https://augmented-ui.com) (pure CSS, sci-fi clipped corners). No heavy component library.
-- Each zone has its own accent color (navigation blue, files green, search yellow, pipes purple, permissions red).
+Two styles, kept apart (full guide for designers: [`design/ui-guide.md`](design/ui-guide.md)):
+
+- **Game screens** (title screen, game screen): own design tokens (colors, fonts, spacing) as CSS variables, CSS modules and [augmented-ui](https://augmented-ui.com) (pure CSS, sci-fi clipped corners). No component library.
+- **Website pages** (hub, game details, mission map): Tailwind CSS v4 + shadcn/ui, with a few [8bitcn](https://www.8bitcn.com) pixel components as accents, on a living starfield in the logo's deep navy. Tailwind's reset never leaks into the game screens.
+- Each zone has its own accent color: wake-up room blue `#7AA2F7`, archive green `#9ECE6A`, search hall gold `#E0AF68`, pipe factory violet `#BB9AF7`, guarded vault red `#F7768E`, detective cases cyan `#7DCFFF`.
 - Terminal colors inspired by Tokyo Night.
-- Fonts: JetBrains Mono for the terminal, a game font for titles. [TO FILL: game title font, if any]
-- Free UI assets from [Kenney](https://kenney.nl) or made by the team; animated buttons and characters in Rive.
+- Fonts: JetBrains Mono for the terminal and text, Pixelify Sans for titles and buttons (placeholder until the club picks a title font), both self-hosted.
+- Pixel-art cursors for the whole app (arrow, hand in Pixel's sleeve, padlock, hourglass), with a "Classic cursor" setting.
+- Original art only: capsule art, Pixel's faces and the six mission-map islands are AI-generated for the club; placeholder sounds and stickers are synthesized or drawn by the team.
 - Optional CRT effect (scanlines, glow) as a setting, off by default. A reduced-motion setting turns off shakes and heavy animations.
 
 **What happens while typing**
@@ -349,21 +357,21 @@ Opened by "Play now" on the game details page, like a console game start screen.
 
 ## 9. v1 mission list
 
-v1 has 10 missions across 5 zones plus 1 bonus detective case. Each mission takes 5 to 15 min. The story texts are first drafts the team can rewrite.
+v1 has 10 missions across 5 zones plus 1 bonus detective case. Each mission takes 5 to 15 min. The story texts are first drafts the team can rewrite. Detailed designs of missions 6 to 11 are in [`HANDOFF.md`](HANDOFF.md).
 
-| # | Zone | Mission | Goal | Main commands |
-| --- | --- | --- | --- | --- |
-| 1 | Wake-up room | Hello, world? | Find where you are and read the welcome note | pwd, ls, cat |
-| 2 | Wake-up room | The first door | Move into the right folder and read the key | cd, cd .., ls |
-| 3 | Archive | The hidden scroll | Find a hidden file that holds the password | ls -a, cat |
-| 4 | Archive | Moving day | Organize the intern's mess into folders | mkdir, mv, cp, touch |
-| 5 | Archive | Clean up, carefully | Delete only the fake files, keep the real one | rm, ls -l |
-| 6 | Search hall | Needle in the logs | Find the line with the password in a big log file | grep, head, tail |
-| 7 | Search hall | Lost file | Find a file by name somewhere deep in the tree | find |
-| 8 | Pipe factory | Count the intruders | Count unique IP addresses in a log | cat, sort, uniq, wc, pipes |
-| 9 | Pipe factory | Save the evidence | Write filtered results to a file | >, >>, grep |
-| 10 | Guarded vault | Let me in | Read a protected file by changing its permissions | whoami, ls -l, chmod |
-| Bonus | Detective | Who ate the last msemen? | Use the club logs to name the culprit | grep, sort, pipes |
+| # | Zone | Mission (id) | Goal | Main commands | Status |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Wake-up room | Hello, world? (`wake-up-hello-world`) | Find where you are and read the welcome note | pwd, ls, cat | done |
+| 2 | Wake-up room | The first door (`wake-up-first-door`) | Move into the right folder and read the key | cd, cd .., ls | done |
+| 3 | Archive | The hidden scroll (`archive-hidden-scroll`) | Find a hidden file that holds the password | ls -a, cat | done |
+| 4 | Archive | Moving day (`archive-moving-day`) | Tidy the intern's desk by following `TODO.txt` | mkdir, mv, cp, touch | done |
+| 5 | Archive | Clean up, carefully (`archive-clean-up`) | Delete only the empty copies, keep the real grades | rm, ls -l | done |
+| 6 | Search hall | Needle in the logs | Find the line with the password in a big log file | grep, head, tail | to do |
+| 7 | Search hall | Lost file | Find a file by name somewhere deep in the tree | find | to do |
+| 8 | Pipe factory | Count the intruders | Count unique IP addresses in a log | cat, sort, uniq, wc, pipes | to do |
+| 9 | Pipe factory | Save the evidence | Write filtered results to a file | >, >>, grep | to do |
+| 10 | Guarded vault | Let me in | Read a protected file by changing its permissions | whoami, ls -l, chmod | to do |
+| Bonus | Detective | Who ate the last msemen? | Use the club logs to name the culprit (le Président is a suspect) | grep, sort, uniq, pipes | to do |
 
 **Rewards (proposal)**
 
@@ -444,11 +452,13 @@ rewards: { points: 10, no_hint_bonus: 5 }
 concept: "Files starting with a dot are hidden. ls -a shows them."
 ```
 
-**Goal types for v1:** password (player submits a value), file exists or has a given content, current folder, permission state, command used (for example a pipe was used).
+**Goal types for v1:** `password` (player submits a value), `file_exists`, `file_absent`, `file_content` (equals or contains), `cwd` (current folder), `permission` (octal mode), `command_used` (a command or a pipe of a given length was used), and `all` (several goals at once).
+
+**Fields added during the build** (the real schema is `src/games/linux/content/schema.ts`): `objective` (the goal in one line), `victory` (lines after success), `solution` (commands that solve the mission, played at build time and shown when the player gives up), and `recap` (each command taught, what it does, an example) for the mission map. Text is `{ en, fr }`.
 
 **Global content files:** reactions to classic mistakes, unknown-command lines, meme packs (`memes.yaml` + assets), man pages.
 
-All player-facing text lives in content files so the game can be translated. [TO FILL: game language(s): French, English or both]
+All player-facing text lives in content files so the game can be translated. The game is in **French and English** (English is the fallback).
 
 ## 12. Architecture, integration and player progress
 
@@ -532,23 +542,26 @@ No game engine. The game is a Next.js app like Xplore, with a few focused librar
 
 | Part | Choice | Why |
 | --- | --- | --- |
-| Framework | Next.js (App Router) + React | Same as Xplore, supports Multi-Zones and `basePath` [TO FILL: Xplore's Next.js version, to match it] |
+| Framework | Next.js 16.4 (App Router, Cache Components) + React 19 | Same family as Xplore, supports Multi-Zones and `basePath` [TO FILL: Xplore's Next.js version, to match it] |
 | Language | TypeScript (strict) | Many rules in the command engine |
 | Rendering | Game pages as client components; static pages prerendered | The game runs in the browser, the server stays light |
-| Styling | CSS modules + CSS variables (own tokens) + augmented-ui | Unique game look, no conflict with Xplore |
+| Game styling | CSS modules + CSS variables (own tokens) + augmented-ui | Unique game look, no conflict with Xplore |
+| Website styling | Tailwind CSS v4 + shadcn/ui (+ 8bitcn accents), reset scoped to `.site` | Fast, consistent website pages |
 | State | Zustand | Small, simple store for game state |
 | Terminal UI | xterm.js | Real terminal look, history, colors |
 | Shell simulation | Own TypeScript engine (section 10) | Safe, free, full control over reactions |
-| Live map | D3.js (tree layout) | Animated folder tree |
-| Character animation | Rive (`@rive-app/react-canvas`) | Characters with moods and states |
-| Galaxy background | Canvas 2D (or a light shader) | Animated title screen without video |
-| Effects | canvas-confetti, GSAP | Victory effects, shakes, transitions |
+| Live map | d3-hierarchy (tree layout) + SVG | Animated folder tree |
+| Character art | One WebP face per mood (Rive later) | Light, no runtime; Rive can replace it with the same moods |
+| Backgrounds | Canvas 2D starfield; capsule art with CSS motion on the title screen | Living backgrounds without video |
+| Effects | canvas-confetti, Web Animations API | Victory effects, shakes, transitions (GSAP was not needed) |
 | Sound | Howler.js | Sound effects, blips, memes, music, mute |
 | Content | YAML (js-yaml) validated with Zod at build time | Students add missions; bad files fail the build, not the game |
+| Markdown | react-markdown + remark-gfm | "More info" pages of each game |
 | Unit tests | Vitest | Engine, parser, commands, goal checker |
 | End-to-end tests | Playwright | Play missions 1 to 3 automatically |
 | Code quality | ESLint + Prettier | Same style for all contributors |
-| Package manager | [TO FILL: npm or pnpm, same as Xplore] | |
+| Package manager | npm | |
+| Preview hosting | Vercel (<https://xplore-labs.vercel.app/labs>) | Free previews of every pull request |
 
 **Backend (existing Xplore repo, at integration)**
 
@@ -601,6 +614,19 @@ The design already scales well: the whole shell runs in each player's browser, s
 
 v1 is the only committed scope. Each later phase starts only when the gate before it is passed. Dates will be added once the team size and hours per week are known.
 
+**Status of v1, Phase A (2026-10-30)** — build steps from [`ARCHITECTURE.md`](ARCHITECTURE.md) section 5:
+
+| Step | Content | Status |
+| --- | --- | --- |
+| 0–2 | Project setup, command engine, bridge + progress store | done |
+| 3–5 | Content loader, missions 1–3, game screen, fun layer (reactions, memes, sounds, effects) | done |
+| 6–7 | Title screen, intro video, hub, game details page, mission map with recaps, footer, cursors | done |
+| 8 | Missions 4 to 10 + bonus case | in progress: missions 4–5 done, 6 to 10 and the bonus case to do |
+| 9 | Playwright e2e, README, CONTRIBUTING | to do |
+| UI | Dialogue box redesign | done |
+
+Every remaining task is specified in [`HANDOFF.md`](HANDOFF.md). Phase B (NestJS `labs` module, api bridge, `/labs` rewrite in Xplore) starts after v1 Phase A.
+
 | Phase | Content | Gate to the next phase |
 | --- | --- | --- |
 | v1 Core game | Command engine, mock bridge, mission loader, 10 missions + bonus case; game screen with terminal, live map, penguin dialogue, sounds, memes; title screen, intro video and Labs hub; progress saving, NestJS labs module, `/labs` on the Xplore domain | Launched at a club event, feedback collected |
@@ -634,15 +660,17 @@ Nothing blocks the start: the game app can be built today in mock mode.
 - Xplore backend: NestJS.
 - Decision: the game is a separate Next.js app on the Xplore domain (section 12).
 - Team: Ali + 1 teammate during development; the Xplore developer joins at integration.
+- Repo: private `Ali-Dev06/Xplore-Labs` on GitHub; previews on Vercel.
 
 **To start development (quick decisions)**
 
 - [ ] Final name of the Linux game (working title: Root Escape) (section 1)
-- [ ] Repo name and owner (for example a private `xplore-labs` repo)
-- [ ] Xplore's Next.js version and package manager, to match them (section 13)
-- [ ] Game language: French, English or both (section 11)
-- [ ] Humor tone: Moroccan student humor, international dev memes, or a mix (section 7)
-- [ ] Penguin name (section 6)
+- [x] Repo name and owner: `Ali-Dev06/Xplore-Labs` (private)
+- [x] Package manager: npm; Next.js 16.4 (match Xplore's version at integration if needed) (section 13)
+- [x] Game language: French and English, English fallback (section 11)
+- [x] Humor tone: Moroccan student humor, Darija and local references, with dev jokes (section 7)
+- [x] Penguin name: Pixel (section 6)
+- [ ] Le Président agrees to be a running joke (section 6)
 
 **For integration (ask the Xplore developer)**
 
@@ -658,8 +686,11 @@ Nothing blocks the start: the game app can be built today in mock mode.
 
 **Nice to know**
 
-- [ ] Who designs the characters and records sounds (section 6)
-- [ ] Game title font (section 8)
+- [x] Who designs the characters: AI-generated art made for the club (section 6)
+- [ ] Who records sounds and makes original meme stickers (placeholders today)
+- [ ] Title music file and its licence (section 8)
+- [ ] Game title font (section 8; Pixelify Sans is the placeholder)
+- [ ] Landing page at `/labs` (it redirects to the hub `/labs/games` until it exists)
 - [ ] Hours per week, to date the roadmap (section 15)
 - [ ] Expected players at a club event (section 14)
 - [ ] Who approves memes and weekly cases
@@ -667,6 +698,8 @@ Nothing blocks the start: the game app can be built today in mock mode.
 ## 18. Instructions for Claude Code
 
 Development happens in 2 phases with 2 prompts. Phase A builds the whole game in a new repo with the mock bridge. Phase B, later, adds the NestJS `labs` module in the Xplore backend and connects the two.
+
+> **Phase A is under way** (setup and steps 0 to 7 are done). To continue it, do not paste Prompt A again: follow [`HANDOFF.md`](HANDOFF.md). Prompt A and the structure below are kept as the original plan; the real structure is in [`ARCHITECTURE.md`](ARCHITECTURE.md) sections 2 and 7 (for example, website pages live in `app/(site)`, the hub is `/labs/games`).
 
 **Setup**
 
@@ -794,6 +827,8 @@ xplore-labs/
 | --- | --- | --- |
 | NEXT_PUBLIC_LABS_BRIDGE | game | `mock` now, `api` at integration |
 | NEXT_PUBLIC_LABS_API_URL | game | Xplore NestJS URL [TO FILL] |
+| GITHUB_TOKEN | game (server only) | read-only token for the footer's "Developed by" list (the repo is private); without it a fallback list shows |
+| NEXT_PUBLIC_FEEDBACK_URL | game | link of the "Your feedback" button (hidden when empty) |
 | LABS_HMAC_SECRET | NestJS | long random string, never in the frontend |
 
 **Definition of done for v1:** 10 missions + bonus case playable start to end, progress kept after a refresh and on another device (api mode), all tests green, Lighthouse performance score of 90 or more on the game page, and a student who never used Linux can finish zone 1 without help.

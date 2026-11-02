@@ -23,7 +23,10 @@ const person = (login: string, name: string): Person => ({
 export const FOUNDER = person('Youssef-YBM', 'Youssef Errami');
 
 /** Shown when GitHub cannot be asked (no token for the private repo, offline, rate limit). */
-export const FALLBACK_DEVELOPERS: Person[] = [person('Ali-Dev06', 'Ali Zouhdi')];
+export const FALLBACK_DEVELOPERS: Person[] = [
+  person('Ali-Dev06', 'Ali Zouhdi'),
+  person('Saad-programmer', 'Saad Ait Yahia'),
+];
 
 /** The fields we use from GitHub's "list repository contributors" answer. */
 export interface GitHubContributor {

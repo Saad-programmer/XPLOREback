@@ -65,12 +65,12 @@ describe('mission map', () => {
 });
 
 describe('Labs hub', () => {
-  it('lists Linux as playable and the others as coming soon', () => {
+  it('lists the playable games and upcoming games on the hub', () => {
     expect(GAMES.map((g) => [g.id, g.status])).toEqual([
       ['linux', 'play'],
-      ['sql', 'soon'],
+      ['sql', 'play'],
       ['git', 'soon'],
-      ['network', 'soon'],
+      ['network', 'play'],
     ]);
     expect(GAMES.filter((g) => g.status === 'play').every((g) => g.href)).toBe(true);
   });

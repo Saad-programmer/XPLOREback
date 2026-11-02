@@ -11,6 +11,7 @@ import { FooterView } from './FooterView';
 async function github<T>(path: string): Promise<T> {
   const token = process.env.GITHUB_TOKEN;
   const response = await fetch(`https://api.github.com${path}`, {
+    signal: AbortSignal.timeout(3000),
     headers: {
       Accept: 'application/vnd.github+json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),

@@ -16,6 +16,10 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     // Installed Claude Code skills (third-party examples, not our code).
     '.claude/**',
+    // Static third-party game assets:
+    'public/games/**',
+    'src/games/SQLGame/**',
+    'src/games/nextHop/**',
   ]),
 ]);
 

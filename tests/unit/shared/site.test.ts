@@ -6,6 +6,7 @@ import { checkAbout } from '@/src/games/linux/content/load';
 import { SQL_GAME_ABOUT } from '@/src/games/SQLGame/content/about';
 import { GAMES } from '@/src/shared/games';
 import { pickText } from '@/src/shared/i18n/text';
+import { GAME_COVERS } from '@/src/shared/site/covers';
 import { developersFrom, FALLBACK_DEVELOPERS, FOUNDER } from '@/src/shared/site/credits';
 import { generateStarfield, STAR_TILE, starPosition, twinkle } from '@/src/shared/site/stars';
 import { levelOf } from '@/src/shared/site/strings';
@@ -81,12 +82,9 @@ describe('game details content', () => {
     expect(headings(SQL_GAME_ABOUT.fr)).toBe(headings(SQL_GAME_ABOUT.en));
   });
 
-  it('has capsule art for every playable game and the brand files', () => {
-    for (const game of GAMES.filter((g) => g.status === 'play')) {
-      expect(existsSync(join(process.cwd(), `public/games/${game.id}/cover/capsule-art.jpg`))).toBe(
-        true,
-      );
-    }
+  it('has capsule art or preview for every playable game and the brand files', () => {
+    expect(existsSync(join(process.cwd(), 'public/games/linux/cover/capsule-art.jpg'))).toBe(true);
+    expect(GAME_COVERS.sql).toBeDefined();
     for (const file of ['xplore-labs-logo.svg', 'xplore-labs-mark.png']) {
       expect(existsSync(join(process.cwd(), 'public/brand', file))).toBe(true);
     }

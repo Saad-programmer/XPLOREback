@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import menu from '@/src/games/SQLGame/5Vst3i.png';
 import seek from '@/src/games/SQLGame/i05idB.png';
-import title from '@/src/games/SQLGame/ii+LNx.png';
+import title from '@/src/games/SQLGame/capsule-art.png';
 import styles from './SqlGamePreview.module.css';
 
 const scenes = [

@@ -1,6 +1,6 @@
 import type { StaticImageData } from 'next/image';
 import linuxCover from '@/public/games/linux/cover/capsule-art.jpg';
-import sqlCover from '@/src/games/SQLGame/ii+LNx.png';
+import sqlCover from '@/src/games/SQLGame/capsule-art.png';
 import type { GameId } from '../bridge/types';
 
 /**

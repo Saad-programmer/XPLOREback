@@ -1,10 +1,10 @@
 'use client';
 
-import { Gamepad2, Languages, LogOut, MapIcon, Menu, Settings2 } from 'lucide-react';
+import { Gamepad2, Languages, LogOut, MapIcon, Menu, Settings2, Trophy } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import logo from '@/public/brand/xplore-labs-logo.svg';
 import mark from '@/public/brand/xplore-labs-mark.png';
 import { Avatar, AvatarFallback, AvatarImage } from '@/src/shared/components/ui/avatar';
@@ -35,12 +35,27 @@ import type { Lang } from '../i18n/text';
 import { useText } from '../i18n/use-text';
 import { cn } from '../lib/utils';
 import { getProgressStore, useProgress } from '../progress';
+import { asset } from '../asset';
+import {
+  DEVELOPMENT_PLAYERS,
+  getSelectedDevelopmentPlayer,
+  PLAYER_CHANGED_EVENT,
+} from '../labs/player';
+import { getLabsAuthHeaders } from '../labs/auth';
 import { levelOf, SITE } from './strings';
 
 const LANGUAGES: { id: Lang; label: string }[] = [
   { id: 'fr', label: 'Français' },
   { id: 'en', label: 'English' },
 ];
+const LOCAL_PROFILE_ENABLED =
+  process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_LABS_BRIDGE !== 'supabase';
+
+interface LocalLabsSummary {
+  displayName: string;
+  weeklyXp: number;
+  weeklyCap: number;
+}
 
 /** Website links. "Missions" belongs to the Linux game for now (one game is playable). */
 function useLinks() {
@@ -57,6 +72,12 @@ function useLinks() {
       label: SITE.missions,
       icon: MapIcon,
       active: pathname.startsWith('/linux/missions'),
+    },
+    {
+      href: '/profile',
+      label: SITE.dashboard,
+      icon: Trophy,
+      active: pathname.startsWith('/profile'),
     },
   ];
 }
@@ -75,29 +96,98 @@ function PlayerCard({ compact = false }: { compact?: boolean }) {
   const t = useText();
   const player = useProgress((s) => s.player);
   const { level, percent, toNext } = levelOf(player?.points ?? 0);
+  const [localSummary, setLocalSummary] = useState<LocalLabsSummary | null>(null);
+
+  useEffect(() => {
+    if (!LOCAL_PROFILE_ENABLED) return;
+
+    let active = true;
+    const load = (id: string) => {
+      void getLabsAuthHeaders()
+        .then((authHeaders) =>
+          fetch(asset('api/v1/labs/xp/summary'), {
+            headers: {
+              ...authHeaders,
+              ...(process.env.NODE_ENV === 'development' ? { 'x-labs-player': id } : {}),
+            },
+            cache: 'no-store',
+          }),
+        )
+        .then(async (response) => {
+          if (!response.ok) throw new Error(`Could not load player summary (${response.status}).`);
+          return (await response.json()) as LocalLabsSummary;
+        })
+        .then((summary) => {
+          if (active) setLocalSummary(summary);
+        })
+        .catch(() => {
+          if (active) setLocalSummary(null);
+        });
+    };
+    const refresh = (id: string = getSelectedDevelopmentPlayer()) => load(id);
+    const onChanged = (event: Event) => refresh((event as CustomEvent<string>).detail);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === 'labs:development-player') refresh();
+    };
+
+    refresh();
+    window.addEventListener(PLAYER_CHANGED_EVENT, onChanged);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      active = false;
+      window.removeEventListener(PLAYER_CHANGED_EVENT, onChanged);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
+  const selectedDevPlayer = DEVELOPMENT_PLAYERS.find(
+    (option) => option.displayName === localSummary?.displayName,
+  );
+  const displayName = LOCAL_PROFILE_ENABLED
+    ? (localSummary?.displayName ??
+      selectedDevPlayer?.displayName ??
+      DEVELOPMENT_PLAYERS[0].displayName)
+    : (player?.name ?? t(SITE.guest));
+  const displayPoints = player?.points ?? 0;
+  const progress = LOCAL_PROFILE_ENABLED
+    ? localSummary
+      ? (localSummary.weeklyXp / localSummary.weeklyCap) * 100
+      : 0
+    : percent;
 
   return (
     <div className="flex min-w-0 items-center gap-3">
-      <Avatar className="size-9 rounded-md border border-border">
-        {player?.avatarUrl && <AvatarImage src={player.avatarUrl} alt="" />}
-        <AvatarFallback className="rounded-md bg-secondary font-pixel text-sm text-primary">
-          {player ? initials(player.name) : '…'}
+      <Avatar className="size-10 rounded-sm border border-primary/40 bg-deep">
+        {!LOCAL_PROFILE_ENABLED && player?.avatarUrl && (
+          <AvatarImage src={player.avatarUrl} alt="" />
+        )}
+        <AvatarFallback className="rounded-sm bg-primary/10 font-pixel text-sm text-primary">
+          {initials(displayName)}
         </AvatarFallback>
       </Avatar>
       <div className={cn('min-w-0 text-left', compact && 'hidden lg:block')}>
-        <p className="truncate text-sm leading-tight text-foreground">
-          {player?.name ?? t(SITE.guest)}
+        <p className="max-w-36 truncate text-sm font-medium leading-tight text-foreground">
+          {displayName}
         </p>
-        <div className="mt-1 flex items-center gap-2">
-          <span className="font-pixel text-xs text-warn">
-            {t(SITE.level)} {level}
-          </span>
-          <Progress
-            value={percent}
-            className="h-1.5 w-20 bg-secondary *:data-[slot=progress-indicator]:bg-warn"
-            aria-label={`${player?.points ?? 0} ${t(SITE.points)}, ${toNext} ${t(SITE.nextLevel)}`}
-          />
-        </div>
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
+          {LOCAL_PROFILE_ENABLED
+            ? `${localSummary?.weeklyXp ?? 0} / ${localSummary?.weeklyCap ?? 50} Labs XP`
+            : `${t(SITE.level)} ${level} · ${displayPoints} ${t(SITE.points)}`}
+        </p>
+        <Progress
+          value={progress}
+          className={cn(
+            'mt-1.5 h-1 w-full max-w-36 bg-secondary',
+            LOCAL_PROFILE_ENABLED
+              ? '*:data-[slot=progress-indicator]:bg-primary'
+              : '*:data-[slot=progress-indicator]:bg-warn',
+          )}
+          aria-label={
+            LOCAL_PROFILE_ENABLED
+              ? `${localSummary?.weeklyXp ?? 0} of ${localSummary?.weeklyCap ?? 50} Labs XP`
+              : `${toNext} ${t(SITE.nextLevel)}`
+          }
+        />
       </div>
     </div>
   );
@@ -218,7 +308,7 @@ function MobileMenu() {
           <Menu className="size-5" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-72 gap-0 border-r border-border bg-card">
+      <SheetContent side="left" className="site w-72 gap-0 border-r border-border bg-card">
         <SheetHeader className="flex-row items-center gap-3 border-b border-border">
           <Image src={mark} alt="" width={32} height={32} />
           <SheetTitle className="font-pixel text-lg">Xplore Labs</SheetTitle>
@@ -343,13 +433,26 @@ export function SiteNav() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center rounded-md p-1 pr-2 transition-colors hover:bg-accent data-[state=open]:bg-accent"
+                className="flex items-center rounded-sm border border-transparent p-1 pr-2 text-left transition-colors hover:border-border hover:bg-accent data-[state=open]:border-border data-[state=open]:bg-accent focus-visible:outline-2 focus-visible:outline-primary"
                 aria-label={t(SITE.profile)}
               >
                 <PlayerCard compact />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-60">
+            <DropdownMenuContent align="end" className="site w-72">
+              <div className="border-b border-border p-3">
+                <PlayerCard />
+                <p className="mt-2 pl-[3.25rem] text-xs leading-5 text-muted-foreground">
+                  {t(LOCAL_PROFILE_ENABLED ? SITE.localLabsIdentity : SITE.pointsSeparation)}
+                </p>
+              </div>
+              <DropdownMenuItem asChild>
+                <Link href="/profile" className="flex cursor-pointer items-center gap-2">
+                  <Trophy className="size-4 text-warn" aria-hidden="true" />
+                  {t(SITE.dashboard)}
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <SettingsItems />
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>

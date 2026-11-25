@@ -1,5 +1,6 @@
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import type { ProgressStore, SubmitOutcome } from '@/src/shared/progress/progress-store';
+import type { LabsGameClient } from '@/src/shared/labs/client';
 import type { LocalizedText } from '@/src/shared/i18n/text';
 import type { DialogueLine, Meme, MemeEvent, Mission, Mood, Reactions } from './content/schema';
 import type { EventOf, SpecialKind } from './engine/events';
@@ -31,6 +32,8 @@ export interface Dialogue {
 export interface Victory {
   outcome: SubmitOutcome | null;
   hintsUsed: number;
+  labsXpAwarded?: number | null;
+  labsXpCapReached?: boolean;
 }
 
 /** One-shot things the screen shows; the UI clears them when their animation ends. */
@@ -103,6 +106,7 @@ interface Dependencies {
   now?: () => Date;
   /** No typing for this long: the penguin falls asleep (PRD section 6). */
   idleMs?: number;
+  gamification?: LabsGameClient;
 }
 
 /** Mistakes in a row before the penguin offers a hint (PRD section 5). */
@@ -120,6 +124,7 @@ export function createGameStore({
   random = Math.random,
   now = () => new Date(),
   idleMs = 60_000,
+  gamification,
 }: Dependencies): GameStore {
   let shell: Shell | null = null;
   // Filled by start(), which runs in the browser: no clock read while prerendering.
@@ -127,6 +132,7 @@ export function createGameStore({
   let shortestCmdLen: number | null = null;
   let nextId = 0;
   let mistakes = 0;
+  let totalMistakes = 0;
   let idleTimer: ReturnType<typeof setTimeout> | null = null;
 
   return createStore<GameState>()((set, get) => {
@@ -188,7 +194,35 @@ export function createGameStore({
           shortestCmdLen,
           commands: shell ? [...shell.history()] : [],
         });
-        set({ victory: { outcome, hintsUsed: meta.hintsUsed } });
+        let xpResult: Awaited<ReturnType<LabsGameClient['completeLevel']>> = null;
+        if (outcome.kind === 'queued' || (outcome.kind === 'done' && outcome.result.success)) {
+          try {
+            xpResult = await gamification?.completeLevel({
+              levelId: mission.id,
+              score: timeS,
+              durationSeconds: timeS,
+              hintsUsed: meta.hintsUsed,
+              mistakes: totalMistakes,
+            }) ?? null;
+          } catch (gamificationError) {
+            console.error('[labs] could not submit the gamification event', gamificationError);
+          }
+        }
+        try {
+          await gamification?.endSession();
+        } catch (sessionError) {
+          console.error('[labs] could not end the gamification session', sessionError);
+        }
+        const awards = xpResult?.awards ?? [];
+        const awardedXp = awards.reduce((total, award) => total + award.awardedXp, 0);
+        set({
+          victory: {
+            outcome,
+            hintsUsed: meta.hintsUsed,
+            labsXpAwarded: awards.length > 0 && awardedXp > 0 ? awardedXp : null,
+            labsXpCapReached: awards.some((award) => award.status === 'CAP_REACHED'),
+          },
+        });
       } catch (error) {
         console.error('[labs] could not submit the mission', error);
       }
@@ -218,6 +252,11 @@ export function createGameStore({
         try {
           const state = progress.getState();
           const start = await state.startMission('linux', mission.id);
+          try {
+            await gamification?.startSession();
+          } catch (sessionError) {
+            console.error('[labs] could not start the gamification session', sessionError);
+          }
           const created = createMissionShell(
             mission,
             options.fresh ? { ...start, checkpoint: null } : start,
@@ -227,6 +266,7 @@ export function createGameStore({
           meta = created.meta;
           shortestCmdLen = null;
           mistakes = 0;
+          totalMistakes = 0;
           const savedMap = created.restored
             ? (start.checkpoint?.state as { map?: unknown } | undefined)?.map
             : undefined;
@@ -290,6 +330,7 @@ export function createGameStore({
         else if (feedback.dialogue) say('reaction', feedback.dialogue);
 
         mistakes = feedback.mistake ? mistakes + 1 : 0;
+        if (feedback.mistake) totalMistakes++;
         if (mistakes >= MISTAKES_BEFORE_HINT && !own && !feedback.dialogue) {
           mistakes = 0;
           if (meta.hintsUsed < mission.hints.length) {
@@ -389,6 +430,9 @@ export function createGameStore({
 
       dispose() {
         stopIdle();
+        void gamification?.endSession().catch((error: unknown) => {
+          console.error('[labs] could not end the gamification session', error);
+        });
         shell = null;
       },
     };

@@ -16,6 +16,7 @@ import { GameThumb } from './GameThumb';
 import { introSeen } from './intro';
 import { IntroVideo } from './IntroVideo';
 import { HUB } from './strings';
+import { WeeklyXpBadge } from './WeeklyXpBadge';
 
 const noSubscription = () => () => {};
 
@@ -124,6 +125,8 @@ export function LabsHub() {
     <main className="mx-auto w-full max-w-6xl flex-1 px-4 pt-10 pb-12 sm:px-6 sm:pt-14">
       {/* The games speak for themselves; the title is for screen readers. */}
       <h1 className="sr-only">{t(HUB.games)}</h1>
+
+      <WeeklyXpBadge />
 
       <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {GAMES.map((game) => (

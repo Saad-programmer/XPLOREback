@@ -1,0 +1,32 @@
+insert into public.labs_badge_catalog (key, game, label, tier, xp, rule)
+values
+  ('linux-first-mission', 'linux', 'Linux: First mission', 'BRONZE', 5,
+    '{"type":"first_mission","required_count":1}'::jsonb),
+  ('linux-chapter-1', 'linux', 'Linux: Chapter 1', 'SILVER', 10,
+    '{"type":"missions_complete","required_count":2}'::jsonb),
+  ('linux-complete', 'linux', 'Linux: Story complete', 'GOLD', 20,
+    '{"type":"missions_complete","required_count":5}'::jsonb),
+  ('sql-first-mission', 'sql', 'SQL: First mission', 'BRONZE', 5,
+    '{"type":"first_mission","required_count":1}'::jsonb),
+  ('sql-chapter-1', 'sql', 'SQL: Chapter 1', 'SILVER', 10,
+    '{"type":"missions_complete","required_count":5}'::jsonb),
+  ('sql-complete', 'sql', 'SQL: Game complete', 'GOLD', 20,
+    '{"type":"missions_complete","required_count":20}'::jsonb),
+  ('git-first-mission', 'git', 'Git: First mission', 'BRONZE', 5,
+    '{"type":"first_mission","required_count":1}'::jsonb),
+  ('git-chapter-1', 'git', 'Git: Chapter 1', 'SILVER', 10,
+    '{"type":"missions_complete","required_count":5}'::jsonb),
+  ('git-complete', 'git', 'Git: Game complete', 'GOLD', 20,
+    '{"type":"missions_complete","required_count":20}'::jsonb),
+  ('network-first-mission', 'network', 'Network: First mission', 'BRONZE', 5,
+    '{"type":"first_mission","required_count":1}'::jsonb),
+  ('network-chapter-1', 'network', 'Network: Chapter 1', 'SILVER', 10,
+    '{"type":"missions_complete","required_count":5}'::jsonb),
+  ('network-complete', 'network', 'Network: Game complete', 'GOLD', 20,
+    '{"type":"missions_complete","required_count":20}'::jsonb)
+on conflict (key) do update set
+  game = excluded.game,
+  label = excluded.label,
+  tier = excluded.tier,
+  xp = excluded.xp,
+  rule = excluded.rule;

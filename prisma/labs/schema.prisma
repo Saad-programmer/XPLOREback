@@ -1,0 +1,271 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../src/generated/labs-client"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum GameScoreDirection {
+  HIGHER_IS_BETTER
+  LOWER_IS_BETTER
+}
+
+enum GameSessionStatus {
+  ACTIVE
+  ENDED
+  ABANDONED
+}
+
+enum GameEventValidationStatus {
+  VALID
+  UNVERIFIED
+  REJECTED
+  PENDING
+}
+
+enum GameRecordVerificationStatus {
+  VERIFIED
+  UNVERIFIED
+  REJECTED
+}
+
+enum XpAwardStatus {
+  PENDING
+  AWARDED
+  REJECTED
+  CAP_REACHED
+}
+
+enum XpSyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+  RETRYING
+}
+
+model LabsPlayer {
+  id                   String                @id @default(uuid())
+  externalXploreUserId String?               @unique
+  displayName          String
+  avatarUrl            String?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  sessions             GameSession[]
+  events               GameEvent[]
+  levelProgress        PlayerLevelProgress[]
+  achievements         PlayerAchievement[]
+  records              GameRecord[]
+  xpAwards             XpAward[]
+  weeklyBalances       WeeklyXpBalance[]
+  syncOutbox           XpSyncOutbox[]
+}
+
+model GameDefinition {
+  id             String                      @id @default(uuid())
+  slug           String                      @unique
+  title          String
+  description    String
+  enabled        Boolean                     @default(true)
+  scoreDirection GameScoreDirection          @default(HIGHER_IS_BETTER)
+  createdAt      DateTime                    @default(now())
+  levels         GameLevel[]
+  sessions       GameSession[]
+  xpAwards       XpAward[]
+  achievements   GameAchievementDefinition[]
+  records        GameRecord[]
+  events         GameEvent[]
+}
+
+model GameLevel {
+  id         String                @id @default(uuid())
+  gameId     String
+  game       GameDefinition        @relation(fields: [gameId], references: [id])
+  levelKey   String
+  title      String
+  difficulty String?
+  sequence   Int
+  enabled    Boolean               @default(true)
+  progress   PlayerLevelProgress[]
+  records    GameRecord[]
+  events     GameEvent[]
+
+  @@unique([gameId, levelKey])
+  @@index([gameId, sequence])
+}
+
+model GameSession {
+  id                      String            @id @default(uuid())
+  playerId                String
+  player                  LabsPlayer        @relation(fields: [playerId], references: [id])
+  gameId                  String
+  game                    GameDefinition    @relation(fields: [gameId], references: [id])
+  startedAt               DateTime          @default(now())
+  lastHeartbeatAt         DateTime          @default(now())
+  endedAt                 DateTime?
+  status                  GameSessionStatus @default(ACTIVE)
+  activeDurationSeconds   Int               @default(0)
+  verifiedDurationSeconds Int               @default(0)
+  events                  GameEvent[]
+
+  @@index([playerId, gameId, status])
+}
+
+model GameEvent {
+  id               String                    @id @default(uuid())
+  eventId          String                    @unique
+  playerId         String
+  player           LabsPlayer                @relation(fields: [playerId], references: [id])
+  gameId           String
+  game             GameDefinition            @relation(fields: [gameId], references: [id])
+  levelId          String?
+  level            GameLevel?                @relation(fields: [levelId], references: [id])
+  sessionId        String?
+  session          GameSession?              @relation(fields: [sessionId], references: [id])
+  eventType        String
+  payload          Json
+  createdAt        DateTime                  @default(now())
+  processedAt      DateTime?
+  validationStatus GameEventValidationStatus @default(PENDING)
+
+  @@index([playerId, gameId, eventType])
+  @@index([eventId])
+}
+
+model PlayerLevelProgress {
+  playerId         String
+  levelId          String
+  player           LabsPlayer @relation(fields: [playerId], references: [id])
+  level            GameLevel  @relation(fields: [levelId], references: [id])
+  completed        Boolean    @default(false)
+  bestScore        Int?
+  bestTimeSeconds  Int?
+  attempts         Int        @default(0)
+  firstCompletedAt DateTime?
+  lastCompletedAt  DateTime?
+
+  @@id([playerId, levelId])
+  @@index([playerId, completed])
+}
+
+model GameAchievementDefinition {
+  id           String              @id @default(uuid())
+  gameId       String
+  game         GameDefinition      @relation(fields: [gameId], references: [id])
+  key          String
+  title        String
+  description  String
+  category     String
+  baseXp       Int                 @default(0)
+  repeatPolicy String              @default("once")
+  enabled      Boolean             @default(true)
+  awards       XpAward[]
+  unlocks      PlayerAchievement[]
+
+  @@unique([gameId, key])
+}
+
+model PlayerAchievement {
+  id            String                    @id @default(uuid())
+  playerId      String
+  player        LabsPlayer                @relation(fields: [playerId], references: [id])
+  achievementId String
+  achievement   GameAchievementDefinition @relation(fields: [achievementId], references: [id])
+  earnedAt      DateTime                  @default(now())
+  metadata      Json?
+
+  @@unique([playerId, achievementId])
+  @@index([playerId, earnedAt])
+}
+
+model GameRecord {
+  id                 String                       @id @default(uuid())
+  playerId           String
+  player             LabsPlayer                   @relation(fields: [playerId], references: [id])
+  gameId             String
+  game               GameDefinition               @relation(fields: [gameId], references: [id])
+  levelId            String?
+  level              GameLevel?                   @relation(fields: [levelId], references: [id])
+  recordType         String
+  value              Int
+  achievedAt         DateTime                     @default(now())
+  verificationStatus GameRecordVerificationStatus @default(UNVERIFIED)
+
+  @@unique([playerId, gameId, levelId, recordType])
+  @@index([gameId, levelId, recordType])
+}
+
+model XpAward {
+  id                 String                       @id @default(uuid())
+  playerId           String
+  player             LabsPlayer                   @relation(fields: [playerId], references: [id])
+  gameId             String
+  game               GameDefinition               @relation(fields: [gameId], references: [id])
+  eventId            String?
+  earningKey         String                       @unique
+  achievementId      String?
+  achievement        GameAchievementDefinition?   @relation(fields: [achievementId], references: [id])
+  weekStart          String
+  ruleKey            String
+  requestedXp        Int
+  awardedXp          Int
+  status             XpAwardStatus                @default(PENDING)
+  verificationStatus GameRecordVerificationStatus @default(UNVERIFIED)
+  createdAt          DateTime                     @default(now())
+  syncOutbox         XpSyncOutbox?
+
+  @@unique([playerId, weekStart, ruleKey, eventId])
+  @@index([playerId, weekStart])
+  @@index([status])
+}
+
+model WeeklyXpBalance {
+  playerId  String
+  player    LabsPlayer @relation(fields: [playerId], references: [id])
+  weekStart String
+  earnedXp  Int        @default(0)
+  capXp     Int        @default(50)
+  updatedAt DateTime   @updatedAt
+
+  @@id([playerId, weekStart])
+}
+
+model XpSyncOutbox {
+  id                 String                       @id @default(uuid())
+  awardId            String                       @unique
+  award              XpAward                      @relation(fields: [awardId], references: [id])
+  playerId           String
+  player             LabsPlayer                   @relation(fields: [playerId], references: [id])
+  externalUserId     String?
+  tenantId       String?
+  amount             Int
+  reason             String
+  verificationStatus GameRecordVerificationStatus @default(UNVERIFIED)
+  idempotencyKey     String                       @unique
+  status             XpSyncStatus                 @default(PENDING)
+  attempts           Int                          @default(0)
+  lastError          String?
+  syncedAt           DateTime?
+  createdAt          DateTime                     @default(now())
+  ledgerEntries      LocalXploreXpEntry[]
+
+  @@index([status, createdAt])
+}
+
+model LocalXploreXpEntry {
+  id             String       @id @default(uuid())
+  outboxId       String
+  outbox         XpSyncOutbox @relation(fields: [outboxId], references: [id])
+  externalUserId String
+  tenantId       String
+  amount         Int
+  reason         String
+  label          String
+  idempotencyKey String       @unique
+  createdAt      DateTime     @default(now())
+
+  @@index([externalUserId, createdAt])
+}

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { ApiBridge } from '@/src/shared/bridge/api-bridge';
 import { MAX_CHECKPOINT_BYTES, MOCK_SECRET, MockBridge } from '@/src/shared/bridge/mock-bridge';
 import { personalPassword } from '@/src/shared/bridge/password';
+import { missionPassword } from '@/src/labs/mission-password';
 import {
   BridgeError,
   DEFAULT_SETTINGS,
@@ -18,6 +19,14 @@ describe('personal passwords', () => {
     expect(await personalPassword(MOCK_SECRET, 'ali', 'archive-hidden-scroll')).toBe(a);
     expect(await personalPassword(MOCK_SECRET, 'sara', 'archive-hidden-scroll')).not.toBe(a);
     expect(await personalPassword(MOCK_SECRET, 'ali', 'wake-up-hello')).not.toBe(a);
+  });
+
+  it('uses the same HMAC format in the server mission validator', async () => {
+    const userId = '00000000-0000-4000-8000-000000000001';
+    const missionId = 'wake-up-hello-world';
+    expect(await personalPassword(MOCK_SECRET, userId, missionId)).toBe(
+      missionPassword(MOCK_SECRET, userId, missionId),
+    );
   });
 });
 
@@ -127,6 +136,64 @@ describe('MockBridge', () => {
     const later = new MockBridge(store);
     expect((await later.getProgress('linux')).missions.m1).toBeDefined();
     expect((await later.getSettings()).muted).toBe(false);
+  });
+});
+
+describe('SupabaseBridge contract', () => {
+  it('returns the same player contract as MockBridge', async () => {
+    const token = `header.${Buffer.from(
+      JSON.stringify({
+        xplore_user_id: '00000000-0000-4000-8000-000000000001',
+        tenant_id: '00000000-0000-4000-8000-000000000101',
+      }),
+    ).toString('base64url')}.signature`;
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://supabase.test');
+    vi.stubEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY', 'public-anon-key');
+    vi.stubGlobal('window', { xploreLabsAuth: { getAccessToken: async () => token } });
+    vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes('/auth/v1/user')) {
+        return new Response(
+          JSON.stringify({ id: 'supabase-auth-user', email: 'player@example.test' }),
+          {
+            status: 200,
+            headers: { 'content-type': 'application/json' },
+          },
+        );
+      }
+      if (url.endsWith('/labs/api/labs/me')) {
+        return new Response(
+          JSON.stringify({
+            id: '00000000-0000-4000-8000-000000000001',
+            name: 'Alice',
+            points: 15,
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        );
+      }
+      return new Response('Unexpected test request', { status: 500 });
+    });
+
+    try {
+      vi.resetModules();
+      const { SupabaseBridge } = await import('@/src/shared/bridge/supabase-bridge');
+      const supabasePlayer = await new SupabaseBridge().getCurrentPlayer();
+      const mockPlayer = await new MockBridge(memoryStore()).getCurrentPlayer();
+      expect(supabasePlayer).toMatchObject({
+        id: expect.any(String),
+        name: expect.any(String),
+        points: expect.any(Number),
+      });
+      expect(mockPlayer).toMatchObject({
+        id: expect.any(String),
+        name: expect.any(String),
+        points: expect.any(Number),
+      });
+      expect(Object.keys(supabasePlayer).sort()).toEqual(['id', 'name', 'points']);
+    } finally {
+      vi.unstubAllGlobals();
+      vi.unstubAllEnvs();
+    }
   });
 });
 

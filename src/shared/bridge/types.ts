@@ -83,6 +83,8 @@ export interface SubmitResult {
   firstCompletion: boolean;
   stickers: string[];
   progress: GameProgress;
+  badges?: { key: string; label: string; tier: string; xp: number; capped: boolean }[];
+  weekXp?: { used: number; cap: number };
 }
 
 export interface Settings {

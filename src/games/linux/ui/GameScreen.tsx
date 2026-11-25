@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { getProgressStore, useProgress } from '@/src/shared/progress';
+import { createLabsGameClient } from '@/src/shared/labs/client';
 import { getMission, memes, missions, reactions } from '../content';
 import { isLocked } from '../mission-map';
 import { createGameStore } from '../game-store';
@@ -25,6 +26,7 @@ import { VimTrap } from './VimTrap';
 const Terminal = dynamic(() => import('./Terminal'), { ssr: false });
 
 export function GameScreen({ missionId }: { missionId: string }) {
+  const [gamification] = useState(() => createLabsGameClient('linux'));
   const [store] = useState(() =>
     createGameStore({
       mission: getMission(missionId)!,
@@ -32,6 +34,7 @@ export function GameScreen({ missionId }: { missionId: string }) {
       reactions,
       memes,
       sound: linuxSound,
+      gamification,
     }),
   );
 

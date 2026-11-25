@@ -1,0 +1,2418 @@
+// Tenant domain changes require reviewed, data-preserving migrations under prisma/migrations. SITE XPLORE
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  ARCHIVED
+}
+
+enum MembershipStatus {
+  ACTIVE
+  INVITED
+  DISABLED
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  EXPIRED
+}
+
+enum BillingInterval {
+  MONTHLY
+  QUARTERLY
+  YEARLY
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum MemberRegistrationSource {
+  WALK_IN
+  REFERRAL
+  SOCIAL_MEDIA
+  WEBSITE
+  PARTNER
+  ADVERTISEMENT
+  OTHER
+}
+
+enum MemberSubscriptionStatus {
+  SCHEDULED
+  ACTIVE
+  TRANSFERRED
+  EXPIRED
+  CANCELED
+}
+
+enum MemberContactMode {
+  SELF
+  RESPONSIBLE_PERSON
+}
+
+enum AttendanceDirection {
+  ENTRY
+  EXIT
+}
+
+enum FinanceEntryType {
+  INCOME
+  EXPENSE
+}
+
+enum FinancePaymentMethod {
+  CASH
+  CARD
+  BANK_TRANSFER
+  OTHER
+}
+
+enum EmployeeStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum BackgroundJobStatus {
+  QUEUED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum WebhookStatus {
+  RECEIVED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+enum AuthProvider {
+  PASSWORD
+  GOOGLE
+  MICROSOFT
+}
+
+enum AccessRequestStatus {
+  PENDING
+  APPROVED
+  REFUSED
+}
+
+enum LoginVerificationMethod {
+  EMAIL
+  TOTP
+}
+
+enum ClubRegistrationStatus {
+  PENDING_PAYMENT
+  PAYMENT_SUBMITTED
+  ACTIVE
+  PAYMENT_REJECTED
+  CANCELLED
+  INACTIVE
+  LEFT
+}
+
+enum ClubPaymentStatus {
+  NOT_SUBMITTED
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  PARTIALLY_PAID
+}
+
+/// Who a club space profile is for: a teacher invited by the club, or a laureate (alumnus) who signed up.
+enum ClubSpaceKind {
+  PROFESSOR
+  ALUMNI
+}
+
+enum ClubSpaceStatus {
+  /// Professor invited, not accepted yet.
+  INVITED
+  /// Laureate signed up, waiting for staff to check the proof.
+  PENDING_REVIEW
+  ACTIVE
+  REJECTED
+  DISABLED
+}
+
+/// What happened to a member at the end of a school year.
+enum ClubProgressionOutcome {
+  /// Moved up to the next year (Ilisi 1 to 2, 2 to 3).
+  PROMOTED
+  /// Redoublant: stays in the same year.
+  REPEATED
+  /// Quit the programme.
+  LEFT
+  /// Finished Ilisi 3: becomes a laureate.
+  GRADUATED
+}
+
+enum ClubActivityStatus {
+  DRAFT
+  WAITING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+/// What an activity is: a one-off event (Ramadan evening), a challenge (a game), or a mandatory weekly topic.
+enum ClubActivityKind {
+  EVENT
+  CHALLENGE
+  WEEKLY_TOPIC
+}
+
+enum ClubActivityRecurrence {
+  NONE
+  WEEKLY
+}
+
+enum ClubActivityOccurrenceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ClubActivityAttendanceStatus {
+  PRESENT
+  ABSENT
+}
+
+enum ClubActivityAbsenceDecision {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Platform {
+  id            String               @id @default(uuid()) @db.Uuid
+  key           String               @unique
+  name          String
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  tenants       Tenant[]
+  admins        PlatformMembership[]
+  plans         Plan[]
+  modules       Module[]
+  webhookEvents WebhookEvent[]
+  invitations   PlatformInvitation[]
+}
+
+model AccessRequest {
+  id           String              @id @default(uuid()) @db.Uuid
+  name         String
+  gymName      String
+  email        String
+  phone        String
+  description  String
+  status       AccessRequestStatus @default(PENDING)
+  decidedBy    String?             @db.Uuid
+  decidedAt    DateTime?
+  decisionNote String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+model Tenant {
+  id                             String                          @id @default(uuid()) @db.Uuid
+  platformId                     String                          @db.Uuid
+  slug                           String
+  name                           String
+  status                         TenantStatus                    @default(ACTIVE)
+  createdAt                      DateTime                        @default(now())
+  updatedAt                      DateTime                        @updatedAt
+  platform                       Platform                        @relation(fields: [platformId], references: [id], onDelete: Restrict)
+  sites                          Site[]
+  memberships                    TenantMembership[]
+  modules                        TenantModule[]
+  settings                       TenantSetting[]
+  promoLists                     PromoList[]
+  branding                       TenantBranding?
+  subscriptions                  TenantSubscription[]
+  auditLogs                      AuditLog[]
+  members                        Member[]
+  webhookEvents                  WebhookEvent[]
+  memberSubscriptions            MemberSubscription[]
+  subscriptionSnapshots          SubscriptionSnapshot[]
+  subscriptionPayments           SubscriptionPayment[]
+  serviceAllowanceBalances       ServiceAllowanceBalance[]
+  memberInsuranceCoverages       MemberInsuranceCoverage[]
+  subscriptionTransferRecords    SubscriptionTransferRecord[]
+  attendanceEvents               AttendanceEvent[]
+  financeEntries                 FinanceEntry[]
+  employees                      Employee[]
+  notifications                  Notification[]
+  quotas                         TenantQuota[]
+  usageMetrics                   UsageMetric[]
+  backgroundJobs                 BackgroundJob[]
+  invitations                    TenantInvitation[]
+  catalogServices                CatalogService[]
+  catalogPacks                   CatalogPack[]
+  catalogPackServices            CatalogPackService[]
+  catalogOffers                  CatalogOffer[]
+  catalogOfferAllowances         CatalogOfferAllowance[]
+  catalogFees                    CatalogFee[]
+  catalogFeeEligibleOffers       CatalogFeeEligibleOffer[]
+  catalogInsurances              CatalogInsurance[]
+  catalogInsuranceEligibleOffers CatalogInsuranceEligibleOffer[]
+  catalogPromotions              CatalogPromotion[]
+  catalogPromotionEligibleOffers CatalogPromotionEligibleOffer[]
+  clubConfiguration              ClubConfiguration?
+  clubRuleVersions               ClubRuleVersion[]
+  clubRegistrations              ClubRegistration[]
+  clubBirthdayGifts              ClubBirthdayGift[]
+  clubAnnouncements              ClubAnnouncement[]
+  clubRegistrationPayments       ClubRegistrationPayment[]
+  clubAttendanceEvents           ClubAttendanceEvent[]
+  clubActivities                 ClubActivity[]
+  clubActivityOccurrences        ClubActivityOccurrence[]
+  clubActivityParts              ClubActivityPart[]
+  clubActivityPartMembers        ClubActivityPartMember[]
+  clubActivityMembers            ClubActivityMember[]
+  clubActivityAttendance         ClubActivityAttendance[]
+  clubActivityFeedback           ClubActivityFeedback[]
+  clubActivityQrSessions         ClubActivityQrSession[]
+  landingVisitors                LandingVisitor[]
+  feedback                       ClubFeedback[]
+  spaceProfiles                  ClubSpaceProfile[]
+  progressionEntries             ClubProgressionEntry[]
+  contributionPrograms           ClubContributionProgram[]
+  contributionPayments           ClubContributionPayment[]
+  projects                       ClubProject[]
+  alerts                         ClubAlert[]
+  topicSubjects                  ClubTopicSubject[]
+  wheelDraws                     ClubWheelDraw[]
+  landingVisits                  LandingVisit[]
+  landingVisitEvents             LandingVisitEvent[]
+  recruitmentTeams               RecruitmentTeam[]
+  recruitmentCampaigns           RecruitmentCampaign[]
+  recruitmentCandidates          RecruitmentCandidate[]
+  memberXpEntries                MemberXpEntry[]
+  memberBadges                   MemberBadge[]
+
+  @@unique([platformId, slug])
+  @@index([platformId, status])
+}
+
+model ClubConfiguration {
+  tenantId             String   @id @db.Uuid
+  registrationFeeMinor Int
+  trackFees            Json     @default("{}")
+  activities           Json     @default("[]")
+  landing              Json     @default("{}")
+  currency             String   @default("MAD")
+  activeRulesVersion   String
+  paymentInstructions  String
+  /// Who is told about a member's birthday: CLUB (everyone), PROGRAM (same track) or OFF.
+  birthdayAudience     String   @default("CLUB")
+  updatedAt            DateTime @updatedAt
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+/// A virtual gift sent to a member for their birthday. Special gifts cost club points:
+/// `points` move from the sender to the receiver.
+model ClubBirthdayGift {
+  id                 String           @id @default(uuid()) @db.Uuid
+  tenantId           String           @db.Uuid
+  fromRegistrationId String           @db.Uuid
+  toRegistrationId   String           @db.Uuid
+  giftKey            String
+  points             Int              @default(0)
+  message            String?
+  /// The birthday it was sent for (YYYY-MM-DD, Casablanca).
+  birthdayDate       String
+  createdAt          DateTime         @default(now())
+  tenant             Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  from               ClubRegistration @relation("BirthdayGiftSender", fields: [fromRegistrationId], references: [id], onDelete: Cascade)
+  to                 ClubRegistration @relation("BirthdayGiftReceiver", fields: [toRegistrationId], references: [id], onDelete: Cascade)
+
+  @@unique([fromRegistrationId, toRegistrationId, birthdayDate, giftKey])
+  @@index([tenantId, toRegistrationId, createdAt])
+  @@index([fromRegistrationId])
+}
+
+model ClubRuleVersion {
+  id            String             @id @default(uuid()) @db.Uuid
+  tenantId      String             @db.Uuid
+  version       String
+  title         String
+  content       String
+  publishedAt   DateTime           @default(now())
+  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  registrations ClubRegistration[]
+
+  @@unique([tenantId, version])
+  @@index([tenantId, publishedAt])
+}
+
+model ClubRegistration {
+  id                         String                    @id @default(uuid()) @db.Uuid
+  tenantId                   String                    @db.Uuid
+  userId                     String?                   @db.Uuid
+  reference                  String                    @unique
+  trackingTokenHash          String                    @unique
+  firstName                  String
+  lastName                   String
+  email                      String
+  phone                      String
+  studyProgram               String
+  cellule                    String?
+  studentNumber              String?
+  /// Required for new public registrations; older rows may still be missing it.
+  dateOfBirth                DateTime?                 @db.Date
+  /// Staff link to a student of an official promo list (start year + full name as on the
+  /// list), for names the automatic matching can't recognise.
+  rosterCohort               Int?
+  rosterName                 String?
+  /// Year the birthday email was last sent, so the daily job greets each student once a year.
+  birthdayGreetedYear        Int?
+  hasStudentCard             Boolean                   @default(false)
+  studentCardObjectKey       String?
+  photoObjectKey             String?
+  emailVerifiedAt            DateTime?
+  studentCardUploadedAt      DateTime?
+  activities                 String[]                  @default([])
+  feeMinor                   Int
+  paidMinor                  Int                       @default(0)
+  currency                   String
+  acceptedRulesVersion       String
+  rulesAcceptedAt            DateTime
+  status                     ClubRegistrationStatus    @default(PENDING_PAYMENT)
+  paymentStatus              ClubPaymentStatus         @default(NOT_SUBMITTED)
+  paymentReference           String?
+  paymentSubmittedAt         DateTime?
+  paymentReviewedAt          DateTime?
+  paymentReviewedBy          String?                   @db.Uuid
+  rejectionReason            String?
+  qrTokenHash                String?                   @unique
+  qrIssuedAt                 DateTime?
+  qrRevokedAt                DateTime?
+  statusReason               String?
+  statusChangedAt            DateTime?
+  statusChangedBy            String?                   @db.Uuid
+  createdAt                  DateTime                  @default(now())
+  updatedAt                  DateTime                  @updatedAt
+  tenant                     Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user                       User?                     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ruleVersion                ClubRuleVersion           @relation(fields: [tenantId, acceptedRulesVersion], references: [tenantId, version], onDelete: Restrict)
+  recruitmentCandidates      RecruitmentCandidate[]
+  attendanceEvents           ClubAttendanceEvent[]
+  activityMemberships        ClubActivityMember[]
+  activityPartMemberships    ClubActivityPartMember[]
+  activityAttendance         ClubActivityAttendance[]
+  activityFeedback           ClubActivityFeedback[]
+  payments                   ClubRegistrationPayment[]
+  /// Staff check of the uploaded student card: PENDING (to check), VERIFIED or REJECTED.
+  studentCardStatus          String?
+  studentCardReviewedAt      DateTime?
+  studentCardReviewedBy      String?                   @db.Uuid
+  /// Why staff refused the photo (shown to the student so they can send a new one).
+  studentCardRejectionReason String?
+  /// Automatic check the student's browser ran on the card ({ passed, issues, checkedAt }); helps staff, never decides.
+  studentCardAutoCheck       Json?
+  /// Staff check of the member's profile photo (their account photo): PENDING (changed, to check),
+  /// VERIFIED, REJECTED (removed, a new one is needed) or UPDATE_REQUESTED (staff ask for one).
+  photoStatus                String?
+  photoSubmittedAt           DateTime?
+  photoReviewedAt            DateTime?
+  photoReviewedBy            String?                   @db.Uuid
+  /// Refusal reason or staff request message, shown to the member.
+  photoReviewMessage         String?
+  /// Automatic check of the current profile photo (face found…), same shape as studentCardAutoCheck.
+  photoAutoCheck             Json?
+  /// Once staff VERIFIED the photo it is locked: the member sends the new one here, staff approve
+  /// it (it becomes the account photo) or refuse it. Empty when no change is waiting.
+  photoChangeUrl             String?
+  photoChangePublicId        String?
+  photoChangeRequestedAt     DateTime?
+  photoChangeMessage         String?
+  /// Automatic check of the photo waiting in photoChangeUrl.
+  photoChangeAutoCheck       Json?
+  /// Why staff refused the last change request (shown to the member until their next request).
+  photoChangeRejection       String?
+  /// Personal details staff asked the member to correct (name, phone, dateOfBirth, studentNumber).
+  /// Empty when nothing is pending; cleared once the member sends them.
+  infoRequestFields          String[]                  @default([])
+  infoRequestMessage         String?
+  infoRequestedAt            DateTime?
+  infoRequestedBy            String?                   @db.Uuid
+  /// Details the member corrected (on their own or answering infoRequest), waiting for staff:
+  /// { firstName?, lastName?, phone?, dateOfBirth? (YYYY-MM-DD), studentNumber? }. Applied only once
+  /// staff accept them; null when nothing is waiting.
+  infoChange                 Json?
+  infoChangeRequestedAt      DateTime?
+  /// Why staff refused the last correction (shown to the member until their next one).
+  infoChangeRejection        String?
+  /// Last time the member opened their notifications (for the unread badge).
+  notificationsSeenAt        DateTime?
+  /// Earned stickers the member has already seen in their album (the others show as new).
+  stickersSeen               String[]                  @default([])
+  /// Up to 3 earned stickers the member shows on their profile.
+  favoriteStickers           String[]                  @default([])
+  birthdayGiftsSent          ClubBirthdayGift[]        @relation("BirthdayGiftSender")
+  birthdayGiftsReceived      ClubBirthdayGift[]        @relation("BirthdayGiftReceiver")
+  progressionEntries         ClubProgressionEntry[]
+  projectRoles               ClubProjectMember[]
+  contributionPayments       ClubContributionPayment[]
+  wheelDraws                 ClubWheelDraw[]
+
+  @@unique([tenantId, userId])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, paymentStatus, createdAt])
+  @@index([tenantId, email])
+  @@index([tenantId, studentNumber])
+  @@index([tenantId, phone])
+  @@index([userId])
+}
+
+/// 6-digit email code for public registration; a verified code issues a single-use token.
+model ClubEmailVerification {
+  id         String    @id @default(uuid()) @db.Uuid
+  email      String
+  codeHash   String
+  attempts   Int       @default(0)
+  expiresAt  DateTime
+  verifiedAt DateTime?
+  tokenHash  String?   @unique
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([email, createdAt])
+}
+
+/// One instalment towards a registration fee (taken at the club).
+model ClubRegistrationPayment {
+  id             String               @id @default(uuid()) @db.Uuid
+  tenantId       String               @db.Uuid
+  registrationId String               @db.Uuid
+  amountMinor    Int
+  currency       String
+  method         FinancePaymentMethod
+  reference      String?
+  recordedBy     String?              @db.Uuid
+  financeEntryId String?              @db.Uuid
+  paidAt         DateTime
+  createdAt      DateTime             @default(now())
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  registration   ClubRegistration     @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([registrationId, paidAt])
+  @@index([tenantId, paidAt])
+}
+
+model ClubAttendanceEvent {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenantId       String           @db.Uuid
+  registrationId String           @db.Uuid
+  staffUserId    String           @db.Uuid
+  checkInDate    DateTime         @db.Date
+  scannedAt      DateTime         @default(now())
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  registration   ClubRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@unique([registrationId, checkInDate])
+  @@index([tenantId, scannedAt])
+}
+
+model ClubActivity {
+  id                   String                   @id @default(uuid()) @db.Uuid
+  tenantId             String                   @db.Uuid
+  title                String
+  description          String?
+  type                 String
+  language             String
+  recurrence           ClubActivityRecurrence   @default(NONE)
+  weekday              Int?
+  startTime            String
+  timezone             String
+  startsAt             DateTime?
+  absencePenaltyPoints Int                      @default(0)
+  status               ClubActivityStatus       @default(WAITING)
+  kind                 ClubActivityKind         @default(EVENT)
+  /// Tracks whose active members take part automatically (a member who moves to or joins one of them is added, one who
+  /// moves out is removed); members added by hand stay whatever their track.
+  audienceTracks       String[]                 @default([])
+  /// Whether a QR code can be shown for this activity's sessions.
+  qrEnabled            Boolean                  @default(true)
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @updatedAt
+  tenant               Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  occurrences          ClubActivityOccurrence[]
+  members              ClubActivityMember[]
+  contribution         ClubContributionProgram?
+  topicSubjects        ClubTopicSubject[]
+  wheelDraws           ClubWheelDraw[]
+
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, startsAt])
+}
+
+/// The cotisation an activity asks of each participant (one program per activity). Staff record what each one paid.
+model ClubContributionProgram {
+  id          String                    @id @default(uuid()) @db.Uuid
+  tenantId    String                    @db.Uuid
+  activityId  String                    @unique @db.Uuid
+  amountMinor Int
+  currency    String
+  dueAt       DateTime?
+  notes       String?
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  tenant      Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  activity    ClubActivity              @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  payments    ClubContributionPayment[]
+
+  @@index([tenantId])
+}
+
+/// A payment (partial ones add up) or a waiver (the member owes nothing) recorded by staff.
+model ClubContributionPayment {
+  id             String                  @id @default(uuid()) @db.Uuid
+  tenantId       String                  @db.Uuid
+  programId      String                  @db.Uuid
+  registrationId String                  @db.Uuid
+  amountMinor    Int
+  method         FinancePaymentMethod    @default(CASH)
+  reference      String?
+  note           String?
+  waived         Boolean                 @default(false)
+  paidAt         DateTime                @default(now())
+  recordedBy     String                  @db.Uuid
+  createdAt      DateTime                @default(now())
+  tenant         Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  program        ClubContributionProgram @relation(fields: [programId], references: [id], onDelete: Cascade)
+  registration   ClubRegistration        @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([programId, registrationId])
+  @@index([tenantId, registrationId])
+}
+
+/// A subject of a weekly topic's bank. Subjects are drawn lowest level first: level 2 only comes up once every level-1
+/// subject has been drawn. A drawn subject is not drawn again.
+model ClubTopicSubject {
+  id          String          @id @default(uuid()) @db.Uuid
+  tenantId    String          @db.Uuid
+  activityId  String          @db.Uuid
+  title       String
+  description String?
+  level       Int             @default(1)
+  drawnAt     DateTime?
+  createdAt   DateTime        @default(now())
+  tenant      Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  activity    ClubActivity    @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  draws       ClubWheelDraw[]
+
+  @@index([activityId, level])
+}
+
+/// One spin of a weekly topic's wheel: a participant and a subject, for one session. `cycle` counts the rounds: a
+/// participant is drawn once per round, and a new round starts when everyone has been drawn.
+model ClubWheelDraw {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenantId       String           @db.Uuid
+  activityId     String           @db.Uuid
+  occurrenceId   String?          @db.Uuid
+  registrationId String           @db.Uuid
+  subjectId      String           @db.Uuid
+  /// The topic created in the session (so it shows in the usual place); removed when the draw is cancelled.
+  partId         String?          @db.Uuid
+  cycle          Int
+  drawnBy        String           @db.Uuid
+  createdAt      DateTime         @default(now())
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  activity       ClubActivity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  registration   ClubRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  subject        ClubTopicSubject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@index([activityId, cycle])
+  @@index([tenantId, registrationId])
+}
+
+model ClubActivityOccurrence {
+  id                String                       @id @default(uuid()) @db.Uuid
+  tenantId          String                       @db.Uuid
+  activityId        String                       @db.Uuid
+  startsAt          DateTime
+  endsAt            DateTime?
+  status            ClubActivityOccurrenceStatus @default(SCHEDULED)
+  presentationNotes String?
+  createdAt         DateTime                     @default(now())
+  updatedAt         DateTime                     @updatedAt
+  tenant            Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  activity          ClubActivity                 @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  parts             ClubActivityPart[]
+  attendance        ClubActivityAttendance[]
+  feedback          ClubActivityFeedback[]
+  qrSessions        ClubActivityQrSession[]
+
+  @@unique([activityId, startsAt])
+  @@index([tenantId, startsAt, status])
+}
+
+model ClubActivityPart {
+  id           String                   @id @default(uuid()) @db.Uuid
+  tenantId     String                   @db.Uuid
+  occurrenceId String                   @db.Uuid
+  position     Int
+  title        String
+  description  String?
+  notes        String?
+  createdAt    DateTime                 @default(now())
+  updatedAt    DateTime                 @updatedAt
+  tenant       Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  occurrence   ClubActivityOccurrence   @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  feedback     ClubActivityFeedback[]
+  members      ClubActivityPartMember[]
+
+  @@unique([occurrenceId, position])
+  @@index([tenantId, occurrenceId, position])
+}
+
+model ClubActivityPartMember {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenantId       String           @db.Uuid
+  partId         String           @db.Uuid
+  registrationId String           @db.Uuid
+  assignedAt     DateTime         @default(now())
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  part           ClubActivityPart @relation(fields: [partId], references: [id], onDelete: Cascade)
+  registration   ClubRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@unique([partId, registrationId])
+  @@index([tenantId, registrationId])
+  @@index([tenantId, partId])
+}
+
+model ClubActivityMember {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenantId       String           @db.Uuid
+  activityId     String           @db.Uuid
+  registrationId String           @db.Uuid
+  assignedAt     DateTime         @default(now())
+  /// MANUAL (picked by staff) or TRACK (added by the activity's audienceTracks).
+  source         String           @default("MANUAL")
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  activity       ClubActivity     @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  registration   ClubRegistration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@unique([activityId, registrationId])
+  @@index([tenantId, registrationId])
+}
+
+model ClubActivityAttendance {
+  id              String                       @id @default(uuid()) @db.Uuid
+  tenantId        String                       @db.Uuid
+  occurrenceId    String                       @db.Uuid
+  registrationId  String                       @db.Uuid
+  status          ClubActivityAttendanceStatus
+  absenceReason   String?
+  absenceDecision ClubActivityAbsenceDecision  @default(PENDING)
+  penaltyPoints   Int                          @default(0)
+  markedAt        DateTime                     @default(now())
+  decidedAt       DateTime?
+  decidedBy       String?                      @db.Uuid
+  tenant          Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  occurrence      ClubActivityOccurrence       @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  registration    ClubRegistration             @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@unique([occurrenceId, registrationId])
+  @@index([tenantId, occurrenceId, status])
+  @@index([tenantId, registrationId])
+}
+
+model ClubActivityFeedback {
+  id                   String                 @id @default(uuid()) @db.Uuid
+  tenantId             String                 @db.Uuid
+  occurrenceId         String                 @db.Uuid
+  partId               String                 @db.Uuid
+  registrationId       String                 @db.Uuid
+  understandingPercent Int
+  comment              String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+  tenant               Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  occurrence           ClubActivityOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+  part                 ClubActivityPart       @relation(fields: [partId], references: [id], onDelete: Cascade)
+  registration         ClubRegistration       @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@unique([occurrenceId, partId, registrationId])
+  @@index([tenantId, occurrenceId, partId])
+}
+
+model ClubActivityQrSession {
+  id           String                 @id @default(uuid()) @db.Uuid
+  tenantId     String                 @db.Uuid
+  occurrenceId String                 @db.Uuid
+  tokenHash    String                 @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime               @default(now())
+  tenant       Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  occurrence   ClubActivityOccurrence @relation(fields: [occurrenceId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, occurrenceId, expiresAt])
+}
+
+model CatalogService {
+  id                       String                    @id @default(uuid()) @db.Uuid
+  tenantId                 String                    @db.Uuid
+  name                     String
+  normalizedName           String
+  description              String?
+  standalonePriceMinor     Int?
+  isActive                 Boolean                   @default(true)
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  tenant                   Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  packMemberships          CatalogPackService[]
+  offerAllowances          CatalogOfferAllowance[]
+  serviceAllowanceBalances ServiceAllowanceBalance[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, normalizedName])
+  @@index([tenantId, isActive, name])
+}
+
+model CatalogPack {
+  id             String               @id @default(uuid()) @db.Uuid
+  tenantId       String               @db.Uuid
+  name           String
+  normalizedName String
+  description    String?
+  revision       Int                  @default(1)
+  isActive       Boolean              @default(true)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  services       CatalogPackService[]
+  offers         CatalogOffer[]
+
+  @@unique([tenantId, normalizedName])
+  @@index([tenantId, isActive, name])
+}
+
+model CatalogPackService {
+  tenantId  String         @db.Uuid
+  packId    String         @db.Uuid
+  serviceId String         @db.Uuid
+  createdAt DateTime       @default(now())
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pack      CatalogPack    @relation(fields: [packId], references: [id], onDelete: Cascade)
+  service   CatalogService @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@id([packId, serviceId])
+  @@index([tenantId, serviceId])
+  @@index([tenantId, packId])
+}
+
+enum CatalogOfferValidityType {
+  DURATION_DAYS
+  FIXED_DATE
+  UNLIMITED
+}
+
+model CatalogOffer {
+  id                      String                          @id @default(uuid()) @db.Uuid
+  tenantId                String                          @db.Uuid
+  packId                  String                          @db.Uuid
+  name                    String
+  normalizedName          String
+  description             String?
+  priceMinor              Int
+  currency                String                          @default("MAD")
+  validityType            CatalogOfferValidityType
+  durationDays            Int?
+  fixedEndDate            DateTime?                       @db.Date
+  availableFrom           DateTime?                       @db.Date
+  availableUntil          DateTime?                       @db.Date
+  isActive                Boolean                         @default(true)
+  createdAt               DateTime                        @default(now())
+  updatedAt               DateTime                        @updatedAt
+  tenant                  Tenant                          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  pack                    CatalogPack                     @relation(fields: [packId], references: [id], onDelete: Restrict)
+  allowances              CatalogOfferAllowance[]
+  feeEligibleOffers       CatalogFeeEligibleOffer[]
+  insuranceEligibleOffers CatalogInsuranceEligibleOffer[]
+  promotionEligibleOffers CatalogPromotionEligibleOffer[]
+  memberSubscriptions     MemberSubscription[]
+  subscriptionSnapshots   SubscriptionSnapshot[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, normalizedName])
+  @@index([tenantId, isActive, name])
+  @@index([tenantId, packId])
+  @@index([tenantId, packId, isActive])
+}
+
+model CatalogOfferAllowance {
+  tenantId  String         @db.Uuid
+  offerId   String         @db.Uuid
+  serviceId String         @db.Uuid
+  unlimited Boolean        @default(true)
+  sessions  Int?
+  createdAt DateTime       @default(now())
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  offer     CatalogOffer   @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  service   CatalogService @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@id([offerId, serviceId])
+  @@index([tenantId, serviceId])
+  @@index([tenantId, offerId])
+}
+
+enum CatalogFeeTrigger {
+  NEW_MEMBERSHIP
+  RENEWAL
+  CARD_ISSUE
+  FREEZE
+  REACTIVATION
+  TRANSFER
+  MANUAL
+}
+
+enum CatalogFeeBehavior {
+  REQUIRED_AUTOMATIC
+  DEFAULT_SELECTED
+  MANUAL
+}
+
+model CatalogFee {
+  id                          String                       @id @default(uuid()) @db.Uuid
+  tenantId                    String                       @db.Uuid
+  name                        String
+  normalizedName              String
+  description                 String?
+  trigger                     CatalogFeeTrigger
+  behavior                    CatalogFeeBehavior
+  amountMinor                 Int
+  currency                    String                       @default("MAD")
+  isActive                    Boolean                      @default(true)
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+  tenant                      Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  eligibleOffers              CatalogFeeEligibleOffer[]
+  subscriptionTransferRecords SubscriptionTransferRecord[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, normalizedName])
+  @@index([tenantId, isActive, name])
+  @@index([tenantId, trigger])
+  @@index([tenantId, behavior])
+}
+
+model CatalogFeeEligibleOffer {
+  tenantId  String       @db.Uuid
+  feeId     String       @db.Uuid
+  offerId   String       @db.Uuid
+  createdAt DateTime     @default(now())
+  tenant    Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  fee       CatalogFee   @relation(fields: [feeId], references: [id], onDelete: Cascade)
+  offer     CatalogOffer @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@id([feeId, offerId])
+  @@index([tenantId, offerId])
+  @@index([tenantId, feeId])
+}
+
+enum CatalogInsuranceBehavior {
+  REQUIRED_AUTOMATIC
+  DEFAULT_SELECTED
+  MANUAL
+}
+
+model CatalogInsurance {
+  id              String                          @id @default(uuid()) @db.Uuid
+  tenantId        String                          @db.Uuid
+  name            String
+  normalizedName  String
+  description     String?
+  priceMinor      Int
+  currency        String                          @default("MAD")
+  validityDays    Int                             @default(365)
+  behavior        CatalogInsuranceBehavior
+  isActive        Boolean                         @default(true)
+  createdAt       DateTime                        @default(now())
+  updatedAt       DateTime                        @updatedAt
+  tenant          Tenant                          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  eligibleOffers  CatalogInsuranceEligibleOffer[]
+  memberCoverages MemberInsuranceCoverage[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, normalizedName])
+  @@index([tenantId, isActive, name])
+  @@index([tenantId, behavior])
+}
+
+model CatalogInsuranceEligibleOffer {
+  tenantId    String           @db.Uuid
+  insuranceId String           @db.Uuid
+  offerId     String           @db.Uuid
+  createdAt   DateTime         @default(now())
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  insurance   CatalogInsurance @relation(fields: [insuranceId], references: [id], onDelete: Cascade)
+  offer       CatalogOffer     @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@id([insuranceId, offerId])
+  @@index([tenantId, offerId])
+  @@index([tenantId, insuranceId])
+}
+
+enum CatalogPromotionDiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+}
+
+model CatalogPromotion {
+  id             String                          @id @default(uuid()) @db.Uuid
+  tenantId       String                          @db.Uuid
+  name           String
+  normalizedName String
+  description    String?
+  discountType   CatalogPromotionDiscountType
+  discountValue  Int
+  currency       String                          @default("MAD")
+  startDate      DateTime                        @db.Date
+  endDate        DateTime                        @db.Date
+  isActive       Boolean                         @default(true)
+  createdAt      DateTime                        @default(now())
+  updatedAt      DateTime                        @updatedAt
+  tenant         Tenant                          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  eligibleOffers CatalogPromotionEligibleOffer[]
+
+  @@unique([tenantId, normalizedName])
+  @@index([tenantId, isActive, startDate, endDate])
+  @@index([tenantId, isActive, name])
+}
+
+model CatalogPromotionEligibleOffer {
+  tenantId    String           @db.Uuid
+  promotionId String           @db.Uuid
+  offerId     String           @db.Uuid
+  createdAt   DateTime         @default(now())
+  tenant      Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  promotion   CatalogPromotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  offer       CatalogOffer     @relation(fields: [offerId], references: [id], onDelete: Cascade)
+
+  @@id([promotionId, offerId])
+  @@index([tenantId, offerId])
+  @@index([tenantId, promotionId])
+}
+
+model Member {
+  id                      String                       @id @default(uuid()) @db.Uuid
+  tenantId                String                       @db.Uuid
+  firstName               String
+  lastName                String
+  nationalId              String?
+  normalizedNationalId    String?
+  phone                   String?
+  normalizedPhone         String?
+  email                   String?
+  normalizedEmail         String?
+  dateOfBirth             DateTime                     @db.Date
+  contactMode             MemberContactMode
+  responsibleName         String?
+  responsiblePhone        String?
+  responsibleRelationship String?
+  responsibleNationalId   String?
+  photoObjectKey          String?
+  address                 String?
+  emergencyName           String?
+  emergencyPhone          String?
+  registrationSource      MemberRegistrationSource
+  cellule                 String?
+  status                  MemberStatus                 @default(ACTIVE)
+  notes                   String?
+  registeredAt            DateTime                     @default(now())
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+  tenant                  Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscriptions           MemberSubscription[]
+  subscriptionPayments    SubscriptionPayment[]
+  insuranceCoverages      MemberInsuranceCoverage[]
+  sourceTransfers         SubscriptionTransferRecord[] @relation("TransferSourceMember")
+  recipientTransfers      SubscriptionTransferRecord[] @relation("TransferRecipientMember")
+  attendanceEvents        AttendanceEvent[]
+  financeEntries          FinanceEntry[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, normalizedPhone])
+  @@unique([tenantId, normalizedNationalId])
+  @@unique([tenantId, normalizedEmail])
+  @@index([tenantId, status, createdAt])
+  @@index([tenantId, lastName, firstName])
+  @@index([tenantId, responsiblePhone])
+  @@index([tenantId, emergencyPhone])
+  @@index([tenantId, registrationSource])
+}
+
+model MemberSubscription {
+  id                            String                      @id @default(uuid()) @db.Uuid
+  tenantId                      String                      @db.Uuid
+  memberId                      String                      @db.Uuid
+  offerId                       String                      @db.Uuid
+  snapshotId                    String                      @db.Uuid
+  status                        MemberSubscriptionStatus    @default(ACTIVE)
+  startsOn                      DateTime                    @db.Date
+  endsOn                        DateTime?                   @db.Date
+  activatedAt                   DateTime
+  renewedFromSubscriptionId     String?                     @db.Uuid
+  transferredFromSubscriptionId String?                     @db.Uuid
+  createdAt                     DateTime                    @default(now())
+  updatedAt                     DateTime                    @updatedAt
+  tenant                        Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  member                        Member                      @relation(fields: [tenantId, memberId], references: [tenantId, id], onDelete: Restrict, map: "MemberSubscription_tenantId_memberId_fkey_v2")
+  offer                         CatalogOffer                @relation(fields: [tenantId, offerId], references: [tenantId, id], onDelete: Restrict)
+  snapshot                      SubscriptionSnapshot        @relation("SubscriptionSnapshot", fields: [tenantId, snapshotId], references: [tenantId, id], onDelete: Restrict)
+  renewedFrom                   MemberSubscription?         @relation("SubscriptionRenewal", fields: [tenantId, renewedFromSubscriptionId], references: [tenantId, id], onDelete: Restrict)
+  renewals                      MemberSubscription[]        @relation("SubscriptionRenewal")
+  transferredFrom               MemberSubscription?         @relation("SubscriptionLineage", fields: [tenantId, transferredFromSubscriptionId], references: [tenantId, id], onDelete: Restrict)
+  transferredSubscriptions      MemberSubscription[]        @relation("SubscriptionLineage")
+  payments                      SubscriptionPayment[]
+  allowanceBalances             ServiceAllowanceBalance[]
+  insuranceCoverages            MemberInsuranceCoverage[]
+  outgoingTransfer              SubscriptionTransferRecord? @relation("TransferSourceSubscription")
+  incomingTransfer              SubscriptionTransferRecord? @relation("TransferRecipientSubscription")
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, snapshotId])
+  @@index([tenantId, memberId, status])
+  @@index([tenantId, endsOn, status])
+  @@index([tenantId, offerId])
+  @@index([tenantId, renewedFromSubscriptionId])
+  @@index([tenantId, transferredFromSubscriptionId])
+}
+
+model SubscriptionSnapshot {
+  id                String                   @id @default(uuid()) @db.Uuid
+  tenantId          String                   @db.Uuid
+  offerId           String                   @db.Uuid
+  sourceSnapshotId  String?                  @db.Uuid
+  schemaVersion     Int
+  offerName         String
+  packName          String
+  validityType      CatalogOfferValidityType
+  durationDays      Int?
+  fixedEndDate      DateTime?                @db.Date
+  allowanceTerms    Json
+  basePriceMinor    Int
+  promotionSnapshot Json?
+  feeSnapshots      Json
+  insuranceSnapshot Json?
+  currency          String                   @default("MAD")
+  totalMinor        Int
+  createdAt         DateTime                 @default(now())
+  tenant            Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  offer             CatalogOffer             @relation(fields: [tenantId, offerId], references: [tenantId, id], onDelete: Restrict)
+  sourceSnapshot    SubscriptionSnapshot?    @relation("SnapshotLineage", fields: [tenantId, sourceSnapshotId], references: [tenantId, id], onDelete: Restrict)
+  derivedSnapshots  SubscriptionSnapshot[]   @relation("SnapshotLineage")
+  subscription      MemberSubscription?      @relation("SubscriptionSnapshot")
+
+  @@unique([tenantId, id])
+  @@index([tenantId, offerId])
+  @@index([tenantId, sourceSnapshotId])
+}
+
+model SubscriptionPayment {
+  id             String               @id @default(uuid()) @db.Uuid
+  tenantId       String               @db.Uuid
+  subscriptionId String               @db.Uuid
+  memberId       String               @db.Uuid
+  siteId         String               @db.Uuid
+  actorUserId    String               @db.Uuid
+  method         FinancePaymentMethod
+  amountMinor    Int
+  currency       String               @default("MAD")
+  reference      String?
+  paidAt         DateTime
+  createdAt      DateTime             @default(now())
+  tenant         Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscription   MemberSubscription   @relation(fields: [tenantId, subscriptionId], references: [tenantId, id], onDelete: Restrict)
+  member         Member               @relation(fields: [tenantId, memberId], references: [tenantId, id], onDelete: Restrict)
+  site           Site                 @relation(fields: [tenantId, siteId], references: [tenantId, id], onDelete: Restrict)
+  actor          User                 @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, subscriptionId])
+  @@index([tenantId, memberId, paidAt])
+  @@index([tenantId, siteId, paidAt])
+}
+
+model ServiceAllowanceBalance {
+  id                String             @id @default(uuid()) @db.Uuid
+  tenantId          String             @db.Uuid
+  subscriptionId    String             @db.Uuid
+  serviceId         String             @db.Uuid
+  unlimited         Boolean
+  originalSessions  Int?
+  remainingSessions Int?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  tenant            Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  subscription      MemberSubscription @relation(fields: [tenantId, subscriptionId], references: [tenantId, id], onDelete: Cascade)
+  service           CatalogService     @relation(fields: [tenantId, serviceId], references: [tenantId, id], onDelete: Restrict)
+
+  @@unique([tenantId, subscriptionId, serviceId])
+  @@index([tenantId, serviceId])
+}
+
+model MemberInsuranceCoverage {
+  id             String             @id @default(uuid()) @db.Uuid
+  tenantId       String             @db.Uuid
+  memberId       String             @db.Uuid
+  subscriptionId String             @db.Uuid
+  insuranceId    String             @db.Uuid
+  insuranceName  String
+  priceMinor     Int
+  currency       String             @default("MAD")
+  startsOn       DateTime           @db.Date
+  expiresOn      DateTime           @db.Date
+  createdAt      DateTime           @default(now())
+  tenant         Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  member         Member             @relation(fields: [tenantId, memberId], references: [tenantId, id], onDelete: Restrict)
+  subscription   MemberSubscription @relation(fields: [tenantId, subscriptionId], references: [tenantId, id], onDelete: Restrict)
+  insurance      CatalogInsurance   @relation(fields: [tenantId, insuranceId], references: [tenantId, id], onDelete: Restrict)
+
+  @@unique([tenantId, subscriptionId, insuranceId])
+  @@index([tenantId, memberId, expiresOn])
+}
+
+model SubscriptionTransferRecord {
+  id                      String             @id @default(uuid()) @db.Uuid
+  tenantId                String             @db.Uuid
+  sourceMemberId          String             @db.Uuid
+  recipientMemberId       String             @db.Uuid
+  sourceSubscriptionId    String             @db.Uuid
+  recipientSubscriptionId String             @db.Uuid
+  actorUserId             String             @db.Uuid
+  remainingEntitlement    Json
+  feeSnapshots            Json               @default("[]")
+  insuranceSnapshot       Json?
+  transferFeeId           String?            @db.Uuid
+  transferFeeName         String?
+  transferFeeAmountMinor  Int?
+  transferFeeCurrency     String?
+  transferredAt           DateTime
+  createdAt               DateTime           @default(now())
+  tenant                  Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  sourceMember            Member             @relation("TransferSourceMember", fields: [tenantId, sourceMemberId], references: [tenantId, id], onDelete: Restrict)
+  recipientMember         Member             @relation("TransferRecipientMember", fields: [tenantId, recipientMemberId], references: [tenantId, id], onDelete: Restrict)
+  sourceSubscription      MemberSubscription @relation("TransferSourceSubscription", fields: [tenantId, sourceSubscriptionId], references: [tenantId, id], onDelete: Restrict)
+  recipientSubscription   MemberSubscription @relation("TransferRecipientSubscription", fields: [tenantId, recipientSubscriptionId], references: [tenantId, id], onDelete: Restrict, map: "SubscriptionTransferRecord_recipientSubscription_fkey")
+  actor                   User               @relation(fields: [actorUserId], references: [id], onDelete: Restrict)
+  transferFee             CatalogFee?        @relation(fields: [tenantId, transferFeeId], references: [tenantId, id], onDelete: Restrict)
+
+  @@unique([tenantId, sourceSubscriptionId])
+  @@unique([tenantId, recipientSubscriptionId])
+  @@index([tenantId, sourceMemberId, transferredAt], map: "SubscriptionTransferRecord_sourceMember_idx")
+  @@index([tenantId, recipientMemberId, transferredAt], map: "SubscriptionTransferRecord_recipientMember_idx")
+}
+
+model AttendanceEvent {
+  id         String              @id @default(uuid()) @db.Uuid
+  tenantId   String              @db.Uuid
+  memberId   String              @db.Uuid
+  siteId     String?             @db.Uuid
+  direction  AttendanceDirection
+  occurredAt DateTime
+  createdAt  DateTime            @default(now())
+  tenant     Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  member     Member              @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  site       Site?               @relation(fields: [siteId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, occurredAt])
+  @@index([tenantId, memberId, occurredAt])
+  @@index([tenantId, direction, occurredAt])
+  @@index([siteId, occurredAt])
+}
+
+model FinanceEntry {
+  id                  String               @id @default(uuid()) @db.Uuid
+  tenantId            String               @db.Uuid
+  memberId            String?              @db.Uuid
+  siteId              String?              @db.Uuid
+  type                FinanceEntryType
+  amountMinor         Int
+  currency            String
+  paymentMethod       FinancePaymentMethod
+  description         String
+  occurredAt          DateTime
+  /// Optional justification (receipt, invoice): private storage key, original file name and MIME type.
+  attachmentObjectKey String?
+  attachmentName      String?
+  attachmentMimeType  String?
+  createdAt           DateTime             @default(now())
+  deletedAt           DateTime?
+  tenant              Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  member              Member?              @relation(fields: [memberId], references: [id], onDelete: Restrict)
+  site                Site?                @relation(fields: [siteId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, occurredAt])
+  @@index([tenantId, type, occurredAt])
+  @@index([tenantId, memberId, occurredAt])
+  @@index([siteId, occurredAt])
+}
+
+model Site {
+  id                   String                @id @default(uuid()) @db.Uuid
+  tenantId             String                @db.Uuid
+  slug                 String
+  name                 String
+  address              String?
+  city                 String?
+  country              String?
+  postalCode           String?
+  phone                String?
+  latitude             Float?
+  longitude            Float?
+  isActive             Boolean               @default(true)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  tenant               Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  attendanceEvents     AttendanceEvent[]
+  financeEntries       FinanceEntry[]
+  employees            Employee[]
+  subscriptionPayments SubscriptionPayment[]
+
+  @@unique([tenantId, id])
+  @@unique([tenantId, slug])
+  @@index([tenantId, isActive])
+}
+
+model Employee {
+  id        String         @id @default(uuid()) @db.Uuid
+  tenantId  String         @db.Uuid
+  siteId    String?        @db.Uuid
+  firstName String
+  lastName  String
+  email     String?
+  phone     String?
+  jobTitle  String?
+  status    EmployeeStatus @default(ACTIVE)
+  hiredAt   DateTime?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  tenant    Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  site      Site?          @relation(fields: [siteId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, email])
+  @@index([tenantId, status, lastName])
+  @@index([siteId, status])
+}
+
+model Notification {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @db.Uuid
+  userId    String    @db.Uuid
+  type      String
+  title     String
+  body      String
+  /// In-app page the notification opens (e.g. /registrations).
+  href      String?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId, readAt, createdAt])
+  @@index([tenantId, createdAt])
+}
+
+model TenantQuota {
+  tenantId  String   @db.Uuid
+  key       String
+  limit     Int
+  used      Int      @default(0)
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, key])
+}
+
+model UsageMetric {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @db.Uuid
+  key         String
+  periodStart DateTime @db.Date
+  value       Int      @default(0)
+  updatedAt   DateTime @updatedAt
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key, periodStart])
+  @@index([tenantId, key, periodStart])
+}
+
+model BackgroundJob {
+  id             String              @id @default(uuid()) @db.Uuid
+  tenantId       String              @db.Uuid
+  scopeKey       String
+  idempotencyKey String
+  moduleKey      String
+  type           String
+  payload        Json
+  status         BackgroundJobStatus @default(QUEUED)
+  attempts       Int                 @default(0)
+  availableAt    DateTime            @default(now())
+  lockedAt       DateTime?
+  completedAt    DateTime?
+  lastError      String?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  tenant         Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([scopeKey, idempotencyKey])
+  @@index([tenantId, status, availableAt])
+  @@index([status, availableAt])
+}
+
+model PlatformMembership {
+  platformId String           @db.Uuid
+  userId     String           @db.Uuid
+  roleId     String           @db.Uuid
+  status     MembershipStatus @default(ACTIVE)
+  isRoot     Boolean          @default(false)
+  assignedAt DateTime         @default(now())
+  platform   Platform         @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role             @relation(fields: [roleId], references: [id], onDelete: Restrict)
+
+  @@id([platformId, userId])
+  @@index([userId, status])
+  @@index([roleId])
+}
+
+model TenantMembership {
+  tenantId            String                         @db.Uuid
+  userId              String                         @db.Uuid
+  roleId              String                         @db.Uuid
+  status              MembershipStatus               @default(INVITED)
+  assignedAt          DateTime                       @default(now())
+  /// Title shown instead of the role's name ("Designer"…); the role still decides the access.
+  displayTitle        String?
+  tenant              Tenant                         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user                User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role                Role                           @relation(fields: [roleId], references: [id], onDelete: Restrict)
+  permissionOverrides MembershipPermissionOverride[]
+
+  @@id([tenantId, userId])
+  @@index([userId, status])
+  @@index([roleId])
+}
+
+model TenantInvitation {
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @db.Uuid
+  email               String
+  displayName         String
+  roleKey             String    @default("ADMIN")
+  /// Title shown once accepted (copied to the membership's displayTitle).
+  displayTitle        String?
+  permissionOverrides Json?
+  tokenHash           String    @unique
+  expiresAt           DateTime
+  acceptedAt          DateTime?
+  createdAt           DateTime  @default(now())
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, email])
+  @@index([expiresAt, acceptedAt])
+}
+
+model RecruitmentTeam {
+  id          String                  @id @default(uuid()) @db.Uuid
+  tenantId    String                  @db.Uuid
+  key         String
+  name        String
+  description String?
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+  tenant      Tenant                  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  members     RecruitmentTeamMember[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId, createdAt])
+}
+
+model RecruitmentTeamMember {
+  teamId     String           @db.Uuid
+  userId     String           @db.Uuid
+  assignedAt DateTime         @default(now())
+  team       RecruitmentTeam @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([teamId, userId])
+  @@index([userId, assignedAt])
+}
+
+enum RecruitmentCampaignStatus {
+  DRAFT
+  OPEN
+  CLOSED
+}
+
+model RecruitmentCampaign {
+  id          String                    @id @default(uuid()) @db.Uuid
+  tenantId    String                    @db.Uuid
+  name        String
+  status      RecruitmentCampaignStatus @default(DRAFT)
+  startsAt    DateTime?
+  endsAt      DateTime?
+  createdById String                    @db.Uuid
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  tenant      Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy   User                      @relation("RecruitmentCampaignCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  /// Set when a holder of club.recruitment.close closes it: evaluations lock, the jury gets its rewards.
+  closedAt    DateTime?
+  closedById  String?                   @db.Uuid
+  closedBy    User?                     @relation("RecruitmentCampaignCloser", fields: [closedById], references: [id], onDelete: SetNull)
+  candidates  RecruitmentCandidate[]
+  xpEntries   MemberXpEntry[]
+  badges      MemberBadge[]
+
+  @@index([tenantId, status, createdAt])
+}
+
+model RecruitmentCandidate {
+  id             String                   @id @default(uuid()) @db.Uuid
+  tenantId       String                   @db.Uuid
+  campaignId     String                   @db.Uuid
+  registrationId String?                  @db.Uuid
+  fullName       String
+  email          String?
+  promotion      String?
+  studyProgram   String?
+  createdAt      DateTime                 @default(now())
+  tenant         Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  campaign       RecruitmentCampaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  registration   ClubRegistration?        @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+  evaluations    RecruitmentEvaluation[]
+
+  @@unique([campaignId, email])
+  @@index([tenantId, campaignId, createdAt])
+}
+
+model RecruitmentEvaluation {
+  id           String               @id @default(uuid()) @db.Uuid
+  candidateId  String               @db.Uuid
+  evaluatorId  String               @db.Uuid
+  formType     String
+  scores       Json
+  decision     String
+  cellPriorities String[] @default([])
+  selectedPost String?
+  remarks      String?
+  evaluatedAt  DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  candidate    RecruitmentCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  evaluator    User                 @relation(fields: [evaluatorId], references: [id], onDelete: Restrict)
+
+  @@unique([candidateId, evaluatorId, formType])
+  @@index([candidateId, evaluatedAt])
+}
+
+/// Experience points (XP): earned for work done for the club, never spent — unlike club points, which
+/// members give away as gifts and lose to penalties. One entry per reward; a person's XP is the sum.
+model MemberXpEntry {
+  id          String               @id @default(uuid()) @db.Uuid
+  tenantId    String               @db.Uuid
+  userId      String               @db.Uuid
+  amount      Int
+  /// What the XP is for, e.g. RECRUITMENT_JURY.
+  reason      String
+  label       String
+  campaignId  String?              @db.Uuid
+  awardedById String?              @db.Uuid
+  createdAt   DateTime             @default(now())
+  tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user        User                 @relation("MemberXpEntries", fields: [userId], references: [id], onDelete: Cascade)
+  awardedBy   User?                @relation("MemberXpAwards", fields: [awardedById], references: [id], onDelete: SetNull)
+  campaign    RecruitmentCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  @@unique([campaignId, userId, reason])
+  @@index([tenantId, userId, createdAt])
+}
+
+/// A badge a person earned (e.g. "Jury de recrutement 2026", gold), shown on their profile.
+model MemberBadge {
+  id          String               @id @default(uuid()) @db.Uuid
+  tenantId    String               @db.Uuid
+  userId      String               @db.Uuid
+  /// Stable per badge kind and edition, e.g. recruitment-jury-2026: a person holds each once.
+  key         String
+  /// GOLD, SILVER or BRONZE for tiered badges.
+  tier        String?
+  label       String
+  campaignId  String?              @db.Uuid
+  awardedById String?              @db.Uuid
+  awardedAt   DateTime             @default(now())
+  /// What earned it (evaluations, rank…), shown with the badge.
+  metadata    Json?
+  tenant      Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user        User                 @relation("MemberBadges", fields: [userId], references: [id], onDelete: Cascade)
+  awardedBy   User?                @relation("MemberBadgeAwards", fields: [awardedById], references: [id], onDelete: SetNull)
+  campaign    RecruitmentCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, userId, key])
+  @@index([userId, awardedAt])
+}
+
+model PlatformInvitation {
+  id          String    @id @default(uuid()) @db.Uuid
+  platformId  String    @db.Uuid
+  email       String
+  displayName String
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  platform    Platform  @relation(fields: [platformId], references: [id], onDelete: Cascade)
+
+  @@index([platformId, email])
+  @@index([expiresAt, acceptedAt])
+}
+
+model Module {
+  id          String         @id @default(uuid()) @db.Uuid
+  platformId  String         @db.Uuid
+  key         String
+  version     String
+  label       String
+  isAvailable Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  platform    Platform       @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  tenants     TenantModule[]
+  planModules PlanModule[]
+
+  @@unique([platformId, key])
+  @@index([platformId, isAvailable])
+}
+
+model TenantModule {
+  tenantId  String   @db.Uuid
+  moduleId  String   @db.Uuid
+  enabled   Boolean  @default(true)
+  enabledAt DateTime @default(now())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, moduleId])
+  @@index([moduleId, enabled])
+}
+
+model Plan {
+  id            String               @id @default(uuid()) @db.Uuid
+  platformId    String               @db.Uuid
+  key           String
+  name          String
+  priceMinor    Int                  @default(0)
+  currency      String               @default("USD")
+  interval      BillingInterval      @default(MONTHLY)
+  isActive      Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  platform      Platform             @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  modules       PlanModule[]
+  subscriptions TenantSubscription[]
+
+  @@unique([platformId, key])
+}
+
+model PlanModule {
+  planId   String @db.Uuid
+  moduleId String @db.Uuid
+  plan     Plan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@id([planId, moduleId])
+}
+
+model TenantSubscription {
+  id                     String             @id @default(uuid()) @db.Uuid
+  tenantId               String             @db.Uuid
+  planId                 String             @db.Uuid
+  status                 SubscriptionStatus @default(TRIALING)
+  isCurrent              Boolean            @default(true)
+  provider               String?
+  providerCustomerId     String?
+  providerSubscriptionId String?
+  currentPeriodStart     DateTime?
+  currentPeriodEnd       DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  tenant                 Tenant             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  plan                   Plan               @relation(fields: [planId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, status])
+  @@index([tenantId, isCurrent])
+  @@index([provider, providerSubscriptionId])
+}
+
+model TenantSetting {
+  tenantId  String   @db.Uuid
+  key       String
+  value     Json
+  updatedAt DateTime @updatedAt
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, key])
+}
+
+model TenantBranding {
+  tenantId     String   @id @db.Uuid
+  logoUrl      String?
+  primaryColor String?
+  accentColor  String?
+  updatedAt    DateTime @updatedAt
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id                      String                       @id @default(uuid()) @db.Uuid
+  email                   String                       @unique
+  normalizedEmail         String                       @unique
+  displayName             String?
+  profilePhotoUrl         String?
+  profilePhotoPublicId    String?
+  profilePhotoSource      String?
+  profilePhotoOptOut      Boolean                      @default(false)
+  /// Set when the user disconnects Google: Google sign-in then no longer re-links by email
+  /// (cleared when they connect Google again from their settings).
+  googleDisconnectedAt    DateTime?
+  /// Which notifications this person wants, e.g. { "birthdays": false }; a missing key means on.
+  notificationPreferences Json                         @default("{}")
+  passwordHash            String?
+  emailVerifiedAt         DateTime?
+  loginVerifiedAt         DateTime?
+  totpSecret              String?
+  totpEnabled             Boolean                      @default(false)
+  isActive                Boolean                      @default(true)
+  failedLoginCount        Int                          @default(0)
+  lockedUntil             DateTime?
+  lastLoginAt             DateTime?
+  createdAt               DateTime                     @default(now())
+  updatedAt               DateTime                     @updatedAt
+  roles                   UserRole[]
+  sessions                AuthSession[]
+  auditEvents             AuditLog[]
+  platformMemberships     PlatformMembership[]
+  tenantMemberships       TenantMembership[]
+  notifications           Notification[]
+  pushDevices             PushDevice[]
+  subscriptionPayments    SubscriptionPayment[]
+  subscriptionTransfers   SubscriptionTransferRecord[]
+  identities              AuthIdentity[]
+  emailVerificationTokens EmailVerificationToken[]
+  passwordResetTokens     PasswordResetToken[]
+  loginVerificationCodes  LoginVerificationCode[]
+  clubRegistrations       ClubRegistration[]
+  feedback                ClubFeedback[]
+  spaceProfiles           ClubSpaceProfile[]
+  recruitmentTeamMemberships RecruitmentTeamMember[]
+  recruitmentCampaignsCreated RecruitmentCampaign[] @relation("RecruitmentCampaignCreator")
+  recruitmentCampaignsClosed RecruitmentCampaign[] @relation("RecruitmentCampaignCloser")
+  xpEntries               MemberXpEntry[] @relation("MemberXpEntries")
+  xpAwarded               MemberXpEntry[] @relation("MemberXpAwards")
+  badges                  MemberBadge[]   @relation("MemberBadges")
+  badgesAwarded           MemberBadge[]   @relation("MemberBadgeAwards")
+  recruitmentEvaluations  RecruitmentEvaluation[]
+
+  @@index([isActive])
+  @@index([lockedUntil])
+}
+
+model AuthIdentity {
+  id              String       @id @default(uuid()) @db.Uuid
+  userId          String       @db.Uuid
+  provider        AuthProvider
+  providerSubject String
+  email           String?
+  profilePhotoUrl String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerSubject])
+  @@index([userId])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @db.Uuid
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
+}
+
+model LoginVerificationCode {
+  id                String                  @id @default(uuid()) @db.Uuid
+  userId            String                  @db.Uuid
+  method            LoginVerificationMethod
+  /// LOGIN for sign-in codes; an action key (e.g. recruitment.close) for a code confirming one sensitive action.
+  /// Kept apart so neither kind of code can stand in for the other.
+  purpose           String                  @default("LOGIN")
+  codeHash          String
+  expiresAt         DateTime
+  consumedAt        DateTime?
+  attempts          Int                     @default(0)
+  resendAvailableAt DateTime
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, method, createdAt])
+  @@index([userId, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+model Role {
+  id                  String               @id @default(uuid()) @db.Uuid
+  key                 String               @unique
+  label               String
+  createdAt           DateTime             @default(now())
+  users               UserRole[]
+  permissions         RolePermission[]
+  platformMemberships PlatformMembership[]
+  tenantMemberships   TenantMembership[]
+}
+
+model Permission {
+  id                  String                         @id @default(uuid()) @db.Uuid
+  key                 String                         @unique
+  label               String
+  createdAt           DateTime                       @default(now())
+  roles               RolePermission[]
+  membershipOverrides MembershipPermissionOverride[]
+}
+
+model UserRole {
+  userId     String   @db.Uuid
+  roleId     String   @db.Uuid
+  assignedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+model RolePermission {
+  roleId       String     @db.Uuid
+  permissionId String     @db.Uuid
+  assignedAt   DateTime   @default(now())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+}
+
+model MembershipPermissionOverride {
+  tenantId     String           @db.Uuid
+  userId       String           @db.Uuid
+  permissionId String           @db.Uuid
+  granted      Boolean
+  assignedAt   DateTime         @default(now())
+  membership   TenantMembership @relation(fields: [tenantId, userId], references: [tenantId, userId], onDelete: Cascade)
+  permission   Permission       @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, userId, permissionId])
+  @@index([permissionId])
+}
+
+model AuthSession {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  familyId         String    @db.Uuid
+  refreshTokenHash String    @unique
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  replacedById     String?   @db.Uuid
+  ipAddress        String?
+  location         String?
+  userAgent        String?
+  /// The browser's long-lived login-device cookie: a new sign-in there replaces its previous session.
+  deviceId         String?
+  lastUsedAt       DateTime?
+  /// When this sign-in passed its second step (email/authenticator code, or Google). Until then the
+  /// session can only reach the verification endpoints. Kept per session (User.loginVerifiedAt is only a
+  /// record), so verifying one browser never unlocks another that only knew the password.
+  verifiedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([userId, deviceId])
+  @@index([familyId])
+  @@index([expiresAt])
+}
+
+model LoginRateLimit {
+  id            String    @id @default(uuid()) @db.Uuid
+  scope         String
+  keyHash       String
+  failedCount   Int       @default(0)
+  blockedUntil  DateTime?
+  lastFailureAt DateTime?
+  lastAlertAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([scope, keyHash])
+  @@index([blockedUntil])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String?  @db.Uuid
+  tenantId    String?  @db.Uuid
+  event       String
+  success     Boolean  @default(true)
+  ipAddress   String?
+  userAgent   String?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  actor       User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  tenant      Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@index([event, createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([tenantId, createdAt])
+}
+
+model IdempotencyRecord {
+  id           String   @id @default(uuid()) @db.Uuid
+  scopeKey     String
+  key          String
+  requestHash  String
+  statusCode   Int?
+  responseBody Json?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([scopeKey, key])
+  @@index([expiresAt])
+}
+
+model WebhookEvent {
+  id              String        @id @default(uuid()) @db.Uuid
+  platformId      String        @db.Uuid
+  tenantId        String?       @db.Uuid
+  provider        String
+  externalEventId String
+  eventType       String
+  payload         Json
+  status          WebhookStatus @default(RECEIVED)
+  attempts        Int           @default(0)
+  receivedAt      DateTime      @default(now())
+  processedAt     DateTime?
+  lastError       String?
+  platform        Platform      @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  tenant          Tenant?       @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@unique([platformId, provider, externalEventId])
+  @@index([tenantId, status])
+  @@index([status, receivedAt])
+}
+
+enum PromoStudentRole {
+  DELEGATE
+  CO_DELEGATE
+}
+
+/// A class roster (promo), identified by the year it entered the programme: 2026 = promo 2026-2029.
+model PromoList {
+  id        String             @id @default(uuid()) @db.Uuid
+  tenantId  String             @db.Uuid
+  startYear Int
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  tenant    Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  students  PromoListStudent[]
+
+  @@unique([tenantId, startYear])
+}
+
+model PromoListStudent {
+  id            String            @id @default(uuid()) @db.Uuid
+  promoListId   String            @db.Uuid
+  position      Int
+  fullName      String
+  studentNumber String?
+  email         String?
+  role          PromoStudentRole?
+  promoList     PromoList         @relation(fields: [promoListId], references: [id], onDelete: Cascade)
+
+  @@index([promoListId, position])
+}
+
+/// Club announcement shown to members and/or staff. One page can carry a poll, a wheel of
+/// names, reactions and an RSVP. Stickers are decorations placed on the cover
+/// ([{ key, x, y, size, rotate }], x/y in % of the cover).
+model ClubAnnouncement {
+  id               String                     @id @default(uuid()) @db.Uuid
+  tenantId         String                     @db.Uuid
+  title            String
+  body             String                     @default("")
+  /// Cover colour theme key (frontend palette).
+  theme            String                     @default("ocean")
+  stickers         Json                       @default("[]")
+  /// Photos, videos (Cloudinary) and links shown under the message: [{ kind, url, objectKey?, title? }].
+  attachments      Json                       @default("[]")
+  /// ALL (members and staff), MEMBERS or STAFF.
+  audience         String                     @default("ALL")
+  /// Members of one track only (e.g. ilisi-2); null = every track.
+  audienceTrack    String?
+  pinned           Boolean                    @default(false)
+  publishedAt      DateTime?
+  expiresAt        DateTime?
+  pollQuestion     String?
+  pollOptions      String[]                   @default([])
+  pollMultiple     Boolean                    @default(false)
+  pollClosesAt     DateTime?
+  wheelTitle       String?
+  wheelEntries     String[]                   @default([])
+  wheelResult      String?
+  wheelSpunAt      DateTime?
+  reactionsEnabled Boolean                    @default(true)
+  rsvpEnabled      Boolean                    @default(false)
+  eventAt          DateTime?
+  eventPlace       String?
+  /// The activity this announcement was made for (from the activity's notification dialog), if any.
+  activityId       String?                    @db.Uuid
+  createdBy        String                     @db.Uuid
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  tenant           Tenant                     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  votes            ClubAnnouncementVote[]
+  reactions        ClubAnnouncementReaction[]
+  rsvps            ClubAnnouncementRsvp[]
+
+  @@index([tenantId, publishedAt])
+}
+
+model ClubAnnouncementVote {
+  id             String           @id @default(uuid()) @db.Uuid
+  announcementId String           @db.Uuid
+  userId         String           @db.Uuid
+  option         Int
+  createdAt      DateTime         @default(now())
+  announcement   ClubAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId, option])
+}
+
+model ClubAnnouncementReaction {
+  id             String           @id @default(uuid()) @db.Uuid
+  announcementId String           @db.Uuid
+  userId         String           @db.Uuid
+  emoji          String
+  createdAt      DateTime         @default(now())
+  announcement   ClubAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId, emoji])
+}
+
+model ClubAnnouncementRsvp {
+  id             String           @id @default(uuid()) @db.Uuid
+  announcementId String           @db.Uuid
+  userId         String           @db.Uuid
+  going          Boolean
+  updatedAt      DateTime         @updatedAt
+  announcement   ClubAnnouncement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+
+  @@unique([announcementId, userId])
+}
+
+/// One email the app sent (never its body: it may hold sign-in codes). `status` follows Resend's
+/// delivery events: QUEUED → SENT → DELIVERED, or DELAYED / BOUNCED / COMPLAINED / FAILED.
+model EmailLog {
+  id         String    @id @default(uuid()) @db.Uuid
+  to         String
+  subject    String
+  /// What the email is for: verification, registration, birthday, invitation…
+  kind       String
+  status     String    @default("QUEUED")
+  /// Resend's id for the email, to match its delivery events.
+  providerId String?   @unique
+  /// Why it failed or bounced, as reported.
+  error      String?
+  /// What rebuilds the email to send it again (the send method's input), only for kinds that hold no
+  /// code, token or link that expires: welcome, confirmation, requests, birthday, promo-list check.
+  resend     Json?
+  /// When an admin sent it again from the Emails page (the new attempt is its own row).
+  resentAt   DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([createdAt])
+  @@index([to])
+}
+
+/// One browser that opened the public landing page, known by a random key kept in its localStorage.
+model LandingVisitor {
+  id          String         @id @default(uuid()) @db.Uuid
+  tenantId    String         @db.Uuid
+  key         String
+  firstSeenAt DateTime       @default(now())
+  lastSeenAt  DateTime       @default(now())
+  visitCount  Int            @default(0)
+  /// A club admin's own browser (it opened the Visitors page): left out of the numbers.
+  staff       Boolean        @default(false)
+  tenant      Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  visits      LandingVisit[]
+
+  @@unique([tenantId, key])
+  @@index([tenantId, lastSeenAt])
+}
+
+/// One opening of the landing page: where from, on what, how long and how far it went.
+model LandingVisit {
+  id          String              @id @default(uuid()) @db.Uuid
+  tenantId    String              @db.Uuid
+  visitorId   String              @db.Uuid
+  /// The visitor's 1st, 2nd… visit.
+  number      Int
+  ipAddress   String?
+  /// ISO 3166 two-letter code.
+  country     String?
+  region      String?
+  city        String?
+  /// mobile | tablet | desktop
+  device      String
+  browser     String?
+  os          String?
+  language    String?
+  /// The referring site's host ("google.com"), null for direct visits.
+  referrer    String?
+  utmSource   String?
+  utmCampaign String?
+  screen      String?
+  startedAt   DateTime            @default(now())
+  lastSeenAt  DateTime            @default(now())
+  /// Time the page was actually on screen.
+  durationMs  Int                 @default(0)
+  /// Deepest scroll, in percent of the page.
+  maxScroll   Int                 @default(0)
+  /// Section ids seen, in the order they were first seen.
+  sections    String[]            @default([])
+  clicks      Int                 @default(0)
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  visitor     LandingVisitor      @relation(fields: [visitorId], references: [id], onDelete: Cascade)
+  events      LandingVisitEvent[]
+
+  @@index([tenantId, startedAt])
+  @@index([visitorId, startedAt])
+  @@index([tenantId, ipAddress])
+}
+
+/// Something a visitor did on the landing page: a section came into view, or a link/button was clicked.
+model LandingVisitEvent {
+  id       String       @id @default(uuid()) @db.Uuid
+  tenantId String       @db.Uuid
+  visitId  String       @db.Uuid
+  /// section | click
+  type     String
+  target   String
+  /// The section the click happened in.
+  section  String?
+  at       DateTime     @default(now())
+  tenant   Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  visit    LandingVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, at])
+  @@index([visitId, at])
+}
+
+/// Feedback sent from the site's Feedback button (landing page, member space, staff dashboard):
+/// a suggestion, a problem, something to remove. Visitors may leave a name and an email; a
+/// signed-in sender is linked to their account.
+/// One decision of the end-of-year passage for one member. `academicYear` is the year the school year started
+/// (2025 = 2025-2026). A member has at most one decision per year, so the history tells who repeated, who left
+/// and who graduated.
+model ClubProgressionEntry {
+  id             String                 @id @default(uuid()) @db.Uuid
+  tenantId       String                 @db.Uuid
+  registrationId String                 @db.Uuid
+  academicYear   Int
+  outcome        ClubProgressionOutcome
+  fromProgram    String
+  toProgram      String?
+  reason         String?
+  decidedBy      String                 @db.Uuid
+  createdAt      DateTime               @default(now())
+  tenant         Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  registration   ClubRegistration       @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@unique([registrationId, academicYear])
+  @@index([tenantId, academicYear, outcome])
+}
+
+/// A professor or laureate (alumnus) space. They are not club members (no ClubRegistration) and not staff
+/// (no TenantMembership): this row alone gives them their own space.
+model ClubSpaceProfile {
+  id                  String          @id @default(uuid()) @db.Uuid
+  tenantId            String          @db.Uuid
+  userId              String?         @db.Uuid
+  kind                ClubSpaceKind
+  status              ClubSpaceStatus
+  firstName           String
+  lastName            String
+  email               String
+  phone               String?
+  /// Professor: what they teach. Laureate: not used.
+  department          String?
+  /// Professor: how to address them ("Pr.", "Dr."…).
+  title               String?
+  /// Professor invitation (the link emailed to them).
+  invitationTokenHash String?         @unique
+  invitationExpiresAt DateTime?
+  invitedBy           String?         @db.Uuid
+  /// Laureate: first year of their promo (2021 = promo 2021-2024), the track and what they do now.
+  promoStartYear      Int?
+  studyProgram        String?
+  currentPosition     String?
+  company             String?
+  city                String?
+  linkedinUrl         String?
+  /// Whether other laureates see them in the alumni directory (opt-in).
+  directoryVisible    Boolean         @default(false)
+  /// Proof of having studied at Ilisi: a photo of the student card, diploma or attestation (private storage).
+  proofKind           String?
+  proofObjectKey      String?
+  proofUploadedAt     DateTime?
+  /// Automatic promo-list match { cohort, name, by } found at sign-up; helps staff, never decides.
+  rosterMatch         Json?
+  /// Set when the club made them a laureate from their member registration (end-of-year graduation).
+  registrationId      String?         @db.Uuid
+  /// Lets the sign-up form send the proof right after the profile exists.
+  trackingTokenHash   String?         @unique
+  emailVerifiedAt     DateTime?
+  reviewedAt          DateTime?
+  reviewedBy          String?         @db.Uuid
+  rejectionReason     String?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  tenant              Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user                User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, userId, kind])
+  @@index([tenantId, kind, status])
+  @@index([tenantId, email])
+  @@index([userId])
+}
+
+model ClubFeedback {
+  id         String    @id @default(uuid()) @db.Uuid
+  tenantId   String    @db.Uuid
+  /// Who sent it: STUDENT | TEACHER | ALUMNI | PARTNER | OTHER
+  role       String    @default("OTHER")
+  /// SUGGESTION | PROBLEM | REMOVE | OTHER
+  kind       String
+  message    String
+  name       String?
+  email      String?
+  userId     String?   @db.Uuid
+  /// Where it was sent from: landing | member | staff
+  source     String
+  /// A visitor's address, for the per-sender limit (signed-in senders are counted by account).
+  ipAddress  String?
+  /// The page it was sent from ("/", "/member/activities"…).
+  page       String?
+  /// Up to three attached images (Cloudinary public ids, read through signed URLs).
+  images     String[]  @default([])
+  /// The visitor's browser key (landing tracker): tells repeat messages from one person apart.
+  visitorKey String?
+  /// NEW | DONE
+  status     String    @default("NEW")
+  createdAt  DateTime  @default(now())
+  handledAt  DateTime?
+  handledBy  String?   @db.Uuid
+  tenant     Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, createdAt])
+  @@index([ipAddress, createdAt])
+  @@index([userId, createdAt])
+}
+
+enum ClubProjectKind {
+  /// Paid work for a client: the revenue is shared between the club and the team.
+  COMMERCIAL
+  /// A school project: no money to share.
+  ACADEMIC
+}
+
+enum ClubProjectStatus {
+  PLANNED
+  ACTIVE
+  DONE
+  CANCELLED
+}
+
+/// A club project. Commercial ones carry a team with a role and a share of the revenue each, plus the club's own share
+/// (percentages are stored in basis points: 2500 = 25 %).
+model ClubProject {
+  id           String             @id @default(uuid()) @db.Uuid
+  tenantId     String             @db.Uuid
+  kind         ClubProjectKind
+  title        String
+  description  String?
+  /// The client (commercial) or the supervisor / school (academic).
+  partner      String?
+  status       ClubProjectStatus  @default(PLANNED)
+  startsAt     DateTime?
+  endsAt       DateTime?
+  /// What the client pays, in minor units (commercial only); the shares are computed from it.
+  revenueMinor Int?
+  currency     String             @default("MAD")
+  /// The club's share of the revenue, in basis points (commercial only).
+  clubShareBp  Int                @default(0)
+  createdBy    String             @db.Uuid
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  tenant       Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  team         ClubProjectMember[]
+
+  @@index([tenantId, kind, status])
+}
+
+/// Someone on a project team: a club member or an outside person, with their role and share (basis points of the revenue).
+model ClubProjectMember {
+  id             String            @id @default(uuid()) @db.Uuid
+  tenantId       String            @db.Uuid
+  projectId      String            @db.Uuid
+  registrationId String?           @db.Uuid
+  name           String
+  role           String
+  shareBp        Int               @default(0)
+  createdAt      DateTime          @default(now())
+  project        ClubProject       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  registration   ClubRegistration? @relation(fields: [registrationId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([registrationId])
+}
+
+/// A phone that signed in to the mobile app and agreed to notifications (Expo push token).
+model PushDevice {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  token      String   @unique
+  platform   String
+  createdAt  DateTime @default(now())
+  lastSeenAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// How serious an alert is: its colour on the banner (blue, violet, amber, red, green).
+enum ClubAlertKind {
+  INFO
+  UPDATE
+  WARNING
+  ERROR
+  SUCCESS
+}
+
+/// An alert the club shows as a banner at the top of every page of the chosen spaces, until it ends, the club
+/// closes it for everyone, or the person closes it (when allowed). The details (text, images, a video link,
+/// buttons) open in a dialog.
+model ClubAlert {
+  id               String         @id @default(uuid()) @db.Uuid
+  tenantId         String         @db.Uuid
+  kind             ClubAlertKind  @default(INFO)
+  /// A sticker key of the frontend (CalendarStickerKey), drawn on the banner.
+  sticker          String?
+  title            String
+  message          String
+  /// The longer text of the details dialog.
+  details          String         @default("")
+  /// [{ kind: IMAGE | VIDEO, url, objectKey? }]: uploaded images, video links (YouTube, Vimeo, Drive…).
+  media            Json           @default("[]")
+  /// [{ label, url }]: buttons on the banner and in the details.
+  links            Json           @default("[]")
+  /// MEMBERS, ALUMNI, PROFESSORS, STAFF.
+  audiences        String[]
+  /// Members only: tracks (empty = all), picked registrations (empty = no hand-picked list), age and member-since bounds.
+  memberTracks     String[]       @default([])
+  memberIds        String[]       @default([]) @db.Uuid
+  memberAgeMin     Int?
+  memberAgeMax     Int?
+  memberSinceFrom  DateTime?
+  memberSinceTo    DateTime?
+  /// People (accounts) who never see it, whatever the rest says.
+  excludedUserIds  String[]       @default([]) @db.Uuid
+  /// The close button on the banner; off = it stays until it ends or the club closes it.
+  dismissible      Boolean        @default(true)
+  /// An "I've read it" button that records who confirmed.
+  requireAck       Boolean        @default(false)
+  /// Stays fixed at the top of the page while scrolling (off = scrolls away with the page).
+  sticky           Boolean        @default(true)
+  /// Also sent as a push notification to the mobile app, when it starts.
+  push             Boolean        @default(false)
+  pushSentAt       DateTime?
+  startsAt         DateTime       @default(now())
+  endsAt           DateTime?
+  /// Closed by the club for everyone.
+  closedAt         DateTime?
+  closedBy         String?        @db.Uuid
+  createdBy        String         @db.Uuid
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  tenant           Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  receipts         ClubAlertReceipt[]
+
+  @@index([tenantId, startsAt])
+}
+
+/// What one person did with an alert: when they first saw it, closed it, or confirmed they read it.
+model ClubAlertReceipt {
+  alertId        String    @db.Uuid
+  userId         String    @db.Uuid
+  seenAt         DateTime  @default(now())
+  dismissedAt    DateTime?
+  acknowledgedAt DateTime?
+  alert          ClubAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+
+  @@id([alertId, userId])
+  @@index([userId])
+}

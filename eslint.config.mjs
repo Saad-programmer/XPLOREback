@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    // Generated Prisma client:
+    'src/generated/labs-client/**',
     // Installed Claude Code skills (third-party examples, not our code).
     '.claude/**',
     // Static third-party game assets:
